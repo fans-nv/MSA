@@ -1713,6 +1713,11 @@ class SparseDecodeAttentionForwardSm100:
             pipeline.PipelineUserType.Consumer, self.kv_stage)
         phase_s0 = Int32(0)
         phase_s1 = Int32(0)
+        # pipeline_o_acc producer phases.  Producers start at phase 1 so the
+        # very first acquire passes trivially (same convention as
+        # ``corr_epi_producer_phase`` in correction_loop).
+        o_acc_producer_phase0 = Int32(1)
+        o_acc_producer_phase1 = Int32(1)
 
         work_tile = tile_scheduler.initial_work_tile_info()
         while work_tile.is_valid_tile:
@@ -1731,6 +1736,52 @@ class SparseDecodeAttentionForwardSm100:
                 page_count_mma = kv_page_end_mma - kv_page_begin_mma
                 block_iter_count_mma = (
                     page_count_mma + Int32(1)) & ~Int32(1)
+
+                # ---------------------------------------------------------
+                # Tile-level O-accumulator acquire.
+                #
+                # The MMA is the pipeline_o_acc producer but used to
+                # ``producer_commit`` without ever calling producer_acquire,
+                # so nothing bounded how far ahead of the correction warp it
+                # could run *across work tiles*.  That matters because the
+                # softmax->correction stats mailbox (row_sum / row_max /
+                # acc_scale) lives in the first two columns of the S
+                # accumulator, TMEM S[stage][:, 0:2] (see the
+                # ``tStS_vec_layout`` compositions in softmax_loop and
+                # correction_loop).  The first QK GEMM of the *next* work
+                # tile overwrites S[stage] wholesale and therefore destroys
+                # the stats the correction warp is about to read.
+                #
+                # The only thing that previously ordered that overwrite was
+                # the borrowed pipeline_s_p_o credit chain, whose depth is
+                # ``block_iter_count // 2`` acquires per tile.  With
+                # block_iter_count == 2 (per-split chunk of 1 or 2 pages)
+                # that depth is 1, and the license to clobber S[stage] in
+                # tile N+1 comes from tile N-1's correction release -- a
+                # full tile stale.  The MMA then races the correction warp
+                # for the tile-N stats and wins often enough to corrupt
+                # ~50% of the partial rows (negative/garbage row_sum ->
+                # log2(neg) -> NaN LSE_partial -> garbage after combine).
+                #
+                # pipeline_o_acc already has exactly the right semantics --
+                # the correction warp releases it (correction_loop, right
+                # after it has read the final stats and run the epilogue
+                # combine) -- it was simply never waited on.  Acquiring it
+                # here, before the first QK of the tile, makes the producer
+                # side of pipeline_o_acc well formed (1 acquire + 1 commit
+                # per stage per tile against 1 wait + 1 release on the
+                # consumer side) and bounds the MMA to at most one tile
+                # ahead of the correction warp for every chunk size.
+                # ---------------------------------------------------------
+                if block_iter_count_mma > Int32(0):
+                    pipeline_o_acc.producer_acquire_w_index_phase(
+                        Int32(0), o_acc_producer_phase0)
+                    pipeline_o_acc.producer_acquire_w_index_phase(
+                        Int32(1), o_acc_producer_phase1)
+                    o_acc_producer_phase0 = (
+                        o_acc_producer_phase0 ^ Int32(1))
+                    o_acc_producer_phase1 = (
+                        o_acc_producer_phase1 ^ Int32(1))
 
                 pipeline_q.consumer_wait_w_index_phase(
                     Int32(0), mma_q_consumer_phase)
