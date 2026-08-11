@@ -179,8 +179,10 @@ class DecodeTileScheduler:
     ) -> WorkTileInfo:
         # CLC responses are 16B opaque records.  The scheduler warp can query
         # the next stage before all consumer warps have read the current one,
-        # so each pipeline stage needs its own response slot.
-        response_ptr = self._clc_response_ptr + response_stage * Int32(4)
+        # so each pipeline stage needs its own response slot.  The slot
+        # array is typed Int128 in SharedStorage, so the stage index is also
+        # the element index and the 16B alignment survives the offset.
+        response_ptr = self._clc_response_ptr + response_stage
         m_idx, n_idx, l_idx, is_valid = cute.arch.clc_response(
             response_ptr, loc=loc, ip=ip)
         cute.arch.fence_proxy("async.shared", space="cta")
@@ -239,7 +241,7 @@ class DecodeTileScheduler:
     ):
         if const_expr(self.params.scheduling_mode == SchedulingMode.CLC):
             assert mbarrier_addr is not None
-            response_ptr = self._clc_response_ptr + response_stage * Int32(4)
+            response_ptr = self._clc_response_ptr + response_stage
             with cute.arch.elect_one():
                 cute.arch.issue_clc_query(
                     mbarrier_addr, response_ptr, loc=loc, ip=ip)

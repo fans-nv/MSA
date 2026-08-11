@@ -424,7 +424,13 @@ class SparseDecodeAttentionForwardSm100:
         self.tile_scheduler_cls = DecodeTileScheduler
         grid = DecodeTileScheduler.get_grid_shape(tile_sched_params)
 
-        clc_response_size = self.sched_stages * 4 if self.use_clc_scheduler else 0
+        # One CLC response record per scheduler stage.  A response is a 16B
+        # opaque record that `cute.arch.clc_response` reads back with a
+        # 128-bit `universal_copy`, so each slot must be 16B aligned.  cute
+        # derives a MemRange's alignment from its element width, so the range
+        # is typed Int128 rather than 4 x Int32 (which only guarantees 4B and
+        # makes the copy fail the `cute.copy` verifier).
+        clc_response_size = self.sched_stages if self.use_clc_scheduler else 0
         clc_mbar_size = self.sched_stages * 2 if self.use_clc_scheduler else 0
 
         # ------------------------------------------------------------------
@@ -455,7 +461,7 @@ class SparseDecodeAttentionForwardSm100:
             tmem_dealloc_mbar_ptr: Int64
             tmem_holding_buf: Int32
             clc_mbar_ptr: cute.struct.MemRange[cutlass.Int64, clc_mbar_size]
-            clc_response: cute.struct.MemRange[Int32, clc_response_size]
+            clc_response: cute.struct.MemRange[cutlass.Int128, clc_response_size]
             sQ: cute.struct.Align[
                 cute.struct.MemRange[self.q_dtype, cute.cosize(sQ_layout)],
                 self.buffer_align_bytes,
