@@ -13,6 +13,7 @@ for the KVFP4 attention kernel:
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Tuple
 
@@ -171,12 +172,137 @@ def _import_te_nvfp4_quantizer():
     return NVFP4Quantizer
 
 
-def quantize_bf16_to_nvfp4_128x4(x: torch.Tensor) -> Nvfp4QuantizedTensor:
-    """Quantize a BF16/FP16 tensor to NVFP4 using Transformer Engine.
+# ---------------------------------------------------------------------------
+# Dependency-free (pure PyTorch) NVFP4 quantizer
+# ---------------------------------------------------------------------------
+#
+# This is a drop-in replacement for the Transformer Engine path above.  It
+# exists so the NVFP4 accuracy tests can run on machines without a working
+# Transformer Engine build; it is an exact round-trip partner of
+# ``dequantize_nvfp4_128x4_to_bf16`` below and uses the same physical layout the
+# kernel reads (``_scale_128x4_offset`` in
+# ``src/sm100/fwd/atten_fwd_nvfp4_kv.py``).
+
+# FP4 E2M1: 1 sign bit, 2 exponent bits, 1 mantissa bit.  Codes 0..7 hold the
+# non-negative magnitudes and bit 3 is the sign.  Same table as the LUT used by
+# ``dequantize_nvfp4_128x4_to_bf16``.
+_E2M1_MAGNITUDES: Tuple[float, ...] = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0)
+
+# ``_E2M1_MIDPOINTS[i]`` is the tie point between code ``i`` and code ``i + 1``.
+_E2M1_MIDPOINTS: Tuple[float, ...] = (0.25, 0.75, 1.25, 1.75, 2.5, 3.5, 5.0)
+
+
+def _round_to_e2m1_codes(x: torch.Tensor) -> torch.Tensor:
+    """Round FP32 values to FP4 E2M1 codes, round-to-nearest-even.
+
+    Ties resolve to the code whose mantissa bit is zero, i.e. the even code,
+    matching ``cvt.rn.satfinite.e2m1x2.f32``.  Magnitudes above 6 saturate to
+    code 7 (6.0); the sign is preserved in bit 3, including for negative zero.
+    """
+
+    xf = torch.nan_to_num(x.to(torch.float32), nan=0.0)
+    sign = torch.signbit(xf)
+    magnitude = xf.abs().contiguous()
+    midpoints = torch.tensor(
+        _E2M1_MIDPOINTS, dtype=torch.float32, device=xf.device
+    )
+    # ``low`` counts midpoints strictly below the magnitude (round down on a
+    # tie); ``high`` counts midpoints at or below it (round up on a tie).  They
+    # differ only exactly on a tie, where the tie sits at index ``low``.
+    low = torch.searchsorted(midpoints, magnitude, right=False)
+    high = torch.searchsorted(midpoints, magnitude, right=True)
+    code = torch.where(low % 2 == 0, low, high).to(torch.uint8)
+    return code | (sign.to(torch.uint8) << 3)
+
+
+def _pack_e2m1_codes(codes: torch.Tensor) -> torch.Tensor:
+    """Pack pairs of E2M1 codes into bytes; even element in the low nibble."""
+
+    return (codes[..., 0::2] & 0x0F) | (codes[..., 1::2] << 4)
+
+
+def _quantize_bf16_to_nvfp4_128x4_torch(
+    x: torch.Tensor,
+    *,
+    rows: int,
+    scale_cols: int,
+) -> "Nvfp4QuantizedTensor":
+    """Quantize to NVFP4 with plain PyTorch, no Transformer Engine.
+
+    Follows the same recipe TE uses:
+      global_scale = amax(|x|) / (448 * 6)
+      block_scale  = to_e4m3(amax(|block|) / (6 * global_scale))    <= 448
+      fp4          = to_e2m1(block / (block_scale * global_scale))
+    so ``fp4 * block_scale * global_scale`` reconstructs the value exactly in
+    FP32, which is what ``dequantize_nvfp4_128x4_to_bf16`` computes.
+    """
+
+    flat = x.detach().to(torch.float32).contiguous().reshape(rows, -1)
+    amax = flat.abs().amax()
+    global_scale = nvfp4_global_scale_from_amax(amax.reshape(1))
+    # An all-zero tensor would give a zero (and thus unusable) global scale.
+    global_scale = torch.where(
+        global_scale > 0, global_scale, torch.ones_like(global_scale)
+    )
+
+    blocks = flat.reshape(rows, scale_cols, NVFP4_BLOCK_SIZE)
+    block_amax = blocks.abs().amax(dim=-1)
+    encoded = (block_amax / (NVFP4_FP4_MAX * global_scale)).clamp(
+        min=0.0, max=NVFP4_FP8_E4M3_MAX
+    )
+    block_scale = encoded.to(torch.float8_e4m3fn)
+    dequant_step = block_scale.to(torch.float32) * global_scale
+    nonzero = dequant_step > 0
+    safe_step = torch.where(nonzero, dequant_step, torch.ones_like(dequant_step))
+
+    codes = _round_to_e2m1_codes(blocks / safe_step.unsqueeze(-1))
+    codes = torch.where(nonzero.unsqueeze(-1), codes, torch.zeros_like(codes))
+    data = _pack_e2m1_codes(codes.reshape(rows, -1)).reshape(
+        *x.shape[:-1], x.shape[-1] // 2
+    )
+
+    scale_128x4 = swizzle_nvfp4_scale_to_128x4(
+        block_scale.view(torch.uint8),
+        rows=rows,
+        cols=scale_cols,
+    )
+
+    return Nvfp4QuantizedTensor(
+        data=data.contiguous(),
+        scale_128x4=scale_128x4.contiguous(),
+        global_scale=global_scale.to(torch.float32).contiguous(),
+        logical_scale_shape=(rows, scale_cols),
+        original_shape=tuple(int(v) for v in x.shape),
+    )
+
+
+def te_nvfp4_quantizer_available() -> bool:
+    """Return True when Transformer Engine's NVFP4 quantizer can be imported."""
+
+    try:
+        _import_te_nvfp4_quantizer()
+    except RuntimeError:
+        return False
+    return True
+
+
+def quantize_bf16_to_nvfp4_128x4(
+    x: torch.Tensor,
+    *,
+    backend: str = "auto",
+) -> Nvfp4QuantizedTensor:
+    """Quantize a BF16/FP16 tensor to NVFP4.
 
     TE returns rowwise scales in logical padded layout.  This helper returns
     the scales in physical 128x4 tiled storage, so the attention kernel can
     load them with ``nvfp4_scale_128x4_offset``.
+
+    Two backends produce the same layout:
+      * ``"te"``    - Transformer Engine's ``NVFP4Quantizer``.
+      * ``"torch"`` - a dependency-free PyTorch implementation of the same
+        recipe.  Use it when Transformer Engine is not installed.
+      * ``"auto"``  - TE if importable, otherwise ``"torch"``.  Override with
+        the ``MSA_NVFP4_QUANTIZER_BACKEND`` environment variable.
 
     Parameters
     ----------
@@ -184,6 +310,8 @@ def quantize_bf16_to_nvfp4_128x4(x: torch.Tensor) -> Nvfp4QuantizedTensor:
         CUDA BF16 or FP16 tensor.  The last dimension must be divisible by 16,
         and the flattened row dimension ``prod(x.shape[:-1])`` must also be
         divisible by 16.
+    backend : str, optional
+        ``"auto"``, ``"te"`` or ``"torch"``.
 
     Returns
     -------
@@ -213,6 +341,24 @@ def quantize_bf16_to_nvfp4_128x4(x: torch.Tensor) -> Nvfp4QuantizedTensor:
             f"{NVFP4_BLOCK_SIZE}, got {rows}"
         )
 
+    scale_cols = int(x.shape[-1]) // NVFP4_BLOCK_SIZE
+
+    # An explicit argument wins; the environment only supplies the default, so
+    # a caller that asks for a specific backend always gets it (or an error).
+    backend = backend.lower()
+    if backend == "auto":
+        backend = os.environ.get("MSA_NVFP4_QUANTIZER_BACKEND", "auto").lower()
+    if backend not in ("auto", "te", "torch"):
+        raise ValueError(
+            f"backend must be 'auto', 'te' or 'torch', got {backend!r}"
+        )
+    if backend == "auto":
+        backend = "te" if te_nvfp4_quantizer_available() else "torch"
+    if backend == "torch":
+        return _quantize_bf16_to_nvfp4_128x4_torch(
+            x, rows=rows, scale_cols=scale_cols
+        )
+
     NVFP4Quantizer = _import_te_nvfp4_quantizer()
     quantizer = NVFP4Quantizer(rowwise=True, columnwise=False)
     qx = quantizer.quantize(x.contiguous())
@@ -223,7 +369,6 @@ def quantize_bf16_to_nvfp4_128x4(x: torch.Tensor) -> Nvfp4QuantizedTensor:
         data = data.view(torch.uint8)
     logical_scale = meta["rowwise_scale_inv"]
     amax = meta["amax_rowwise"]
-    scale_cols = int(x.shape[-1]) // NVFP4_BLOCK_SIZE
     scale_128x4 = swizzle_nvfp4_scale_to_128x4(
         logical_scale,
         rows=rows,

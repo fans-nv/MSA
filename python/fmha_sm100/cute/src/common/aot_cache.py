@@ -6,6 +6,12 @@
 Saves compiled TVM FFI kernels as .o files on first compile,
 loads them on subsequent runs to skip JIT compilation.
 
+Cached objects are keyed by the caller's kernel key *and* a build fingerprint
+covering the target GPU architecture and the kernel sources. Without the
+fingerprint a .o built for one architecture (or from an older revision of the
+kernel) is silently reused on another, which both miscompiles across
+SM100/SM103 and makes local kernel edits appear to have no effect.
+
 Environment variables:
     MM_SPARSE_ATTN_AOT_CACHE: Override cache directory
         (default: ~/.cache/minfer/mm_sparse_attn)
@@ -25,10 +31,64 @@ _AOT_CACHE_DIR = os.environ.get(
 _AOT_DISABLE = os.environ.get("MM_SPARSE_ATTN_AOT_DISABLE", "0") == "1"
 
 _loaded_modules: dict[str, object] = {}
+_build_fingerprint_cache: str | None = None
+
+# .../cute/src/common/aot_cache.py -> .../cute
+_PACKAGE_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
+
+
+def _source_fingerprint() -> str:
+    """Hash every .py under the cute package so edits invalidate the cache."""
+    h = hashlib.sha256()
+    for dirpath, dirnames, filenames in os.walk(_PACKAGE_ROOT):
+        dirnames[:] = sorted(d for d in dirnames if d != "__pycache__")
+        for filename in sorted(filenames):
+            if not filename.endswith(".py"):
+                continue
+            path = os.path.join(dirpath, filename)
+            h.update(os.path.relpath(path, _PACKAGE_ROOT).encode())
+            try:
+                with open(path, "rb") as f:
+                    h.update(f.read())
+            except OSError:
+                # Unreadable source: fold the error in rather than silently
+                # producing the same digest as if the file did not exist.
+                h.update(b"<unreadable>")
+    return h.hexdigest()[:16]
+
+
+def _target_arch() -> str:
+    """Compute capability of the device the kernel will be launched on."""
+    try:
+        import torch
+
+        major, minor = torch.cuda.get_device_capability()
+        return f"sm{major}{minor}"
+    except Exception:
+        return "smunknown"
+
+
+def _build_fingerprint() -> str:
+    global _build_fingerprint_cache
+    if _build_fingerprint_cache is None:
+        try:
+            import cutlass
+
+            cutlass_version = getattr(cutlass, "__version__", "unknown")
+        except Exception:
+            cutlass_version = "unknown"
+        _build_fingerprint_cache = "-".join(
+            (_target_arch(), str(cutlass_version), _source_fingerprint())
+        )
+    return _build_fingerprint_cache
 
 
 def _key_to_path(key: tuple) -> str:
-    h = hashlib.sha256(repr(key).encode()).hexdigest()[:16]
+    h = hashlib.sha256(
+        repr((_build_fingerprint(), key)).encode()
+    ).hexdigest()[:16]
     name = str(key[0]).replace("/", "_")
     return os.path.join(_AOT_CACHE_DIR, f"{name}_{h}")
 
