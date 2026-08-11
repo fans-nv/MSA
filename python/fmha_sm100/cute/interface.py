@@ -1296,13 +1296,34 @@ class SparseDecodePagedAttentionWrapper:
         self.work_count = schedule.work_count
         self.padded_work_count = schedule.padded_work_count
         if schedule.split_kv:
+            # O_partial stays uninitialised on purpose: it is only ever read
+            # for splits whose LSE_partial weight is non-zero (combine.py's
+            # ``scale[m] > 0.0`` predicate, and the ``thr_max_valid_split``
+            # loop bound), so seeding LSE_partial below is enough to make any
+            # unwritten partial row neutral.  Zeroing O_partial as well was
+            # measured at +1.7% .. +17.7% of the decode forward (it scales
+            # with partial_rows: 12us for a 64MiB partial buffer, 140us for a
+            # 1GiB one), which is not worth paying for a strictly weaker
+            # guarantee.
             self.O_partial = torch.empty(
                 (schedule.partial_rows, self.num_qo_heads, self.head_dim),
                 dtype=torch.float32,
                 device=page_table.device,
             )
-            self.LSE_partial = torch.empty(
+            # -inf, not torch.empty.  If the forward ever fails to write a
+            # partial row -- a pipeline desync, a schedule bug, a future
+            # kernel edit -- torch.empty makes the combine consume whatever
+            # was in that allocation, which is non-deterministic garbage and
+            # was exactly what turned a decode desync into randomly varying
+            # NaNs.  Seeding -inf gives the combine a defined answer instead:
+            # exp(-inf - lse_max) == 0, so the split is dropped, the result is
+            # reproducible, and a correctness test can actually catch it.
+            # Cost is one ~5-6us launch-bound fill per plan() (partial_rows x
+            # Hq fp32 is small), i.e. ~2.5% of plan() and 0.7-4% of the
+            # forward.
+            self.LSE_partial = torch.full(
                 (schedule.partial_rows, self.num_qo_heads),
+                float("-inf"),
                 dtype=torch.float32,
                 device=page_table.device,
             )

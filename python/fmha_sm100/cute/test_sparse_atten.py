@@ -2785,6 +2785,80 @@ def test_sparse_decode_page_fp8_forward_forced_split_kv_tile_aligned_partial() -
     )
 
 
+# Per-split KV chunk sizes for the forced-split decode regression below.
+# 1 and 2 pages are the sizes that make ``block_iter_count`` collapse to 2
+# (``(page_count + 1) & ~1``), i.e. one softmax stage-iteration per warpgroup.
+DECODE_FORCED_SPLIT_CHUNK_PAGES = (1, 2, 3, 4, 8, 16)
+
+
+@pytest.mark.parametrize("chunk_pages", DECODE_FORCED_SPLIT_CHUNK_PAGES)
+def test_sparse_decode_page_fp8_forward_forced_split_kv_chunk_sizes(
+    chunk_pages: int,
+) -> None:
+    """Forced split-KV decode must be correct for every per-split chunk size.
+
+    Regression for a cross-work-tile pipeline desync.  With a per-split chunk
+    of 1 or 2 pages the MMA warp's per-tile ``pipeline_s_p_o`` acquire count
+    collapses to one, which used to let the MMA start the next work tile's QK
+    GEMM -- and so overwrite TMEM ``S[stage][:, 0:2]``, where the softmax ->
+    correction row_sum/row_max mailbox lives -- while the correction warp was
+    still a full work tile behind.  The result was non-deterministic garbage:
+    NaN rows in ``LSE_partial`` and ~25-80% rms error after the combine.
+
+    ``test_sparse_decode_page_fp8_forward_forced_split_kv_tile_aligned_partial``
+    did not catch it because it only produces 64 work items; the corruption
+    needs enough work tiles that CTAs are recycled (more than one tile per
+    SM), so this test fixes 8 splits over the full ``DECODE_BATCH`` and all 4
+    KV heads, giving 256 work items / 1024 tasks.
+    """
+    splits = 8
+    kv_tokens = BLK_KV * chunk_pages * splits
+    torch.random.manual_seed(0)
+    fn = _get_sparse_decode_atten_func_for_test()
+    inputs = _build_decode_paged_dense_inputs(kv_tokens=kv_tokens)
+
+    fn.plan(
+        page_table=inputs["page_table"],
+        seqused_k=inputs["seqused_k"],
+        seqlen_q=inputs["seqlen_q"],
+        max_seqlen_k=inputs["max_seqlen_k"],
+        q2k_indices=inputs["q2k"],
+        num_qo_heads=inputs["q"].shape[1],
+        num_kv_heads=inputs["k_paged"].shape[1],
+        head_dim=inputs["q"].shape[2],
+        fixed_split_size=chunk_pages,
+    )
+    schedule = fn.decode_schedule
+    assert schedule is not None
+    # Guard the guard: if the override ever stops producing the requested
+    # chunk size, or stops splitting, this test would pass vacuously.
+    assert schedule.split_kv
+    assert schedule.kv_chunk_size_pages == chunk_pages
+    assert int(schedule.split_counts.max().item()) == splits
+    assert schedule.work_count > schedule.num_sms
+
+    out_ref, lse_ref = _decode_paged_dense_reference(inputs)
+    out_ref_exact, _ = _decode_paged_dense_reference(inputs, p_dtype=None)
+
+    # The failure was a race, so a single sample can pass by luck.
+    for _ in range(3):
+        out, lse = fn.run(
+            inputs["q"],
+            inputs["k_paged"],
+            inputs["v_paged"],
+            softmax_scale=inputs["softmax_scale"],
+            return_softmax_lse=True,
+        )
+        assert not torch.isnan(out).any(), "NaN in decode output"
+        assert torch.isfinite(lse).all(), "non-finite LSE"
+        assert fn.LSE_partial is not None
+        assert not torch.isnan(fn.LSE_partial).any(), "NaN in LSE_partial"
+        assert not torch.isnan(fn.O_partial).any(), "NaN in O_partial"
+        _assert_fp8_forward_close(
+            out, out_ref, lse, lse_ref, out_ref_unquantized_p=out_ref_exact
+        )
+
+
 # ---------------------------------------------------------------------------
 # Benchmark harness
 # ---------------------------------------------------------------------------
