@@ -1364,14 +1364,45 @@ def _assert_fp8_forward_close(
     out_ref_bf16 = out_ref.to(torch.bfloat16).float()
     bf16_floor = (out_ref_bf16 - out_ref.float()).abs().max().item()
     kernel_diff = (out.float() - out_ref_bf16).abs().max().item()
-    # QK/LSE should be tight. O additionally includes P(e4m3) @ V(e4m3)
-    # with hardware FP8 MMA accumulation, so allow the observed PV rounding
-    # envelope up through topK=32 rather than a bf16-only floor.
-    # With fp8 O_partial, each split additionally quantizes the partial output
-    # to e4m3 before combine; this adds another ~6% relative error per split
-    # and pushes the worst-case |diff| up to ~0.5 on the standard cases.
-    floor = 5.0e-1 if partial_is_fp8 else 1.25e-1
-    assert kernel_diff <= max(floor, 4.0 * bf16_floor)
+    out_scale = out_ref_bf16.abs().max().item()
+    # QK/LSE should be tight. O additionally includes P(e4m3) @ V(e4m3) with
+    # hardware FP8 MMA accumulation, so it needs a slacker bound -- but that
+    # bound has to be RELATIVE to |O|. It used to be the bare constant 0.125
+    # (0.5 with fp8 O_partial), which is not scale-invariant: it silently gets
+    # stricter as the data grows. Making the synthetic NVFP4 block scales vary
+    # over [0.5, 1.875] instead of being pinned at 1.0 raised max|O| by 1.75x
+    # and raised |diff| by the same factor at *constant* relative error
+    # (measured 1.4-1.9% of max|O| in every scale window from constant-0x38 to
+    # 0x30-0x3E), and that alone flipped the test to failing. A relative bound
+    # would not have moved.
+    #
+    # Error model for the constant. P is rounded to E4M3, which carries 3
+    # explicit mantissa bits, so its round-to-nearest relative error is at most
+    # 2**-4. The kernel and the reference arrive at P by different roundings,
+    # so any P entry may land one E4M3 step away; O = sum_j P_j V_j / sum_j P_j
+    # is a convex combination of V rows, so that carries into O as the same
+    # relative perturbation. With fp8 O_partial every split additionally
+    # re-quantizes the partial output to E4M3 before the combine, which
+    # empirically costs ~4x more (measured max 12.4% vs 4.3% relative) -- the
+    # same 4x the two old constants encoded, now expressed relatively.
+    #
+    # Calibration: 561 measurements over the fp8 and NVFP4 test set give a
+    # worst observed relative error of 4.35% (441 bf16-O_partial cases) and
+    # 12.38% (120 fp8-O_partial cases), i.e. 1.4x and 2.0x of headroom below
+    # the bounds used here. The 4 * bf16_floor term is the reference's own
+    # bf16 storage floor; bf16 keeps 8 significand bits, so it is bounded by
+    # 4 * 2**-8 * max|O| = 1.6% * max|O| and is scale-invariant too. The
+    # headroom figures above count only the rtol term, so they are lower
+    # bounds on the real margin.
+    e4m3_relative_ulp = 2.0**-4
+    rtol = 4.0 * e4m3_relative_ulp if partial_is_fp8 else e4m3_relative_ulp
+    tol = 4.0 * bf16_floor + rtol * out_scale
+    assert kernel_diff <= tol, (
+        f"max|out - out_ref| = {kernel_diff:.6g} exceeds {tol:.6g} "
+        f"(= 4 * bf16_floor {bf16_floor:.6g} + rtol {rtol:.6g} "
+        f"* max|out_ref| {out_scale:.6g}); relative error "
+        f"{kernel_diff / max(out_scale, 1e-30):.4%}"
+    )
 
     finite = lse_ref.isfinite()
     if finite.any():
