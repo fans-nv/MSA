@@ -1148,7 +1148,16 @@ def _decode_paged_dense_reference(
     inputs: dict[str, object],
     *,
     chunk_tokens: int = 8192,
+    p_dtype: torch.dtype | None = torch.float8_e4m3fn,
 ) -> tuple[torch.Tensor, torch.Tensor]:
+    """Reference decode attention.
+
+    ``p_dtype`` selects the rounding applied to unnormalized P.  The default
+    (e4m3) models the kernel.  ``p_dtype=None`` skips that rounding entirely
+    and yields the same reference with its own P-quantization noise removed;
+    ``_assert_fp8_forward_close`` uses the difference of the two as a measured
+    noise floor.  See the derivation in that function.
+    """
     q = inputs["q"].float()
     k_paged = inputs["k_paged"]
     v_paged = inputs["v_paged"]
@@ -1249,7 +1258,11 @@ def _decode_paged_dense_reference(
                 # normalized probabilities here would model a different
                 # rounding point and overstate the kernel error for short-KV
                 # decode rows.
-                p_unnorm = exp_scores.to(torch.float8_e4m3fn).float()
+                p_unnorm = (
+                    exp_scores
+                    if p_dtype is None
+                    else exp_scores.to(p_dtype).float()
+                )
                 out_cur += torch.einsum("hst,td->shd", p_unnorm, v_chunk)
             out_cur = out_cur / safe_row_sum.transpose(0, 1).unsqueeze(-1)
 
@@ -1360,11 +1373,18 @@ def _assert_fp8_forward_close(
     lse: torch.Tensor,
     lse_ref: torch.Tensor,
     partial_is_fp8: bool = False,
+    out_ref_unquantized_p: torch.Tensor | None = None,
 ) -> None:
+    out_ref_f = out_ref.float()
     out_ref_bf16 = out_ref.to(torch.bfloat16).float()
-    bf16_floor = (out_ref_bf16 - out_ref.float()).abs().max().item()
-    kernel_diff = (out.float() - out_ref_bf16).abs().max().item()
+    bf16_err = out_ref_bf16 - out_ref_f
+    bf16_floor = bf16_err.abs().max().item()
+    bf16_rms_floor = bf16_err.pow(2).mean().sqrt().item()
+    diff = out.float() - out_ref_bf16
+    kernel_diff = diff.abs().max().item()
+    diff_rms = diff.pow(2).mean().sqrt().item()
     out_scale = out_ref_bf16.abs().max().item()
+    out_rms = out_ref_bf16.pow(2).mean().sqrt().item()
     # QK/LSE should be tight. O additionally includes P(e4m3) @ V(e4m3) with
     # hardware FP8 MMA accumulation, so it needs a slacker bound -- but that
     # bound has to be RELATIVE to |O|. It used to be the bare constant 0.125
@@ -1394,14 +1414,125 @@ def _assert_fp8_forward_close(
     # 4 * 2**-8 * max|O| = 1.6% * max|O| and is scale-invariant too. The
     # headroom figures above count only the rtol term, so they are lower
     # bounds on the real margin.
+    #
+    # The rtol term above is *only* valid while the reference's own P entries
+    # stay inside E4M3's normal range.  They do not, for long-KV decode.  The
+    # reference normalizes P by the GLOBAL row max, so p_j = exp(s_j - max_j
+    # s_j) covers (0, 1]; as the KV length N grows the row max grows like
+    # sqrt(2 ln N) and an ever larger share of p_j falls below E4M3's smallest
+    # normal 2**-6, where the rounding error is an ABSOLUTE half-ulp of 2**-10
+    # rather than a relative 2**-4.  Measured on the decode sweep, the
+    # subnormal share of the reference's P goes 0.9% (N=8) -> 34% (N=8192) ->
+    # 74% (N=1048576).  Meanwhile max|O| shrinks like 1/sqrt(N) (O is a convex
+    # combination of random V rows), so that absolute noise shows up as a
+    # relative error that climbs with N -- entirely on the reference's side.
+    #
+    # The kernel does not have this problem: it normalizes P against a
+    # per-tile running max (`rescale_threshold = 4.0` in
+    # src/sm100/fwd_decode/atten_fwd.py), never against a 1M-token global max.
+    # Measured against the same reference evaluated with an *unquantized* P,
+    # rms|kernel - exact| / rms|exact| is FLAT at 2.7% over N = 8192 ..
+    # 1048576, while rms|ref - exact| / rms|exact| climbs 2.68% -> 3.79% and
+    # max|ref - exact| / max|O| climbs 3.97% -> 12.74%.  At N = 1048576 the
+    # kernel is closer to the unquantized answer (6.9%) than the reference is
+    # (12.7%).  A bound that charges the reference's own quantization noise to
+    # the kernel is mis-modelled, not a kernel defect.
+    #
+    # So: when the caller can supply the same reference computed without the
+    # E4M3 P rounding, subtract the two to get that noise directly and admit
+    # it into the tolerance.  This is measured from the *inputs*, not from the
+    # kernel, so it cannot be inflated by a broken kernel.  Callers that do
+    # not supply it (all prefill/NVFP4 sites) keep exactly the previous bound.
     e4m3_relative_ulp = 2.0**-4
     rtol = 4.0 * e4m3_relative_ulp if partial_is_fp8 else e4m3_relative_ulp
-    tol = 4.0 * bf16_floor + rtol * out_scale
+    if out_ref_unquantized_p is None:
+        ref_noise_max = 0.0
+        ref_noise_rms = 0.0
+    else:
+        ref_noise = out_ref_f - out_ref_unquantized_p.float()
+        ref_noise_max = ref_noise.abs().max().item()
+        ref_noise_rms = ref_noise.pow(2).mean().sqrt().item()
+
+    # Triangle inequality through the unquantized-P reference:
+    #   |out - out_ref| <= |out - exact| + |exact - out_ref|.
+    # The second leg is ref_noise.  The first leg is the kernel's own E4M3 P
+    # rounding, which is of the same class and (per the measurements above)
+    # never coarser, so it is charged the same quantity -- hence the factor 2.
+    tol = 4.0 * bf16_floor + rtol * out_scale + 2.0 * ref_noise_max
     assert kernel_diff <= tol, (
         f"max|out - out_ref| = {kernel_diff:.6g} exceeds {tol:.6g} "
         f"(= 4 * bf16_floor {bf16_floor:.6g} + rtol {rtol:.6g} "
-        f"* max|out_ref| {out_scale:.6g}); relative error "
+        f"* max|out_ref| {out_scale:.6g} + 2 * ref_quant_noise "
+        f"{ref_noise_max:.6g}); relative error "
         f"{kernel_diff / max(out_scale, 1e-30):.4%}"
+    )
+
+    # The same model evaluated in RMS instead of at the single worst element.
+    # rms <= max elementwise, so the same relative constants are conservative
+    # here; this is the coarse net for "the kernel got noisier everywhere",
+    # which a max over millions of elements reports only weakly.
+    rms_tol = 4.0 * bf16_rms_floor + rtol * out_rms + 2.0 * ref_noise_rms
+    assert diff_rms <= rms_tol, (
+        f"rms(out - out_ref) = {diff_rms:.6g} exceeds {rms_tol:.6g} "
+        f"(= 4 * bf16_rms_floor {bf16_rms_floor:.6g} + rtol {rtol:.6g} "
+        f"* rms|out_ref| {out_rms:.6g} + 2 * ref_quant_noise_rms "
+        f"{ref_noise_rms:.6g}); ratio {diff_rms / max(out_rms, 1e-30):.4%}"
+    )
+
+    # Both bounds above are set by the quantization NOISE, which is a few
+    # percent for any E4M3 attention kernel and grows with N on the reference
+    # side.  On their own they would accept a several-percent systematic
+    # corruption at large N, i.e. they would be close to vacuous exactly where
+    # the old absolute constant already was.  The two projections below are
+    # what keep the criterion sharp: they are insensitive to zero-mean noise
+    # (it averages down by sqrt(n_elem)) but respond linearly to a systematic
+    # error.
+    #
+    #   gain_err = <out - out_ref, out_ref> / <out_ref, out_ref>
+    #
+    # is exactly eps for a corruption out -> (1 + eps) * out.  For a correct
+    # kernel it is not zero, because round-to-nearest on the E4M3 grid is only
+    # unbiased to FIRST order in the relative ulp; writing the residual as
+    # sum_j e_j p_j / sum_j p_j^2 with |e_j| <= rtol * p_j, the surviving
+    # systematic part is second order, O(rtol**2).  Measured: the kernel's own
+    # projection (against the unquantized-P reference) is flat at -6.2e-4 ..
+    # -7.2e-4 across N = 1024 .. 1048576 = 0.16 .. 0.18 * rtol**2, and over
+    # 141 prefill/NVFP4 measurements |gain_err| <= 9.7e-5 = 0.025 * rtol**2.
+    # The reference's own projection is what grows with N (+4.6e-5 at N=1024
+    # -> +9.1e-4 at N=1048576), so it enters through ref_noise like the terms
+    # above.  The 8 * (statistical null sd) term covers small tensors, where
+    # the projection of a genuinely zero-mean residual fluctuates.
+    n_elem = diff.numel()
+    ref_energy = (out_ref_bf16 * out_ref_bf16).sum().item()
+    gain_err = (diff * out_ref_bf16).sum().item() / ref_energy if ref_energy > 0 else 0.0
+    gain_null_sd = diff_rms / (math.sqrt(n_elem) * out_rms) if out_rms > 0 else 0.0
+    ref_gain_noise = 0.0
+    if out_ref_unquantized_p is not None and ref_energy > 0:
+        ref_gain_noise = abs(
+            (ref_noise * out_ref_bf16).sum().item() / ref_energy
+        )
+    gain_tol = rtol * rtol + 2.0 * ref_gain_noise + 8.0 * gain_null_sd
+    assert abs(gain_err) <= gain_tol, (
+        f"<out - out_ref, out_ref> / <out_ref, out_ref> = {gain_err:.6g} "
+        f"exceeds {gain_tol:.6g} (= rtol**2 {rtol * rtol:.6g} + 2 * "
+        f"ref_gain_noise {ref_gain_noise:.6g} + 8 * null_sd "
+        f"{gain_null_sd:.6g}); the kernel output is systematically scaled"
+    )
+
+    # Companion projection onto the constant vector: catches an additive
+    # offset, which the gain statistic cannot see when out_ref is zero-mean.
+    # Its null is diff_rms / sqrt(n_elem); over the 160 fp8/NVFP4 measurements
+    # the observed |mean| never exceeded 2.38 of those sd, so 8 is >3x the
+    # worst observation.  The gain_tol * |mean(out_ref)| term keeps the two
+    # checks from double-counting when out_ref does have a nonzero mean.
+    mean_err = diff.mean().item()
+    mean_ref = out_ref_bf16.mean().item()
+    mean_tol = 8.0 * diff_rms / math.sqrt(n_elem) + gain_tol * abs(mean_ref)
+    assert abs(mean_err) <= mean_tol, (
+        f"mean(out - out_ref) = {mean_err:.6g} exceeds {mean_tol:.6g} "
+        f"(= 8 * null_sd {diff_rms / math.sqrt(n_elem):.6g} + gain_tol "
+        f"{gain_tol:.6g} * |mean(out_ref)| {abs(mean_ref):.6g}); the kernel "
+        f"output carries a systematic offset"
     )
 
     finite = lse_ref.isfinite()
@@ -2609,10 +2740,13 @@ def test_sparse_decode_page_fp8_forward(kv_tokens: int) -> None:
 
     out, lse = _run_sparse_decode_page_fp8(fn, inputs)
     out_ref, lse_ref = _decode_paged_dense_reference(inputs)
+    out_ref_exact, _ = _decode_paged_dense_reference(inputs, p_dtype=None)
     assert out.dtype == torch.bfloat16
     assert out.shape == inputs["q"].shape
     assert lse.shape == inputs["q"].shape[:2]
-    _assert_fp8_forward_close(out, out_ref, lse, lse_ref)
+    _assert_fp8_forward_close(
+        out, out_ref, lse, lse_ref, out_ref_unquantized_p=out_ref_exact
+    )
 
 
 def test_sparse_decode_page_fp8_forward_forced_split_kv_tile_aligned_partial() -> None:
@@ -2645,7 +2779,10 @@ def test_sparse_decode_page_fp8_forward_forced_split_kv_tile_aligned_partial() -
         return_softmax_lse=True,
     )
     out_ref, lse_ref = _decode_paged_dense_reference(inputs)
-    _assert_fp8_forward_close(out, out_ref, lse, lse_ref)
+    out_ref_exact, _ = _decode_paged_dense_reference(inputs, p_dtype=None)
+    _assert_fp8_forward_close(
+        out, out_ref, lse, lse_ref, out_ref_unquantized_p=out_ref_exact
+    )
 
 
 # ---------------------------------------------------------------------------
