@@ -440,7 +440,16 @@ def _make_synthetic_nvfp4_tensor(
     *,
     global_scale_value: float = 1.0,
 ) -> object:
-    """Create deterministic packed NVFP4 data with unit block/global scales."""
+    """Create deterministic packed NVFP4 data with *varying* block scales.
+
+    The block scales must vary for these tests to mean anything: with every
+    scale byte set to the same value, permuting the whole scale array leaves
+    the dequantized result bit-identical, so a wrong 128x4 scale-layout decode
+    in the kernel is undetectable. Varying scales make that layout observable.
+
+    Bytes 0x30..0x3E are positive E4M3 values in [0.5, 1.875] -- no NaN, zero
+    or denormal -- so the reference stays well conditioned.
+    """
 
     from quantize import Nvfp4QuantizedTensor
 
@@ -457,9 +466,10 @@ def _make_synthetic_nvfp4_tensor(
         device="cuda",
         dtype=torch.uint8,
     )
-    scale_128x4 = torch.full(
+    scale_128x4 = torch.randint(
+        0x30,
+        0x3F,
         (padded_rows, padded_cols),
-        0x38,
         device="cuda",
         dtype=torch.uint8,
     )
@@ -478,14 +488,22 @@ def _make_synthetic_nvfp4_tensor(
     )
 
 
-def _quantize_bf16_to_nvfp4_or_skip(x: torch.Tensor) -> object:
+def _quantize_bf16_to_nvfp4(x: torch.Tensor) -> object:
+    """Quantize to NVFP4 for the reference path.
+
+    This deliberately does not skip on error. It used to swallow any
+    ``RuntimeError`` from the quantizer and call ``pytest.skip``, which turned a
+    missing Transformer Engine into 141 green-looking skips and silently removed
+    *all* NVFP4 accuracy coverage on machines that have the hardware -- and would
+    equally have hidden a genuine quantizer bug. The quantizer now has a
+    dependency-free PyTorch backend, so there is nothing left to be unavailable
+    and a raised error here is a real defect.
+    """
+
     _install_flash_attn3_stub_for_te_import()
     from quantize import quantize_bf16_to_nvfp4_128x4
 
-    try:
-        return quantize_bf16_to_nvfp4_128x4(x)
-    except RuntimeError as exc:
-        pytest.skip(str(exc))
+    return quantize_bf16_to_nvfp4_128x4(x)
 
 
 def _dequant_nvfp4_to_bf16(qx: object, *, include_global_scale: bool = True) -> torch.Tensor:
@@ -1857,8 +1875,8 @@ def test_sparse_atten_nvfp4_kv_matches_dequantized_bf16(
         k_source = inputs["k"]
         v_source = inputs["v"]
 
-    k_q = _quantize_bf16_to_nvfp4_or_skip(k_source)
-    v_q = _quantize_bf16_to_nvfp4_or_skip(v_source)
+    k_q = _quantize_bf16_to_nvfp4(k_source)
+    v_q = _quantize_bf16_to_nvfp4(v_source)
     k_deq = _dequant_nvfp4_to_bf16(k_q)
     v_deq = _dequant_nvfp4_to_bf16(v_q)
 
@@ -2184,8 +2202,8 @@ def test_sparse_atten_nvfp4_kv_te_quantized_flat_smoke() -> None:
         dtype=torch.bfloat16,
         q2k_pattern=Q2KPattern.UNIFORM,
     )
-    k_q = _quantize_bf16_to_nvfp4_or_skip(inputs["k"])
-    v_q = _quantize_bf16_to_nvfp4_or_skip(inputs["v"])
+    k_q = _quantize_bf16_to_nvfp4(inputs["k"])
+    v_q = _quantize_bf16_to_nvfp4(inputs["v"])
     k_deq = _dequant_nvfp4_to_bf16(k_q)
     v_deq = _dequant_nvfp4_to_bf16(v_q)
 
@@ -2280,8 +2298,8 @@ def test_sparse_atten_nvfp4_kv_fp8_q_matches_block_scaled_fp8_reference(
         v_source = inputs["v"]
 
     q_fp8 = inputs["q"].to(torch.float8_e4m3fn)
-    k_q = _quantize_bf16_to_nvfp4_or_skip(k_source)
-    v_q = _quantize_bf16_to_nvfp4_or_skip(v_source)
+    k_q = _quantize_bf16_to_nvfp4(k_source)
+    v_q = _quantize_bf16_to_nvfp4(v_source)
     fp8_max = torch.finfo(torch.float8_e4m3fn).max
     k_stage = _dequant_nvfp4_to_bf16(k_q, include_global_scale=False)
     v_stage = _dequant_nvfp4_to_bf16(v_q, include_global_scale=False)

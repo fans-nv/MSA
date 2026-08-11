@@ -17,7 +17,33 @@ from cutlass.cute.runtime import from_dlpack
 
 import quack.activation
 
+from . import cuda_toolchain
+
 _MIXER_ATTRS = ("__vec_size__",)
+
+# Inline-PTX capability gates.
+#
+# These instructions are not available in every CUDA toolkit, so each has a
+# portable fallback below. The gate must reflect the toolkit that will actually
+# assemble the PTX -- NOT `cutlass.CUDA_VERSION`, which is the CUDA version the
+# CuTe DSL wheel was *built* against. When a DSL built against a newer CUDA is
+# installed beside an older toolkit, trusting `cutlass.CUDA_VERSION` emits PTX
+# that ptxas cannot parse, and libNVVM reports only "NVVM backend compilation
+# failed" with no mention of the instruction.
+_PTX_PROBE_SCALED_E4M3_MUL = "  mul.e4m3x4.e2m1x4.e4m3x4.satfinite %r2, %r3, %r4;"
+_PTX_PROBE_BF16X2_FROM_E2M1 = "  cvt.rn.bf16x2.e2m1x2 %r2, %b1;"
+
+# Used only when ptxas cannot be run at all, so the gate still has an answer.
+_PTX_PROBE_FALLBACK_MIN_CUDA = (13, 3)
+
+
+def _toolchain_supports(probe_body: str) -> bool:
+    supported = cuda_toolchain.ptxas_supports(probe_body)
+    if supported is not None:
+        return supported
+    from cutlass import CUDA_VERSION
+
+    return (CUDA_VERSION.major, CUDA_VERSION.minor) >= _PTX_PROBE_FALLBACK_MIN_CUDA
 
 # Obtained from sollya:
 # fpminimax(exp(x * log(2.0)), 1, [|1,24...|],[0;1],relative);
@@ -657,9 +683,7 @@ def cvt_fp4x8_e2m1_bf16x8(
 ) -> Tuple[cutlass.Int32, cutlass.Int32, cutlass.Int32, cutlass.Int32]:
     """Convert four packed E2M1 bytes into four packed bf16x2 registers."""
 
-    from cutlass import CUDA_VERSION
-
-    if CUDA_VERSION.major > 13 or (CUDA_VERSION.major == 13 and CUDA_VERSION.minor >= 2):
+    if _toolchain_supports(_PTX_PROBE_BF16X2_FROM_E2M1):
         out = llvm.inline_asm(
             llvm.StructType.get_literal([T.i32(), T.i32(), T.i32(), T.i32()]),
             [cutlass.Int32(src).ir_value(loc=loc, ip=ip)],
@@ -703,9 +727,7 @@ def cvt_fp4x8_e2m1_scaled_e4m3x8(
 ) -> Tuple[cutlass.Int32, cutlass.Int32]:
     """Scale eight packed E2M1 values by one E4M3 byte and convert to E4M3."""
 
-    from cutlass import CUDA_VERSION
-
-    if CUDA_VERSION.major > 13 or (CUDA_VERSION.major == 13 and CUDA_VERSION.minor >= 2):
+    if _toolchain_supports(_PTX_PROBE_SCALED_E4M3_MUL):
         out = llvm.inline_asm(
             llvm.StructType.get_literal([T.i32(), T.i32()]),
             [
