@@ -303,8 +303,8 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
     q: torch.Tensor,
     k: torch.Tensor,
     v: torch.Tensor,
-    k_scale_128x4: torch.Tensor,
-    v_scale_128x4: torch.Tensor,
+    k_scale: torch.Tensor,
+    v_scale: torch.Tensor,
     k_global_scale: Optional[torch.Tensor],
     v_global_scale: Optional[torch.Tensor],
     k2q_row_ptr: torch.Tensor,
@@ -326,10 +326,14 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
         )
     if k.dtype != torch.uint8 or v.dtype != torch.uint8:
         raise TypeError(f"KVFP4 k/v must be torch.uint8, got {k.dtype} and {v.dtype}")
-    if k_scale_128x4.dtype != torch.uint8 or v_scale_128x4.dtype != torch.uint8:
+    if k_scale.dtype != torch.uint8 or v_scale.dtype != torch.uint8:
+        # NOTE: vllm.utils.torch_utils.nvfp4_split_data_scale (:466) hands back
+        # the scale view as float8_e4m3fn, not uint8.  The caller must pass
+        # ``sf.view(torch.uint8)`` -- zero-copy, same bytes -- or this raises.
         raise TypeError(
             "KVFP4 block scales must be torch.uint8 E4M3 tensors, got "
-            f"{k_scale_128x4.dtype} and {v_scale_128x4.dtype}"
+            f"{k_scale.dtype} and {v_scale.dtype}; a vLLM scale view from "
+            "nvfp4_split_data_scale is float8_e4m3fn and needs .view(torch.uint8)"
         )
     if k_global_scale is not None and k_global_scale.dtype != torch.float32:
         raise TypeError("KVFP4 K global scale must be a torch.float32 tensor or None")
@@ -338,8 +342,8 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
     tensors = (
         k,
         v,
-        k_scale_128x4,
-        v_scale_128x4,
+        k_scale,
+        v_scale,
         k2q_row_ptr,
         k2q_q_indices,
         cu_seqlens_q,
@@ -352,12 +356,15 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
         raise ValueError(f"KVFP4 k and v must have the same shape, got {k.shape} and {v.shape}")
     packed_dim = q.shape[-1] // 2
     scale_cols = q.shape[-1] // 16
-    if k_scale_128x4.ndim != 2 or v_scale_128x4.ndim != 2:
-        raise ValueError("KVFP4 block scales must be rank-2 128x4 tiled tensors")
-    if k_scale_128x4.shape[1] < scale_cols or v_scale_128x4.shape[1] < scale_cols:
-        raise ValueError(
-            "KVFP4 block scales must have at least D/16 columns; "
-            f"need {scale_cols}, got {k_scale_128x4.shape[1]} and {v_scale_128x4.shape[1]}"
+    # head_size % 64 == 0  <=>  scale_cols % 4 == 0.  The V token-quad swizzle
+    # (t//4)*(4*S) + 4*s + (t%4) is a bijection over a region for ANY S, so a
+    # bijectivity check cannot catch a ragged S; only 4 | S makes it agree with
+    # vLLM's writer, whose swizzle group size is scale_dim/4
+    # (nvfp4_kv_cache_kernels.cu:25-39, checked at :208-215).
+    if scale_cols % 4 != 0:
+        raise NotImplementedError(
+            "KVFP4 scale factors require head_size % 64 == 0 so that D/16 is "
+            f"divisible by 4; got D={int(q.shape[-1])}, D/16={scale_cols}"
         )
     if k_global_scale is not None and k_global_scale.numel() < 1:
         raise ValueError("KVFP4 K global scale must contain at least one element")
@@ -373,7 +380,8 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
             raise ValueError(f"KVFP4 packed K/V last dimension must be D/2={packed_dim}")
         total_k = int(k.shape[0])
         head_kv = int(k.shape[1])
-        required_scale_rows = total_k * head_kv
+        num_pages = None
+        page_size = None
     else:
         if k.ndim != 4:
             raise ValueError(
@@ -388,7 +396,8 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
                 f"KVFP4 Sparse Page Attention requires page_size == blk_kv, got {page_size} vs {blk_kv}"
             )
         head_kv = int(k.shape[1])
-        required_scale_rows = int(k.shape[0]) * head_kv * page_size
+        total_k = None
+        num_pages = int(k.shape[0])
         if page_table.device != q.device:
             raise ValueError("page_table must be on the same device as q")
         if page_table.dtype != torch.int32:
@@ -405,13 +414,102 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
             if not seqused_k.is_contiguous():
                 raise ValueError("seqused_k must be contiguous")
 
-    padded_scale_rows = ((required_scale_rows + 127) // 128) * 128
-    padded_scale_cols = ((scale_cols + 3) // 4) * 4
-    for name, scale in (("k_scale_128x4", k_scale_128x4), ("v_scale_128x4", v_scale_128x4)):
-        if scale.shape[0] < padded_scale_rows or scale.shape[1] < padded_scale_cols:
+    # ---- scale-factor containers -------------------------------------------
+    # A scale region is EXACTLY region_tokens * D/16 bytes: no row padding, no
+    # column padding.  (The deleted 128x4 layout demanded
+    # round_up(rows,128) x round_up(cols,4); nothing here does.)  The kernel
+    # addresses inside a region with page/head strides supplied by the host,
+    # so what has to be checked is the shape and the *in-region* byte order.
+    for name, scale in (("k_scale", k_scale), ("v_scale", v_scale)):
+        if scale.stride(-1) != 1:
             raise ValueError(
-                f"{name} is too small for 128x4 layout: got {tuple(scale.shape)}, "
-                f"need at least {(padded_scale_rows, padded_scale_cols)}"
+                f"{name} must be contiguous in its last dimension, got "
+                f"stride(-1)={scale.stride(-1)}"
+            )
+        if page_table is None:
+            expected = (total_k, head_kv, scale_cols)
+            if scale.ndim != 3 or tuple(int(d) for d in scale.shape) != expected:
+                raise ValueError(
+                    f"KVFP4 flat-varlen {name} must have shape "
+                    f"[total_k, Hkv, D/16] = {expected}, got "
+                    f"{tuple(int(d) for d in scale.shape)}"
+                )
+            # Flat varlen has no production producer (vLLM is paged only); it
+            # exists because flat test inputs are cheap.  The kernel derives
+            # the flat region geometry in-kernel from num_heads_kv and S and
+            # IGNORES the four host stride arguments, so the container has to
+            # be exactly the plain contiguous one it assumes.
+            if (
+                int(scale.stride(0)) != head_kv * scale_cols
+                or int(scale.stride(1)) != scale_cols
+            ):
+                raise ValueError(
+                    f"KVFP4 flat-varlen {name} must be contiguous with strides "
+                    f"{(head_kv * scale_cols, scale_cols, 1)}, got "
+                    f"{tuple(int(s) for s in scale.stride())}"
+                )
+        else:
+            expected = (num_pages, head_kv, page_size, scale_cols)
+            if scale.ndim != 4 or tuple(int(d) for d in scale.shape) != expected:
+                raise ValueError(
+                    f"KVFP4 paged {name} must have shape "
+                    f"[num_pages, Hkv, page_size, D/16] = {expected}, got "
+                    f"{tuple(int(d) for d in scale.shape)}"
+                )
+            # HND ONLY -- and this is not an arbitrary house rule.  vLLM's
+            # NVFP4 store kernel sniffs the physical layout from strides,
+            # `bool is_hnd = key_cache.stride(2) > key_cache.stride(1)`
+            # (csrc/libtorch_stable/nvfp4_kv_cache_kernels.cu:222, on the
+            # logical [pages, block, heads, dim] view), and then picks
+            #   HND: scale_head_stride = block_size*S, token stride = S
+            #   NHD: scale_head_stride = S,            token stride = Hkv*S
+            # (:245-251).  MSA's in-region offsets -- `t*S + s` for K and
+            # `(t//4)*(4*S) + 4*s + (t%4)` for V, the latter round-tripped
+            # through `swizzled_t * scale_block_offset_stride + swizzled_s`
+            # at :167-170 -- are correct ONLY when the token stride is S,
+            # i.e. only under HND.  The kernel BAKES IN token stride == S; it
+            # does not read stride(2).  So `stride(1) > stride(2)` alone is not
+            # enough: pin both inner strides exactly.  Under NHD a
+            # per-(page, head) region is not contiguous at all, yet every
+            # shape, dtype, size(-1) and stride(-1) check above still passes
+            # and the kernel would read silently wrong bytes -- no exception,
+            # just degraded accuracy.  M3 is HND
+            # (vllm/models/minimax_m3/nvidia/sparse_attention_msa.py:86-95),
+            # so assert it rather than discovering it as an accuracy loss.
+            if (
+                int(scale.stride(2)) != scale_cols
+                or int(scale.stride(1)) != page_size * scale_cols
+            ):
+                raise ValueError(
+                    f"KVFP4 paged {name} must use the HND NVFP4 KV-cache "
+                    "layout: token stride must be exactly D/16=="
+                    f"{scale_cols} and head stride exactly page_size*D/16=="
+                    f"{page_size * scale_cols}; got stride(1)="
+                    f"{int(scale.stride(1))}, stride(2)={int(scale.stride(2))}. "
+                    "NHD is unsupported: vLLM's writer branches on "
+                    "`is_hnd = key_cache.stride(2) > key_cache.stride(1)` "
+                    "(nvfp4_kv_cache_kernels.cu:222) and lays the scale bytes "
+                    "out differently (:245-251), which no shape or dtype check "
+                    "can catch."
+                )
+
+    # Packed FP4 data.  These are no longer forced contiguous at the call site
+    # (that copied the whole KV cache against a vLLM view), so state the two
+    # properties the TMA descriptor actually needs.
+    for name, data in (("k", k), ("v", v)):
+        if int(data.stride(-1)) != 1:
+            raise ValueError(
+                f"KVFP4 {name} must be contiguous in its last dimension, got "
+                f"stride(-1)={int(data.stride(-1))}"
+            )
+        if page_table is not None and int(data.stride(1)) <= int(data.stride(2)):
+            # HND, for the same reason as the scale views above: the page/head
+            # addressing and the TMA descriptor assume head-major pages.
+            raise ValueError(
+                f"KVFP4 paged {name} must use the HND NVFP4 KV-cache layout "
+                f"(head stride > token stride); got stride(1)="
+                f"{int(data.stride(1))}, stride(2)={int(data.stride(2))}. "
+                "See nvfp4_kv_cache_kernels.cu:222."
             )
 
     if k2q_row_ptr.device != q.device or k2q_q_indices.device != q.device:
@@ -769,8 +867,8 @@ def sparse_atten_nvfp4_kv_func(
     q: torch.Tensor,
     k: torch.Tensor,
     v: torch.Tensor,
-    k_scale_128x4: torch.Tensor,
-    v_scale_128x4: torch.Tensor,
+    k_scale: torch.Tensor,
+    v_scale: torch.Tensor,
     k_global_scale: Optional[torch.Tensor],
     v_global_scale: Optional[torch.Tensor],
     k2q_row_ptr: torch.Tensor,
@@ -805,11 +903,20 @@ def sparse_atten_nvfp4_kv_func(
         because each byte packs two FP4 values.
     v : torch.Tensor
         Packed NVFP4 V data with the same shape as ``k``.
-    k_scale_128x4 : torch.Tensor
-        K block scales in cuBLAS/cuDNN 128x4 tiled storage.  Dtype uint8
-        containing FP8 E4M3 scale values.
-    v_scale_128x4 : torch.Tensor
-        V block scales in the same 128x4 tiled storage.
+    k_scale : torch.Tensor
+        K block scales, dtype uint8 holding FP8 E4M3 values, in the **linear**
+        scale-factor layout: byte ``t*S + s`` inside each scale region, with
+        ``S = 128//16 = 8``.  Shape is ``[num_pages, Hkv, blk_kv, S]`` (paged)
+        or ``[total_k, Hkv, S]`` (flat), with no row or column padding -- a
+        region is exactly ``blk_kv * S`` bytes.  Paged views must be HND (see
+        ``_validate_csr_varlen_nvfp4_kv_inputs``).  A vLLM scale view from
+        ``nvfp4_split_data_scale`` is ``float8_e4m3fn`` and must be passed as
+        ``.view(torch.uint8)`` -- zero-copy, but a ``TypeError`` if forgotten.
+    v_scale : torch.Tensor
+        V block scales, same shape and dtype rules, but in the **4x4
+        token-quad swizzle**: byte ``(t//4)*(4*S) + 4*s + (t%4)``.  This is the
+        K/V layout pair vLLM's NVFP4 KV-cache store kernel writes, so a vLLM
+        cache is consumed with no repack pass.
     k_global_scale : torch.Tensor, optional
         FP32 tensor/global dequant scale for K.  May be ``None``.
     v_global_scale : torch.Tensor, optional
@@ -847,7 +954,14 @@ def sparse_atten_nvfp4_kv_func(
         Paged-KV physical page table with shape
         ``[batch_size, max_num_pages_per_seq]`` and dtype int32.
     seqused_k : torch.Tensor, optional
-        Effective KV length per request for paged causal attention.
+        Effective KV length per request for paged causal attention.  **Always
+        pass this for paged KV.**  Without it ``_logical_seqlen_k`` falls back
+        to ``page_table.shape[1] * page_size`` -- the full *allocated* span --
+        so every KV block looks fully valid and the mask silently does nothing.
+        The failure mode is not NaN: unwritten K dequantizes to 0, giving
+        ``S = 0``, which still receives non-zero softmax weight and inflates
+        ``row_sum``.  The output is then uniformly scaled down and reads like a
+        tolerance problem.
     schedule : SparseAttentionSchedule, optional
         Prebuilt sparse forward schedule.
 
@@ -878,8 +992,8 @@ def sparse_atten_nvfp4_kv_func(
         q,
         k,
         v,
-        k_scale_128x4,
-        v_scale_128x4,
+        k_scale,
+        v_scale,
         k_global_scale,
         v_global_scale,
         k2q_row_ptr,
@@ -939,12 +1053,19 @@ def sparse_atten_nvfp4_kv_func(
         k2q_qsplit_indices = schedule.qsplit_indices
         split_counts = schedule.split_counts
 
+    # K/V and their block scales are deliberately NOT forced contiguous.  They
+    # are consumed through TMA descriptors (data) and host-supplied page/head
+    # strides (scales), both of which handle the strided views vLLM hands in.
+    # ``.contiguous()`` here would copy the *entire* selected KV cache on every
+    # layer of every forward against a ``nvfp4_split_data_scale`` view.  The
+    # validator asserts what actually matters instead: exact shapes,
+    # ``stride(-1) == 1`` and the HND inner strides.
     schedule = _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
         q.contiguous(),
-        k.contiguous(),
-        v.contiguous(),
-        k_scale_128x4.contiguous(),
-        v_scale_128x4.contiguous(),
+        k,
+        v,
+        k_scale,
+        v_scale,
         None if k_global_scale is None else k_global_scale.contiguous(),
         None if v_global_scale is None else v_global_scale.contiguous(),
         k2q_row_ptr.contiguous(),
@@ -1828,12 +1949,47 @@ def _call_sparse_forward_sm100_csr_varlen(
     return schedule
 
 
+_INT32_MAX = 2**31 - 1
+
+
+def _nvfp4_scale_strides(sf, name: str) -> tuple[int, int]:
+    """Return ``(page_stride, head_stride)`` of an NVFP4 scale view, in BYTES.
+
+    The kernel addresses a scale factor as ``region_base + in_region_offset``
+    with ``region_base = page*page_stride + head*head_stride`` evaluated in
+    Int64, so these two scalars are the only geometry that has to travel from
+    the host.  ``sf`` is a uint8 view (enforced by the validator), so element
+    strides already are byte strides; the ``element_size()`` factor is kept
+    explicit so the unit is not accidental.
+
+    For a vLLM paged cache these come straight out of ``nvfp4_split_data_scale``
+    (``vllm/utils/torch_utils.py:419-467``) as ``(page_bytes, block_size * S)``.
+    The page stride is the FULL page, data bytes included --
+    ``2*Hkv*block_size*72`` = 73728 B at M3 -- which is why the kernel does the
+    region arithmetic in Int64: a 100 GB cache reaches ~1e11 and overflows Int32
+    by ~50x.  The strides themselves fit in Int32 with room to spare, which is
+    what makes Int32 kernel arguments safe; assert it rather than assume it.
+    """
+
+    itemsize = int(sf.element_size())
+    strides = []
+    for axis, label in ((0, "page"), (1, "head")):
+        value = int(sf.stride(axis)) * itemsize
+        if value < 0 or value > _INT32_MAX:
+            raise ValueError(
+                f"{name} {label} stride must be a non-negative byte count that "
+                f"fits in int32, got {value}"
+            )
+        strides.append(value)
+    return strides[0], strides[1]
+
+
 def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
     q,
     k,
     v,
-    k_scale_128x4,
-    v_scale_128x4,
+    k_scale,
+    v_scale,
     k_global_scale,
     v_global_scale,
     k2q_row_ptr,
@@ -1894,6 +2050,18 @@ def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
         _prepare_paged_kv_for_tma(k, v, n_block_size)
     k_kernel = k
     v_kernel = v
+    if paged_kv:
+        k_sf_page_stride, k_sf_head_stride = _nvfp4_scale_strides(k_scale, "k_scale")
+        v_sf_page_stride, v_sf_head_stride = _nvfp4_scale_strides(v_scale, "v_scale")
+    else:
+        # Flat varlen: the kernel derives its region geometry in-kernel from
+        # num_heads_kv and S (there is no host-side owner of it, and no
+        # production flat producer), so it IGNORES these four arguments.  Pass
+        # 0 rather than the real strides so nothing here reads as meaningful
+        # input; the validator has already pinned the flat container to the
+        # exact contiguous layout the kernel assumes.
+        k_sf_page_stride = k_sf_head_stride = 0
+        v_sf_page_stride = v_sf_head_stride = 0
     O_partial_flat = O_partial.reshape(-1, head_dim).contiguous()
     Q_flat = q.reshape(-1, head_dim).contiguous()
     Q_gather4_desc = (
@@ -1969,8 +2137,8 @@ def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
                 kernel,
                 to_cute_tensor_kvouter(k_kernel),
                 to_cute_tensor_kvouter(v_kernel),
-                to_cute_tensor_kvouter(k_scale_128x4),
-                to_cute_tensor_kvouter(v_scale_128x4),
+                to_cute_tensor_kvouter(k_scale),
+                to_cute_tensor_kvouter(v_scale),
                 None if k_global_scale_kernel is None else to_cute_tensor_kvouter(k_global_scale_kernel),
                 None if v_global_scale_kernel is None else to_cute_tensor_kvouter(v_global_scale_kernel),
                 to_cute_tensor_kvouter(k2q_q_indices),
@@ -1995,6 +2163,13 @@ def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
                 Int32(head_kv),
                 Int32(max_seqlen_q),
                 Int32(work_capacity),
+                # Scale-factor page/head strides, in BYTES, after
+                # work_capacity and before the stream.  Same order in the
+                # launch below.  See _nvfp4_scale_strides.
+                Int32(k_sf_page_stride),
+                Int32(k_sf_head_stride),
+                Int32(v_sf_page_stride),
+                Int32(v_sf_head_stride),
                 cute.runtime.make_fake_stream(use_tvm_ffi_env_stream=True),
                 options="--enable-tvm-ffi",
             )
@@ -2004,8 +2179,8 @@ def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
         _compile_cache[key](
             k_kernel,
             v_kernel,
-            k_scale_128x4,
-            v_scale_128x4,
+            k_scale,
+            v_scale,
             k_global_scale_kernel,
             v_global_scale_kernel,
             k2q_q_indices,
@@ -2028,5 +2203,11 @@ def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
             head_kv,
             max_seqlen_q,
             work_capacity,
+            # Scale-factor page/head strides, in BYTES.  Must match the order
+            # in the cute.compile() call above exactly.
+            k_sf_page_stride,
+            k_sf_head_stride,
+            v_sf_page_stride,
+            v_sf_head_stride,
         )
     return schedule

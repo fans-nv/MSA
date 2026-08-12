@@ -46,8 +46,8 @@ def _load_nvfp4_backend():
     """Lazy import of the cute NVFP4 sparse API + CSR builder."""
     from interface import sparse_atten_nvfp4_kv_func  # noqa: E402
     from sparse_index_utils import build_k2q_csr  # noqa: E402
-    from quantize import quantize_kv_bf16_to_nvfp4_128x4  # noqa: E402
-    return sparse_atten_nvfp4_kv_func, build_k2q_csr, quantize_kv_bf16_to_nvfp4_128x4
+    from quantize import quantize_kv_bf16_to_nvfp4  # noqa: E402
+    return sparse_atten_nvfp4_kv_func, build_k2q_csr, quantize_kv_bf16_to_nvfp4
 
 # ─── Hardware constants ───
 PEAK_TFLOPS = {"fp8": 4500.0, "bf16": 2250.0, "nvfp4": 4500.0}
@@ -295,14 +295,19 @@ def bench_sparse_nvfp4(b, h_q, h_k, q_len, k_len, d, topk, causal, use_mbu=False
         raise ValueError("NVFP4 sparse benchmark requires q_len > 32 to enter MM-SA-Nv path")
     blk_kv = 128
     device = f"cuda:{GPU_ID}"
-    sparse_atten_nvfp4_kv_func, build_k2q_csr, quantize_kv_bf16_to_nvfp4_128x4 = _load_nvfp4_backend()
+    sparse_atten_nvfp4_kv_func, build_k2q_csr, quantize_kv_bf16_to_nvfp4 = _load_nvfp4_backend()
 
     total_q = b * q_len
     total_k = b * k_len
+    if total_k % 4 != 0:
+        # The flat V scale layout tiles the global token axis in token quads.
+        raise ValueError(
+            f"NVFP4 sparse benchmark requires b*k_len % 4 == 0, got {total_k}"
+        )
     q = torch.randn(total_q, h_q, d, dtype=torch.bfloat16, device=device).to(torch.float8_e4m3fn)
     k_src = torch.randn(total_k, h_k, d, dtype=torch.bfloat16, device=device)
     v_src = torch.randn(total_k, h_k, d, dtype=torch.bfloat16, device=device)
-    k_q, v_q = quantize_kv_bf16_to_nvfp4_128x4(k_src, v_src)
+    k_q, v_q = quantize_kv_bf16_to_nvfp4(k_src, v_src)
 
     q2k, actual_block_num = _make_first_topk_q2k(b, q_len, k_len, h_k, topk, blk_kv, device)
     cu_seqlens_q = torch.tensor([0] + list(np.cumsum([q_len] * b)), dtype=torch.int32, device=device)
@@ -318,7 +323,7 @@ def bench_sparse_nvfp4(b, h_q, h_k, q_len, k_len, d, topk, causal, use_mbu=False
 
     fun = lambda: sparse_atten_nvfp4_kv_func(
         q, k_q.data, v_q.data,
-        k_q.scale_128x4, v_q.scale_128x4, k_q.global_scale, v_q.global_scale,
+        k_q.scale, v_q.scale, k_q.global_scale, v_q.global_scale,
         k2q_row_ptr, k2q_q_indices, topk,
         cu_seqlens_q=cu_seqlens_q, cu_seqlens_k=cu_seqlens_k,
         max_seqlen_q=q_len, max_seqlen_k=k_len, blk_kv=blk_kv,

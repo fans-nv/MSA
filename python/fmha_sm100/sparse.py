@@ -79,11 +79,13 @@ from fp4_indexer_interface import fp4_indexer_block_scores  # noqa: E402
 # (cute/quantize.py).
 from quantize import (  # noqa: E402
     Nvfp4QuantizedTensor,
-    dequantize_nvfp4_128x4_to_bf16,
+    dequantize_nvfp4_to_bf16,
     nvfp4_global_scale_from_amax,
-    quantize_bf16_to_nvfp4_128x4,
-    quantize_kv_bf16_to_nvfp4_128x4,
-    swizzle_nvfp4_scale_to_128x4,
+    nvfp4_scale_linear_offset,
+    nvfp4_scale_swizzle4x4_offset,
+    pack_nvfp4_scale,
+    quantize_bf16_to_nvfp4,
+    quantize_kv_bf16_to_nvfp4,
 )
 
 __all__ = [
@@ -98,9 +100,11 @@ __all__ = [
     "SparseK2qCsrBuilderSm100",
     # nvfp4 quantization helpers
     "Nvfp4QuantizedTensor",
-    "quantize_bf16_to_nvfp4_128x4",
-    "quantize_kv_bf16_to_nvfp4_128x4",
-    "dequantize_nvfp4_128x4_to_bf16",
-    "swizzle_nvfp4_scale_to_128x4",
+    "quantize_bf16_to_nvfp4",
+    "quantize_kv_bf16_to_nvfp4",
+    "dequantize_nvfp4_to_bf16",
+    "pack_nvfp4_scale",
+    "nvfp4_scale_linear_offset",
+    "nvfp4_scale_swizzle4x4_offset",
     "nvfp4_global_scale_from_amax",
 ]
