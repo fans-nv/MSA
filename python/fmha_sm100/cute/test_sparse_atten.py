@@ -19,9 +19,11 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import sys
 import types
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Optional
 
 import pytest
@@ -435,20 +437,115 @@ def _install_flash_attn3_stub_for_te_import() -> None:
     sys.modules.setdefault("flash_attn_3.flash_attn_interface", interface)
 
 
+# The kernel reads exactly one scale-factor layout pair, unconditionally: K
+# linear (`t*S + s`) and V in the 4x4 token-quad swizzle
+# (`(t//4)*(4*S) + 4*s + (t%4)`).  There is no third option, no runtime flag and
+# no 128x4 path left anywhere in the branch.
+NVFP4_K_SCALE_LAYOUT = "linear"
+NVFP4_V_SCALE_LAYOUT = "swizzle4x4"
+
+
+def _pack_synthetic_nvfp4_scale(
+    logical: torch.Tensor,
+    *,
+    layout: str,
+) -> torch.Tensor:
+    """Pack a *logical* block-scale array into the bytes the kernel reads.
+
+    ``logical`` is indexed exactly like the interface's scale argument:
+    ``[num_pages, Hkv, page_size, S]`` when paged and ``[total_k, Hkv, S]``
+    when flat.  The result has the same shape and the same bytes, permuted
+    within each region.
+
+    Only the *within-region* permutation comes from
+    ``quantize.pack_nvfp4_scale``.  The region decomposition is re-derived here
+    from the kernel on purpose, so that a silent change of region on either
+    side surfaces as a failure rather than as agreement:
+
+      * paged -- a region is one ``(page, head)`` pair covering ``page_size``
+        tokens (``src/sm100/fwd/atten_fwd_nvfp4_kv.py::_scale_region_base``).
+      * flat -- a region is ``R`` consecutive global tokens of a single KV
+        head, laid out head-minor, with ``R = 1`` for ``"linear"`` and
+        ``R = 4`` for ``"swizzle4x4"``
+        (``..._scale_region_base_flat``).  ``R = 4`` requires
+        ``total_k % 4 == 0``.  Flat is a test-only geometry with no production
+        producer, so it is not an ABI.
+
+    ``"linear"`` is ``t*S + s``, i.e. plain row-major over ``[tokens, S]``, and
+    is therefore the identity for both geometries.
+    """
+
+    if layout == NVFP4_K_SCALE_LAYOUT:
+        return logical.contiguous()
+    if layout != NVFP4_V_SCALE_LAYOUT:
+        raise ValueError(f"unknown NVFP4 scale layout {layout!r}")
+
+    from quantize import pack_nvfp4_scale
+
+    if logical.ndim == 4:
+        num_pages, head_kv, page_size, scale_cols = (int(d) for d in logical.shape)
+        regions = logical.reshape(num_pages * head_kv, page_size, scale_cols)
+        packed = pack_nvfp4_scale(
+            regions.contiguous(),
+            page_size=page_size,
+            scale_cols=scale_cols,
+            layout=layout,
+        )
+        return packed.reshape(num_pages, head_kv, page_size, scale_cols).contiguous()
+
+    if logical.ndim != 3:
+        raise ValueError(
+            "logical NVFP4 scales must be rank-4 [num_pages, Hkv, page_size, S] "
+            f"or rank-3 [total_k, Hkv, S], got shape {tuple(logical.shape)}"
+        )
+    total_k, head_kv, scale_cols = (int(d) for d in logical.shape)
+    if total_k % 4 != 0:
+        raise ValueError(
+            "the flat V swizzle tiles tokens in quads, so total_k must be a "
+            f"multiple of 4, got {total_k}"
+        )
+    regions = (
+        logical.reshape(total_k // 4, 4, head_kv, scale_cols)
+        .permute(0, 2, 1, 3)
+        .reshape(total_k // 4 * head_kv, 4, scale_cols)
+        .contiguous()
+    )
+    packed = pack_nvfp4_scale(
+        regions,
+        page_size=4,
+        scale_cols=scale_cols,
+        layout=layout,
+    )
+    return packed.reshape(total_k, head_kv, scale_cols).contiguous()
+
+
 def _make_synthetic_nvfp4_tensor(
     shape: tuple[int, ...],
     *,
+    layout: str,
     global_scale_value: float = 1.0,
+    generator: Optional[torch.Generator] = None,
 ) -> object:
     """Create deterministic packed NVFP4 data with *varying* block scales.
 
     The block scales must vary for these tests to mean anything: with every
     scale byte set to the same value, permuting the whole scale array leaves
-    the dequantized result bit-identical, so a wrong 128x4 scale-layout decode
-    in the kernel is undetectable. Varying scales make that layout observable.
+    the dequantized result bit-identical, so a wrong scale-layout decode in the
+    kernel is undetectable. Varying scales make the layout observable.
 
     Bytes 0x30..0x3E are positive E4M3 values in [0.5, 1.875] -- no NaN, zero
     or denormal -- so the reference stays well conditioned.
+
+    The scales are drawn in *logical* ``[..., S]`` order and only then packed,
+    so the same seed produces the same logical scale for a given
+    ``(token, scale_col)`` under every layout.  Filling the *physical* array
+    with random bytes instead -- which is what the 128x4 version of this helper
+    did -- would make the logical scales a permutation of each other and no two
+    layouts would ever agree.
+
+    Pass ``generator=`` when the draw must be independent of how many global
+    RNG draws the surrounding input builder happened to make; the golden gate
+    below depends on that.
     """
 
     from quantize import Nvfp4QuantizedTensor
@@ -457,22 +554,26 @@ def _make_synthetic_nvfp4_tensor(
         raise ValueError("NVFP4 synthetic shape requires D divisible by 16")
     rows = math.prod(int(dim) for dim in shape[:-1])
     scale_cols = int(shape[-1]) // 16
-    padded_rows = ((rows + 127) // 128) * 128
-    padded_cols = ((scale_cols + 3) // 4) * 4
+    draw = {} if generator is None else {"generator": generator}
     data = torch.randint(
         0,
         256,
         (*shape[:-1], shape[-1] // 2),
         device="cuda",
         dtype=torch.uint8,
+        **draw,
     )
-    scale_128x4 = torch.randint(
+    # Drawn as rank-2 [rows, S] and reshaped, not drawn in the final rank: the
+    # golden capture script draws it that way, and only an identical draw makes
+    # the two comparable.
+    logical_scale = torch.randint(
         0x30,
         0x3F,
-        (padded_rows, padded_cols),
+        (rows, scale_cols),
         device="cuda",
         dtype=torch.uint8,
-    )
+        **draw,
+    ).reshape(*shape[:-1], scale_cols)
     global_scale = torch.full(
         (1,),
         float(global_scale_value),
@@ -481,15 +582,33 @@ def _make_synthetic_nvfp4_tensor(
     )
     return Nvfp4QuantizedTensor(
         data=data,
-        scale_128x4=scale_128x4,
+        scale=_pack_synthetic_nvfp4_scale(logical_scale, layout=layout),
         global_scale=global_scale,
         logical_scale_shape=(rows, scale_cols),
-        original_shape=shape,
+        original_shape=tuple(shape),
+        layout=layout,
     )
 
 
-def _quantize_bf16_to_nvfp4(x: torch.Tensor) -> object:
-    """Quantize to NVFP4 for the reference path.
+def _quantize_bf16_to_nvfp4_with_layout(x: torch.Tensor, layout: str) -> object:
+    """Quantize one tensor to NVFP4 under an explicitly chosen SF layout.
+
+    Used both for the correct layout and -- by the negative controls -- for the
+    wrong one.  The kernel has no layout flag, so packing on the host with the
+    wrong ``layout=`` is the only way to build a mismatched input.
+    """
+
+    _install_flash_attn3_stub_for_te_import()
+    from quantize import quantize_bf16_to_nvfp4
+
+    return quantize_bf16_to_nvfp4(x, layout=layout)
+
+
+def _quantize_kv_bf16_to_nvfp4(k: torch.Tensor, v: torch.Tensor) -> tuple[object, object]:
+    """Quantize a BF16 K/V pair for the NVFP4 KV path.
+
+    K is packed linear and V with the 4x4 token-quad swizzle, which is the one
+    layout pair the kernel reads.
 
     This deliberately does not skip on error. It used to swallow any
     ``RuntimeError`` from the quantizer and call ``pytest.skip``, which turned a
@@ -501,15 +620,24 @@ def _quantize_bf16_to_nvfp4(x: torch.Tensor) -> object:
     """
 
     _install_flash_attn3_stub_for_te_import()
-    from quantize import quantize_bf16_to_nvfp4_128x4
+    from quantize import quantize_kv_bf16_to_nvfp4
 
-    return quantize_bf16_to_nvfp4_128x4(x)
+    return quantize_kv_bf16_to_nvfp4(k, v)
 
 
 def _dequant_nvfp4_to_bf16(qx: object, *, include_global_scale: bool = True) -> torch.Tensor:
-    from quantize import dequantize_nvfp4_128x4_to_bf16
+    """Reference dequantization.
 
-    return dequantize_nvfp4_128x4_to_bf16(
+    Layout-independent by construction: it reads ``qx.layout`` and undoes
+    whatever packing produced ``qx.scale``, so the same logical block scales
+    give the same BF16 K/V no matter how the FP4 kernel addresses the bytes.
+    That is what lets the BF16 reference stand as an absolute gate across the
+    layout change.
+    """
+
+    from quantize import dequantize_nvfp4_to_bf16
+
+    return dequantize_nvfp4_to_bf16(
         qx,
         include_global_scale=include_global_scale,
     )
@@ -2037,8 +2165,7 @@ def test_sparse_atten_nvfp4_kv_matches_dequantized_bf16(
         k_source = inputs["k"]
         v_source = inputs["v"]
 
-    k_q = _quantize_bf16_to_nvfp4(k_source)
-    v_q = _quantize_bf16_to_nvfp4(v_source)
+    k_q, v_q = _quantize_kv_bf16_to_nvfp4(k_source, v_source)
     k_deq = _dequant_nvfp4_to_bf16(k_q)
     v_deq = _dequant_nvfp4_to_bf16(v_q)
 
@@ -2066,8 +2193,8 @@ def test_sparse_atten_nvfp4_kv_matches_dequantized_bf16(
         inputs["q"],
         k_q.data,
         v_q.data,
-        k_q.scale_128x4,
-        v_q.scale_128x4,
+        k_q.scale,
+        v_q.scale,
         k_q.global_scale,
         v_q.global_scale,
         inputs["k2q_row_ptr"],
@@ -2089,6 +2216,642 @@ def test_sparse_atten_nvfp4_kv_matches_dequantized_bf16(
 
     torch.testing.assert_close(out.float(), out_ref.float(), atol=2e-2, rtol=2e-2)
     torch.testing.assert_close(lse, lse_ref, atol=2e-2, rtol=2e-2)
+
+
+# ---------------------------------------------------------------------------
+# NVFP4 scale-factor layout: golden gate and negative controls
+# ---------------------------------------------------------------------------
+#
+# The FP4 kernel's output is expected to be BIT-IDENTICAL across the SF layout
+# change: the values reaching the MMA are the same E4M3 bytes and the same FP4
+# nibbles, only address generation moved.  Dequant math, accumulation order and
+# the prebuilt schedule are untouched.  So the sharp gate is equality against a
+# tensor captured from the pre-change tree, not a tolerance.
+#
+# A golden mismatch is a FINDING, not a tolerance problem.  Do not widen it.
+# Regenerate the golden -- recording the reason next to the .pt -- only if the
+# dequant path, the schedule builder or the combine changed.
+#
+# The BF16 reference below is layout-independent (see `_dequant_nvfp4_to_bf16`),
+# so the absolute gate keeps meaning something if the golden is ever lost.
+
+NVFP4_GOLDEN_ENV = "MSA_NVFP4_GOLDEN"
+
+
+def nvfp4_golden_default_path() -> Path:
+    """Default location of the captured golden tensor.
+
+    The sync recipe lands the worktree at ``$DEST/MSA`` and the goldens at
+    ``$DEST/golden``, deliberately outside the ``rsync --delete`` target, so
+    ``parents[4]`` of this file is ``$DEST``.  Override with
+    ``$MSA_NVFP4_GOLDEN``.
+    """
+
+    here = Path(__file__).resolve()
+    root = here.parents[4] if len(here.parents) > 4 else here.parent
+    return root / "golden" / "nvfp4_prefill_a.pt"
+
+
+# Every constant below is shared verbatim with the capture script
+# `dump_golden.py` in the msa-nvfp4 root.  Changing ANY of them invalidates an
+# existing golden -- they define the problem the captured tensors describe.
+NVFP4_GOLDEN_SEED = 20260811
+NVFP4_GOLDEN_DIM = 128
+NVFP4_GOLDEN_TOPK = 8
+NVFP4_GOLDEN_HEAD_KV = 2
+NVFP4_GOLDEN_QHEAD_PER_KV = 8
+NVFP4_GOLDEN_SEQLEN_Q = 2048
+NVFP4_GOLDEN_SEQLEN_KV = 2048
+NVFP4_GOLDEN_BATCH_PAGED = 2
+# Non-unit and not powers of two, so the ORDER in which the block scale and the
+# global scale are applied is observable (check_correctness.py:38 uses the same
+# pair for the same reason).  With unit global scales and constant block
+# scales, permuting the whole scale array is a no-op and this test would prove
+# nothing -- that is the single most important property of these inputs.
+NVFP4_GOLDEN_K_GLOBAL_SCALE = 1.37
+NVFP4_GOLDEN_V_GLOBAL_SCALE = 0.83
+
+# The two ways the capture script establishes "same logical inputs before and
+# after", both saved, both gated here:
+#   "q" -- seeded BF16 K/V through the package's own quantizer.  The whole
+#          recipe except the final pack call is layout-agnostic, so the nibbles
+#          and the logical block scales are a pure function of the seed and this
+#          variant needs to know nothing about byte order.  Block scales vary
+#          (per-block amax of random BF16) and the global scale is derived, so
+#          non-unit.
+#   "s" -- seeded random nibbles plus a seeded VARYING logical scale array
+#          (bytes 0x30..0x3E) and the explicit 1.37 / 0.83 global scales, packed
+#          afterwards.  Random nibbles are a stronger probe than quantizer
+#          output.  Paged only: the capture script deliberately declines to
+#          guess the flat region convention, which has no production producer.
+NVFP4_GOLDEN_VARIANTS = (
+    (False, "q"),
+    (True, "q"),
+    (True, "s"),
+)
+
+# Relative-RMS ceiling for the "s" (random-nibble) variant's always-on absolute
+# gate.  Justified from measurements in
+# `test_sparse_atten_nvfp4_kv_matches_golden_and_dequantized_bf16`; read the
+# comment there before touching this number.
+NVFP4_GOLDEN_SYNTHETIC_MAX_RRMS = 0.02
+
+
+def _nvfp4_golden_flat_kwargs() -> dict:
+    return dict(
+        q_lens=(NVFP4_GOLDEN_SEQLEN_Q,),
+        k_lens=(NVFP4_GOLDEN_SEQLEN_KV,),
+        head_kv=NVFP4_GOLDEN_HEAD_KV,
+        qhead_per_kv=NVFP4_GOLDEN_QHEAD_PER_KV,
+        dim=NVFP4_GOLDEN_DIM,
+        topk=NVFP4_GOLDEN_TOPK,
+        blk_kv=BLK_KV,
+        causal=True,
+        dtype=torch.bfloat16,
+        q2k_pattern=Q2KPattern.UNIFORM,
+    )
+
+
+def _nvfp4_golden_paged_kwargs() -> dict:
+    # seqused_trim must be non-zero: it is what makes `_build_paged_inputs` emit
+    # a seqused_k at all (see the assertion in `build_nvfp4_golden_case`).
+    return dict(
+        batch=NVFP4_GOLDEN_BATCH_PAGED,
+        seqlen_q=NVFP4_GOLDEN_SEQLEN_Q,
+        seqlen_kv=NVFP4_GOLDEN_SEQLEN_KV,
+        head_kv=NVFP4_GOLDEN_HEAD_KV,
+        qhead_per_kv=NVFP4_GOLDEN_QHEAD_PER_KV,
+        dim=NVFP4_GOLDEN_DIM,
+        topk=NVFP4_GOLDEN_TOPK,
+        blk_kv=BLK_KV,
+        causal=True,
+        page_size=BLK_KV,
+        seqused_trim=17,
+        dtype=torch.bfloat16,
+        page_table_mode="shuffle",
+    )
+
+
+def build_nvfp4_golden_case(*, paged: bool, variant: str = "s") -> dict[str, object]:
+    """Build the fixed inputs behind the NVFP4 golden gate.
+
+    Public on purpose: it must agree with `dump_golden.py` exactly, or the
+    captured tensors describe a different problem.  Everything is seeded and
+    the scale draws use their own generators, so nothing depends on ambient RNG
+    state or on how many draws the input builder happened to make.
+    """
+
+    # The capture script seeds `SEED + (100 if paged else 0)` per geometry.
+    torch.random.manual_seed(NVFP4_GOLDEN_SEED + (100 if paged else 0))
+    if paged:
+        inputs = _build_paged_inputs(**_nvfp4_golden_paged_kwargs())
+        k_source = inputs["k_paged"]
+        v_source = inputs["v_paged"]
+        # Requirement 3 of the plan's section 7: without seqused_k the kernel's
+        # `_logical_seqlen_k` falls through to `page_table.shape[1]*page_size`,
+        # the full ALLOCATED span, so kv_valid_cols is always 128 and the mask
+        # silently does nothing.  The failure is not NaN -- zero K gives S = 0,
+        # which still gets non-zero softmax weight and inflates row_sum, giving
+        # a uniformly scaled-down output that reads as a tolerance problem.
+        if inputs["seqused_k"] is None:
+            raise AssertionError(
+                "the paged golden case must carry seqused_k; increase "
+                "seqused_trim so the effective K lengths differ from the "
+                "allocated page capacity"
+            )
+    else:
+        inputs = _build_sparse_inputs(**_nvfp4_golden_flat_kwargs())
+        k_source = inputs["k"]
+        v_source = inputs["v"]
+
+    if variant == "q":
+        k_q, v_q = _quantize_kv_bf16_to_nvfp4(k_source, v_source)
+    elif variant == "s":
+        if not paged:
+            raise ValueError(
+                "the synthetic golden variant is paged only; the flat region "
+                "convention has no production producer and the capture script "
+                "deliberately does not pack for it"
+            )
+        k_q = _make_synthetic_nvfp4_tensor(
+            tuple(k_source.shape),
+            layout=NVFP4_K_SCALE_LAYOUT,
+            global_scale_value=NVFP4_GOLDEN_K_GLOBAL_SCALE,
+            generator=torch.Generator(device="cuda").manual_seed(NVFP4_GOLDEN_SEED + 1),
+        )
+        v_q = _make_synthetic_nvfp4_tensor(
+            tuple(v_source.shape),
+            layout=NVFP4_V_SCALE_LAYOUT,
+            global_scale_value=NVFP4_GOLDEN_V_GLOBAL_SCALE,
+            generator=torch.Generator(device="cuda").manual_seed(NVFP4_GOLDEN_SEED + 2),
+        )
+    else:
+        raise ValueError(f"variant must be 'q' or 's', got {variant!r}")
+
+    return {"inputs": inputs, "k_q": k_q, "v_q": v_q, "paged": paged,
+            "variant": variant, "topk": NVFP4_GOLDEN_TOPK, "causal": True}
+
+
+def _nvfp4_common_forward_kwargs(case: dict[str, object]) -> dict[str, object]:
+    inputs = case["inputs"]
+    paged = bool(case["paged"])
+    return dict(
+        blk_kv=inputs["blk_kv"],
+        causal=bool(case["causal"]),
+        softmax_scale=inputs["softmax_scale"],
+        partial_dtype=torch.bfloat16,
+        return_softmax_lse=True,
+        cu_seqlens_q=inputs["cu_seqlens_q"],
+        cu_seqlens_k=inputs["cu_seqlens_k"],
+        max_seqlen_q=inputs["max_seqlen_q"],
+        max_seqlen_k=inputs["max_seqlen_k"],
+        page_table=inputs["page_table"] if paged else None,
+        seqused_k=inputs["seqused_k"] if paged else None,
+        # A prebuilt schedule, so the reduction order -- and therefore
+        # bit-exactness -- does not depend on a scheduler run.
+        schedule=inputs["schedule"],
+    )
+
+
+def run_nvfp4_golden_case(case: dict[str, object]) -> dict[str, torch.Tensor]:
+    """Run the FP4 kernel and its BF16 reference on a golden case.
+
+    Public alongside `build_nvfp4_golden_case` for the capture script.
+    """
+
+    inputs = case["inputs"]
+    k_q = case["k_q"]
+    v_q = case["v_q"]
+    topk = int(case["topk"])
+    common = _nvfp4_common_forward_kwargs(case)
+
+    # `k_deq` / `v_deq` are layout-INDEPENDENT: dequantization undoes whatever
+    # packing produced the bytes, so they are a direct view of
+    # (nibbles x logical block scale x global scale).  If they still match the
+    # capture, the logical inputs demonstrably did not move and any output
+    # difference is a real kernel finding rather than a different problem.
+    k_deq = _dequant_nvfp4_to_bf16(k_q)
+    v_deq = _dequant_nvfp4_to_bf16(v_q)
+    out_ref, lse_ref = sparse_atten_func(
+        inputs["q"],
+        k_deq,
+        v_deq,
+        inputs["k2q_row_ptr"],
+        inputs["k2q_q_indices"],
+        topk,
+        **common,
+    )
+    out, lse = sparse_atten_nvfp4_kv_func(
+        inputs["q"],
+        k_q.data,
+        v_q.data,
+        k_q.scale,
+        v_q.scale,
+        k_q.global_scale,
+        v_q.global_scale,
+        inputs["k2q_row_ptr"],
+        inputs["k2q_q_indices"],
+        topk,
+        **common,
+    )
+    return {"out": out, "lse": lse, "ref": out_ref, "ref_lse": lse_ref,
+            "k_deq": k_deq, "v_deq": v_deq}
+
+
+def _assert_bit_identical(actual: torch.Tensor, expected: torch.Tensor, *, what: str) -> None:
+    expected = expected.to(actual.device)
+    if tuple(actual.shape) != tuple(expected.shape):
+        raise AssertionError(
+            f"{what}: shape {tuple(actual.shape)} != golden {tuple(expected.shape)}. "
+            "The golden was captured on different inputs; regenerate it."
+        )
+    if actual.dtype != expected.dtype:
+        raise AssertionError(
+            f"{what}: dtype {actual.dtype} != golden {expected.dtype}. "
+            "The golden was captured on different inputs; regenerate it."
+        )
+    if torch.equal(actual, expected):
+        return
+    diff = (actual.float() - expected.float()).abs()
+    raise AssertionError(
+        f"{what} is not bit-identical to the golden: "
+        f"{int((diff > 0).sum().item())} of {diff.numel()} elements differ, "
+        f"max |delta| = {diff.max().item():.6g}.\n"
+        "This is a FINDING, not a tolerance problem -- do NOT widen it. The FP4 "
+        "kernel must see the same E4M3 bytes and the same FP4 nibbles as before "
+        "the SF layout change; only address generation was supposed to move. "
+        "Regenerate the golden only if the dequant path, the schedule builder or "
+        "the combine legitimately changed, and record the reason next to the .pt."
+    )
+
+
+@pytest.mark.parametrize(("paged", "variant"), NVFP4_GOLDEN_VARIANTS)
+def test_sparse_atten_nvfp4_kv_matches_golden_and_dequantized_bf16(
+    paged: bool,
+    variant: str,
+) -> None:
+    case = build_nvfp4_golden_case(paged=paged, variant=variant)
+    result = run_nvfp4_golden_case(case)
+
+    # --- absolute gate: always runs, even with no golden on disk -----------
+    # The BF16 reference is layout-independent, so this keeps meaning something
+    # if the golden is ever lost (plan risk R3).
+    #
+    # WHICH gate depends on the variant, and the reason is a measurement, not a
+    # convenience:
+    #
+    #   "q" -- quantizer output.  The repo's own elementwise tolerance (see
+    #          test_sparse_atten_nvfp4_kv_matches_dequantized_bf16) holds with
+    #          room to spare: 0 of 4.2M / 7.0M elements violate it, rel RMS
+    #          0.004454 (flat) / 0.004250 (paged).
+    #
+    #   "s" -- random FP4 nibbles.  The elementwise tolerance does NOT hold, and
+    #          did not hold BEFORE the SF-layout change either.  Measured on the
+    #          pre-change golden tensors themselves -- i.e. with no code from
+    #          this branch in the loop, reading out_paged_s and ref_paged_s
+    #          straight out of nvfp4_prefill_a.pt:
+    #
+    #              allclose(out_paged_s, ref_paged_s, atol=2e-2, rtol=2e-2)
+    #                  -> False
+    #              166524 of 7053312 elements (2.3609%) over tolerance,
+    #              max |delta| 0.28125, relative RMS 0.009274
+    #
+    #          The post-change run reproduces those five numbers to every digit
+    #          printed, because `out_paged_s` is bit-identical to the golden.
+    #          Random nibbles span the full E2M1 range inside every block, so
+    #          dequantize->BF16->attention and the FP4 kernel accumulate the
+    #          same products in different orders and disagree by ~1 BF16 ULP on
+    #          a few percent of elements.  That is a property of the input, not
+    #          of the scale layout.
+    #
+    #          So for "s" the elementwise gate is inapplicable as a matter of
+    #          pre-existing fact and a *relative RMS* bound replaces it.  This
+    #          is NOT a widened tolerance hiding a regression: the bound is 0.02
+    #          against a measured 0.009274, while a cross-fed scale layout --
+    #          the failure this whole file exists to catch -- measures 0.3159 to
+    #          0.3395 (the four `..._negative_control_...` tests below, run on
+    #          this same kernel).  A layout bug misses this bound by 16x.  The
+    #          sharp gate for this variant is the bit-exact golden below.
+    if variant == "s":
+        rrms = _relative_rms(result["out"], result["ref"])
+        assert rrms < NVFP4_GOLDEN_SYNTHETIC_MAX_RRMS, (
+            f"out vs the BF16 reference is off by {rrms:.4g} relative RMS, over "
+            f"the {NVFP4_GOLDEN_SYNTHETIC_MAX_RRMS} bound. The pre-change "
+            "baseline measured 0.009274 on these inputs and the negative "
+            "controls measure 0.32-0.34 for a cross-fed scale layout, so this "
+            "is in scale-addressing territory. Do NOT widen the bound."
+        )
+    else:
+        torch.testing.assert_close(
+            result["out"].float(), result["ref"].float(), atol=2e-2, rtol=2e-2
+        )
+    torch.testing.assert_close(
+        result["lse"], result["ref_lse"], atol=2e-2, rtol=2e-2
+    )
+
+    # --- sharp gate: bit-equality against the captured baseline ------------
+    tag = f"{'paged' if paged else 'flat'}_{variant}"
+    golden_path = Path(os.environ.get(NVFP4_GOLDEN_ENV) or nvfp4_golden_default_path())
+    if not golden_path.is_file():
+        pytest.skip(
+            f"no golden tensor at {golden_path} (set ${NVFP4_GOLDEN_ENV} to "
+            "override). The absolute BF16 gate above ran and passed; the sharp "
+            "bit-exact gate did NOT run."
+        )
+    golden = torch.load(str(golden_path), map_location="cuda")
+    if not isinstance(golden, dict):
+        raise AssertionError(
+            f"{golden_path} must hold a dict of tensors, got {type(golden)!r}"
+        )
+    required = (f"out_{tag}", f"lse_{tag}")
+    missing = [key for key in required if key not in golden]
+    if missing:
+        pytest.skip(
+            f"{golden_path} is missing {missing} (has {sorted(golden)}). The "
+            "absolute BF16 gate above ran and passed; the sharp bit-exact gate "
+            "did NOT run."
+        )
+
+    # Ordered cheapest-diagnosis-first.  k_deq/v_deq are layout-independent, so
+    # if they moved the LOGICAL inputs moved and the golden simply describes a
+    # different problem -- a far more useful message than an out mismatch.
+    for field in ("k_deq", "v_deq", "ref"):
+        key = f"{field}_{tag}"
+        if key in golden:
+            _assert_bit_identical(
+                result[field], golden[key], what=f"{key} (layout-independent)"
+            )
+    _assert_bit_identical(result["out"], golden[f"out_{tag}"], what=f"out_{tag}")
+    _assert_bit_identical(result["lse"], golden[f"lse_{tag}"], what=f"lse_{tag}")
+
+
+# --- negative controls -----------------------------------------------------
+#
+# A gate that cannot fail is vacuous.  With 128x4 deleted, the two surviving
+# layouts are cross-fed against each other: pack with the WRONG `layout=`
+# argument on the host and feed the result to the kernel's unconditional
+# reader.  The kernel has four separate readers
+# (`_load_scale_{bf16x2,e4m3_u8}_{linear,swizzle4x4}`) and no runtime layout
+# dispatch, so host-side mispacking is the only available lever.
+#
+# Assert-large-error, not xfail: an xfail passes just as happily when the
+# kernel silently stops reading scales at all.
+NVFP4_NEGATIVE_CONTROL_SEED = 90210
+NVFP4_NEGATIVE_CONTROL_MIN_RRMS = 0.1
+
+
+def _relative_rms(actual: torch.Tensor, expected: torch.Tensor) -> float:
+    """rms|actual - expected| / rms|expected|."""
+
+    a = actual.float()
+    e = expected.float()
+    denom = e.pow(2).mean().sqrt().item()
+    if denom == 0.0:
+        raise AssertionError("reference output is all zero; the control is vacuous")
+    return (a - e).pow(2).mean().sqrt().item() / denom
+
+
+def _run_nvfp4_layout_cross_feed(*, paged: bool, corrupt: str) -> None:
+    # Deliberately the same geometry as the golden gate: the control has to
+    # exercise the very kernel instantiation the gate depends on, and reusing it
+    # keeps the compile/AOT key identical so no extra kernel build is needed.
+    torch.random.manual_seed(NVFP4_NEGATIVE_CONTROL_SEED + int(paged))
+    topk = NVFP4_GOLDEN_TOPK
+    causal = True
+    if paged:
+        inputs = _build_paged_inputs(**_nvfp4_golden_paged_kwargs())
+        k_source = inputs["k_paged"]
+        v_source = inputs["v_paged"]
+        # Plan section 7 requirement 3 -- see `build_nvfp4_golden_case`.
+        assert inputs["seqused_k"] is not None, (
+            "the paged control must carry seqused_k or the mask does nothing"
+        )
+    else:
+        inputs = _build_sparse_inputs(**_nvfp4_golden_flat_kwargs())
+        k_source = inputs["k"]
+        v_source = inputs["v"]
+
+    k_q, v_q = _quantize_kv_bf16_to_nvfp4(k_source, v_source)
+    if corrupt == "k":
+        good, source, wrong_layout = k_q, k_source, NVFP4_V_SCALE_LAYOUT
+    elif corrupt == "v":
+        good, source, wrong_layout = v_q, v_source, NVFP4_K_SCALE_LAYOUT
+    else:
+        raise ValueError(f"corrupt must be 'k' or 'v', got {corrupt!r}")
+    bad = _quantize_bf16_to_nvfp4_with_layout(source, wrong_layout)
+
+    # Only the byte ORDER may differ; if anything else did, the control would
+    # be measuring the wrong thing.
+    assert torch.equal(good.data, bad.data)
+    assert torch.equal(good.global_scale, bad.global_scale)
+    assert tuple(good.scale.shape) == tuple(bad.scale.shape)
+    assert good.scale.dtype == bad.scale.dtype == torch.uint8
+    # If the two packings agree byte for byte the block scales are too uniform
+    # to observe a permutation, and the whole control -- and the golden gate it
+    # backs -- would be vacuous.
+    assert not torch.equal(good.scale, bad.scale), (
+        "packing under the two layouts produced identical bytes, so this "
+        "control proves nothing: the block scales are not varying"
+    )
+
+    common = _nvfp4_common_forward_kwargs(
+        {"inputs": inputs, "paged": paged, "causal": causal}
+    )
+    out_ref, _ = sparse_atten_func(
+        inputs["q"],
+        _dequant_nvfp4_to_bf16(k_q),
+        _dequant_nvfp4_to_bf16(v_q),
+        inputs["k2q_row_ptr"],
+        inputs["k2q_q_indices"],
+        topk,
+        **common,
+    )
+
+    def run(k_scale: torch.Tensor, v_scale: torch.Tensor) -> torch.Tensor:
+        out, _ = sparse_atten_nvfp4_kv_func(
+            inputs["q"],
+            k_q.data,
+            v_q.data,
+            k_scale,
+            v_scale,
+            k_q.global_scale,
+            v_q.global_scale,
+            inputs["k2q_row_ptr"],
+            inputs["k2q_q_indices"],
+            topk,
+            **common,
+        )
+        return out
+
+    out_good = run(k_q.scale, v_q.scale)
+    out_bad = (
+        run(bad.scale, v_q.scale) if corrupt == "k" else run(k_q.scale, bad.scale)
+    )
+
+    # The same harness with the correct packing must pass the ordinary gate,
+    # otherwise a large error below would say nothing about the layout.
+    torch.testing.assert_close(
+        out_good.float(), out_ref.float(), atol=2e-2, rtol=2e-2
+    )
+    rrms = _relative_rms(out_bad, out_ref)
+    assert rrms > NVFP4_NEGATIVE_CONTROL_MIN_RRMS, (
+        f"cross-feeding a {wrong_layout!r}-packed {corrupt.upper()} scale into "
+        f"the kernel's unconditional {corrupt.upper()} reader changed the output "
+        f"by only {rrms:.4g} relative RMS, below the "
+        f"{NVFP4_NEGATIVE_CONTROL_MIN_RRMS} floor. The kernel is not actually "
+        "reading the scale bytes it is being handed, so the golden gate cannot "
+        "fail and is vacuous."
+    )
+
+
+@pytest.mark.parametrize("paged", [False, True])
+def test_sparse_atten_nvfp4_negative_control_k_scale_packed_with_v_layout(paged: bool) -> None:
+    """K packed with the V swizzle, fed to the linear K reader.
+
+    This is the control that proves
+    `test_sparse_atten_nvfp4_kv_matches_golden_and_dequantized_bf16` can fail.
+    """
+
+    _run_nvfp4_layout_cross_feed(paged=paged, corrupt="k")
+
+
+@pytest.mark.parametrize("paged", [False, True])
+def test_sparse_atten_nvfp4_negative_control_v_scale_packed_with_k_layout(paged: bool) -> None:
+    """V packed linear, fed to the 4x4-swizzle V reader -- the symmetric case."""
+
+    _run_nvfp4_layout_cross_feed(paged=paged, corrupt="v")
+
+
+# --- production container: vLLM's [data | scale] paged cache ---------------
+#
+# The whole point of reading vLLM's byte order is consuming a vLLM cache with
+# no repack, so `sparse_atten_nvfp4_kv_func` stopped calling `.contiguous()` on
+# k/v and their scales -- that copied the entire selected KV cache on every
+# layer of every forward.  Nothing else in this file passes a non-contiguous
+# tensor, so without this test the justification for that removal is untested
+# and plan Q2 ("TMA descriptor over a page-strided data view") stays open.
+#
+# vLLM packs each KV side of a page as [all data bytes | all scale bytes] with
+# last dim full_dim = D/2 + D/16, and `nvfp4_split_data_scale` hands back two
+# `as_strided` views whose page stride is the FULL page -- data bytes included.
+# So the data view's page stride (18432 B at this geometry) exceeds its own
+# contiguous size (16384 B), and the scale view is offset into the middle of
+# the page.  Neither is contiguous; both must give bit-identical output.
+
+
+def _nvfp4_split_data_scale(kv_side: torch.Tensor):
+    """Port of `vllm.utils.torch_utils.nvfp4_split_data_scale` (:419-467).
+
+    Copied rather than imported: vLLM is not installed alongside MSA, and an
+    independent re-derivation is the point -- a shared helper would let one
+    edit satisfy both sides.
+    """
+
+    num_pages, dim_1, dim_2, full_dim = (int(x) for x in kv_side.shape)
+    data_dim = full_dim * 8 // 9
+    scale_dim = full_dim - data_dim
+    data_per_kv = dim_1 * dim_2 * data_dim
+    page_bytes = kv_side.stride(0)
+    base = kv_side.storage_offset()
+    data = torch.as_strided(
+        kv_side,
+        (num_pages, dim_1, dim_2, data_dim),
+        (
+            page_bytes,
+            kv_side.stride(1) * data_dim // full_dim,
+            kv_side.stride(2) * data_dim // full_dim,
+            1,
+        ),
+        storage_offset=base,
+    )
+    scale = torch.as_strided(
+        kv_side,
+        (num_pages, dim_1, dim_2, scale_dim),
+        (
+            page_bytes,
+            kv_side.stride(1) * scale_dim // full_dim,
+            kv_side.stride(2) * scale_dim // full_dim,
+            1,
+        ),
+        storage_offset=base + data_per_kv,
+    ).view(torch.float8_e4m3fn)
+    return data, scale
+
+
+def test_sparse_atten_nvfp4_kv_reads_vllm_split_data_scale_views() -> None:
+    case = build_nvfp4_golden_case(paged=True, variant="s")
+    inputs, k_q, v_q = case["inputs"], case["k_q"], case["v_q"]
+    num_pages, head_kv, page_size, data_dim = (int(x) for x in k_q.data.shape)
+    scale_dim = int(k_q.scale.shape[-1])
+    full_dim = data_dim + scale_dim
+    # vLLM derives data_dim as full_dim*8//9, which only agrees with D/2 and
+    # D/16 because 16 == 2*8: assert it rather than assume it.
+    assert full_dim * 8 // 9 == data_dim, (full_dim, data_dim)
+
+    def build_side(quantized) -> torch.Tensor:
+        cache = torch.empty(
+            (num_pages, head_kv, page_size, full_dim),
+            device=quantized.data.device,
+            dtype=torch.uint8,
+        )
+        flat = cache.view(num_pages, -1)
+        split = head_kv * page_size * data_dim
+        flat[:, :split] = quantized.data.reshape(num_pages, -1)
+        flat[:, split:] = quantized.scale.reshape(num_pages, -1)
+        return cache
+
+    k_data, k_sf = _nvfp4_split_data_scale(build_side(k_q))
+    v_data, v_sf = _nvfp4_split_data_scale(build_side(v_q))
+
+    # Same bytes, different container.  If any of these is contiguous the test
+    # has stopped exercising the thing it exists for.
+    for name, view, packed in (
+        ("k_data", k_data, k_q.data),
+        ("v_data", v_data, v_q.data),
+        ("k_scale", k_sf.view(torch.uint8), k_q.scale),
+        ("v_scale", v_sf.view(torch.uint8), v_q.scale),
+    ):
+        assert torch.equal(view, packed), name
+        assert not view.is_contiguous(), (
+            f"{name} came out contiguous, so this test no longer covers the "
+            "strided vLLM container"
+        )
+    assert int(k_data.stride(0)) > head_kv * page_size * data_dim, (
+        "the data view's page stride must span the scale bytes too, or the "
+        "[data | scale] page layout is not being reproduced"
+    )
+
+    common = _nvfp4_common_forward_kwargs(case)
+    args = (
+        inputs["q"],
+        k_q.global_scale,
+        v_q.global_scale,
+        inputs["k2q_row_ptr"],
+        inputs["k2q_q_indices"],
+        case["topk"],
+    )
+    out_ref, lse_ref = sparse_atten_nvfp4_kv_func(
+        args[0], k_q.data, v_q.data, k_q.scale, v_q.scale, *args[1:], **common
+    )
+    out, lse = sparse_atten_nvfp4_kv_func(
+        args[0],
+        k_data,
+        v_data,
+        k_sf.view(torch.uint8),
+        v_sf.view(torch.uint8),
+        *args[1:],
+        **common,
+    )
+    _assert_bit_identical(out, out_ref, what="out on vLLM split views")
+    _assert_bit_identical(lse, lse_ref, what="lse on vLLM split views")
+
+    # The scale view arrives as float8_e4m3fn and the caller must re-view it as
+    # uint8.  That is documented in `sparse_atten_nvfp4_kv_func`; pin the guard
+    # so the documentation cannot quietly become false.
+    with pytest.raises(TypeError, match="float8_e4m3fn"):
+        sparse_atten_nvfp4_kv_func(
+            args[0], k_data, v_data, k_sf, v_sf, *args[1:], **common
+        )
 
 
 @pytest.mark.parametrize("paged", [False, True])
@@ -2364,8 +3127,7 @@ def test_sparse_atten_nvfp4_kv_te_quantized_flat_smoke() -> None:
         dtype=torch.bfloat16,
         q2k_pattern=Q2KPattern.UNIFORM,
     )
-    k_q = _quantize_bf16_to_nvfp4(inputs["k"])
-    v_q = _quantize_bf16_to_nvfp4(inputs["v"])
+    k_q, v_q = _quantize_kv_bf16_to_nvfp4(inputs["k"], inputs["v"])
     k_deq = _dequant_nvfp4_to_bf16(k_q)
     v_deq = _dequant_nvfp4_to_bf16(v_q)
 
@@ -2391,8 +3153,8 @@ def test_sparse_atten_nvfp4_kv_te_quantized_flat_smoke() -> None:
         inputs["q"],
         k_q.data,
         v_q.data,
-        k_q.scale_128x4,
-        v_q.scale_128x4,
+        k_q.scale,
+        v_q.scale,
         k_q.global_scale,
         v_q.global_scale,
         inputs["k2q_row_ptr"],
@@ -2460,8 +3222,7 @@ def test_sparse_atten_nvfp4_kv_fp8_q_matches_block_scaled_fp8_reference(
         v_source = inputs["v"]
 
     q_fp8 = inputs["q"].to(torch.float8_e4m3fn)
-    k_q = _quantize_bf16_to_nvfp4(k_source)
-    v_q = _quantize_bf16_to_nvfp4(v_source)
+    k_q, v_q = _quantize_kv_bf16_to_nvfp4(k_source, v_source)
     fp8_max = torch.finfo(torch.float8_e4m3fn).max
     k_stage = _dequant_nvfp4_to_bf16(k_q, include_global_scale=False)
     v_stage = _dequant_nvfp4_to_bf16(v_q, include_global_scale=False)
@@ -2507,8 +3268,8 @@ def test_sparse_atten_nvfp4_kv_fp8_q_matches_block_scaled_fp8_reference(
         q_fp8,
         k_q.data,
         v_q.data,
-        k_q.scale_128x4,
-        v_q.scale_128x4,
+        k_q.scale,
+        v_q.scale,
         k_q.global_scale,
         v_q.global_scale,
         inputs["k2q_row_ptr"],
@@ -2546,8 +3307,14 @@ def test_sparse_atten_nvfp4_kv_fp8_q_without_global_scale_matches_reference() ->
         q2k_pattern=Q2KPattern.UNIFORM,
     )
     q_fp8 = inputs["q"].to(torch.float8_e4m3fn)
-    k_q = _make_synthetic_nvfp4_tensor(tuple(inputs["k"].shape))
-    v_q = _make_synthetic_nvfp4_tensor(tuple(inputs["v"].shape))
+    k_q = _make_synthetic_nvfp4_tensor(
+        tuple(inputs["k"].shape),
+        layout=NVFP4_K_SCALE_LAYOUT,
+    )
+    v_q = _make_synthetic_nvfp4_tensor(
+        tuple(inputs["v"].shape),
+        layout=NVFP4_V_SCALE_LAYOUT,
+    )
     fp8_max = torch.finfo(torch.float8_e4m3fn).max
     k_ref = _dequant_nvfp4_to_bf16(
         k_q,
@@ -2575,8 +3342,8 @@ def test_sparse_atten_nvfp4_kv_fp8_q_without_global_scale_matches_reference() ->
         q_fp8,
         k_q.data,
         v_q.data,
-        k_q.scale_128x4,
-        v_q.scale_128x4,
+        k_q.scale,
+        v_q.scale,
         None,
         None,
         inputs["k2q_row_ptr"],
@@ -3203,10 +3970,12 @@ def _build_sparse_nvfp4_kv_benchmark_context(
         raise ValueError(f"Unsupported NVFP4 KV benchmark Q dtype: {q_dtype}")
     k_q = _make_synthetic_nvfp4_tensor(
         tuple(k_source.shape),
+        layout=NVFP4_K_SCALE_LAYOUT,
         global_scale_value=0.75,
     )
     v_q = _make_synthetic_nvfp4_tensor(
         tuple(v_source.shape),
+        layout=NVFP4_V_SCALE_LAYOUT,
         global_scale_value=1.25,
     )
     k_bf16 = _dequant_nvfp4_to_bf16(k_q)
@@ -3250,8 +4019,8 @@ def _build_sparse_nvfp4_kv_benchmark_context(
             q,
             k_q.data,
             v_q.data,
-            k_q.scale_128x4,
-            v_q.scale_128x4,
+            k_q.scale,
+            v_q.scale,
             k_q.global_scale,
             v_q.global_scale,
             k2q_row_ptr,
