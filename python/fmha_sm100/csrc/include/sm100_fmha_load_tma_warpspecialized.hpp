@@ -440,7 +440,7 @@ struct Sm100FmhaLoadTmaWarpspecialized {
     uint32_t lane_predicate = cute::elect_one_sync();
 
     static constexpr int num_q_sub = get<0>(TileShape{}) / get<0>(TileShapeQK{});
-    static constexpr int num_kv_sub = kNumKvSub;  // K2: hoisted to class scope, see :84
+    static constexpr int num_kv_sub = kNumKvSub;
 
     int q0_index = num_q_sub * get<0>(blk_coord);
     int q1_index = num_q_sub * get<0>(blk_coord) + 1;

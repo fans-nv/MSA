@@ -33,16 +33,12 @@ _SPARSE_LAZY_EXPORTS = frozenset(
 )
 
 __all__ = [
-    "Nvfp4KvCache",
     *sorted(_DENSE_LAZY_EXPORTS),
     *sorted(_SPARSE_LAZY_EXPORTS),
 ]
 
 
 def __getattr__(name):
-    if name == "Nvfp4KvCache":
-        from .nvfp4 import Nvfp4KvCache
-        return Nvfp4KvCache
     # PEP 562 module-level hook: resolve sparse symbols on first access by
     # importing the fmha_sm100.sparse shim (which loads the CuTe-DSL stack).
     if name in _DENSE_LAZY_EXPORTS:

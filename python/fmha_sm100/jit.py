@@ -123,8 +123,10 @@ _FMHA_SM100_IMPOSSIBLE = lambda p: (
     (p.get("tile_q") == "_256" and p.get("is_split_kv") == "true") or
     (p.get("page_size") == -1 and p.get("sparse_mode") == "Sparse") or
     (p.get("pack_factor", 1) > 1 and p.get("tile_q") == "_256") or
-    # The NVFP4 dequantization pipeline consumes page-128 tagged tiles.
-    (p.get("kv_mode", 0) >= 3 and p.get("page_size") != 128)
+    # NVFP4 uses the FP8 single-softmax-warpgroup decoder with page-128 tiles.
+    (p.get("kv_mode", 0) >= 3 and (
+        p.get("page_size") != 128 or p.get("single_wg") != "true" or
+        p.get("dtype_in") != "__nv_fp8_e4m3"))
 )
 
 

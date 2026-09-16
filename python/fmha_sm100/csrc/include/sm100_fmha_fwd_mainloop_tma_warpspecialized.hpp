@@ -335,8 +335,8 @@ struct Sm100FmhaFwdMainloopTmaWarpspecialized {
                     == static_cast<int>(kSmemKVCosize * sizeof(Element)),
                 "smem_kv cosize must divide evenly into StageCountKV stages");
   static_assert(kSmemKvTileBytes % 1024 == 0,
-                "K1's Sw<3,4,3> destination swizzle is an ABSOLUTE-address swizzle, so "
-                "every smem_kv stage base must be 1024 B aligned (K1 §2 condition 1)");
+                "The destination swizzle uses absolute shared-memory addresses; "
+                "every smem_kv stage base must be 1024-byte aligned");
 
   // TensorStorage: shared K/V smem buffer + Q (no separate smem_v or smem_k)
   // smem_o is allocated separately in the kernel (no union overlap)

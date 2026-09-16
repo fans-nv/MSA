@@ -204,7 +204,7 @@ void FMHAVariantRun_{{ variant_name }}(ffi::TensorView workspace_buffer, ffi::Te
   auto nvfp4_u8_ptr = [](const Optional<ffi::TensorView>& t, const char* name) -> void* {
     if (!t.has_value()) return nullptr;
     TVM_FFI_ICHECK(encode_dlpack_dtype(t.value().dtype()) == uint8_code)
-        << name << " must be uint8 (R7 §3.2: apache-tvm-ffi<=0.1.10 maps fp8 to kDLBool)";
+        << name << " must be uint8";
     return t.value().data_ptr();
   };
   params.nvfp4_k_data_ptr  = nvfp4_u8_ptr(maybe_nvfp4_k_data,  "nvfp4_k_data");
@@ -225,7 +225,7 @@ void FMHAVariantRun_{{ variant_name }}(ffi::TensorView workspace_buffer, ffi::Te
   TVM_FFI_ICHECK(params.nvfp4_page_stride > 0)
       << "MSA_NVFP4_KV_MODE=3 requires a positive nvfp4_page_stride";
   TVM_FFI_ICHECK(params.dequant_g_k > 0.0f && params.dequant_g_v > 0.0f)
-      << "dequant_g_k / dequant_g_v must be positive (A1 §6.2); got "
+      << "dequant_g_k / dequant_g_v must be positive; got "
       << params.dequant_g_k << " / " << params.dequant_g_v;
 #endif
 {% endif %}

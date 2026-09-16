@@ -23,11 +23,11 @@ static constexpr int kNumThreadsDequant = kNumWarpsDequant * 32;
 static constexpr int kNumActiveWarpsDequant =
     kHasDequantWarpgroup ? 4 : 0;
 static_assert(kNumActiveWarpsDequant <= kNumWarpsDequant,
-              "O9: active dequant warps cannot exceed allocated dequant warps");
+              "Active dequant warps cannot exceed allocated dequant warps");
 static_assert(kNumWarpsDequant == 0 || kNumActiveWarpsDequant == 1 ||
               kNumActiveWarpsDequant == 2 || kNumActiveWarpsDequant == 4 ||
               kNumActiveWarpsDequant == 8,
-              "O9: k1::dequant_page_tile is instantiated for kNumWarps in {1,2,4,8}");
+              "k1::dequant_page_tile is instantiated for kNumWarps in {1,2,4,8}");
 
 static constexpr int kStageBytesNvfp4   = 8192 + 1024;
 static constexpr int kStageBytesPassthru = 16384;

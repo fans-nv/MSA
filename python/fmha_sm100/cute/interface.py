@@ -413,14 +413,7 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
             if not seqused_k.is_contiguous():
                 raise ValueError("seqused_k must be contiguous")
 
-    if kv_layout == "vllm":
-        from nvfp4_cache_contract import validate_nvfp4_views
-        if page_table is None or blk_kv != 128:
-            raise ValueError("vLLM NVFP4 layout requires paged KV with page size 128")
-        if seqused_k is None:
-            raise ValueError("vLLM NVFP4 layout requires seqused_k")
-        validate_nvfp4_views(k, v, k_scale_128x4, v_scale_128x4, q.device)
-    else:
+    if kv_layout == "legacy":
         padded_scale_rows = ((required_scale_rows + 127) // 128) * 128
         padded_scale_cols = ((scale_cols + 3) // 4) * 4
         for name, scale in (("k_scale_128x4", k_scale_128x4), ("v_scale_128x4", v_scale_128x4)):
@@ -932,9 +925,9 @@ def sparse_atten_nvfp4_kv_func(
     # Both forward and combine consume rank-one scale arguments. Keep scalar
     # model buffers as zero-copy views, including while capturing CUDA graphs.
     if k_global_scale is not None:
-        k_global_scale = k_global_scale.reshape(1)
+        k_global_scale = k_global_scale.reshape(-1)
     if v_global_scale is not None:
-        v_global_scale = v_global_scale.reshape(1)
+        v_global_scale = v_global_scale.reshape(-1)
     total_q, head_q, dim = q.shape
     max_num_kv_blocks = _csr_row_capacity(k2q_row_ptr)
     temperature_lse_fast_path = (

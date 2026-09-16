@@ -109,26 +109,14 @@ struct Sm100FmhaCtxKernelWarpspecializedSchedule {
       128 * (NumRegsOther + NumRegsSoftmax + NumRegsCorrection
              + kNumDequantWarpgroups * NumRegsDequant);
   static_assert(NumRegsDequant <= 256 && NumRegsSoftmax <= 256,
-                "O5: setmaxnreg operand must be <= 256");
+                "setmaxnreg operand must be <= 256");
   static_assert(kRegPoolRequested <= 65536,
-                "O5: the setmaxnreg split over-subscribes the 65536-register file. "
-                "USETMAXREG.TRY_ALLOC.CTAPOOL would silently lose the race (F-K2-B) "
-                "rather than fail the build.  Lower 232/CORRECTION/OTHER "
-                "or 112.");
+                "The warpgroup register allocation exceeds the register file");
   static constexpr int kCtaRegPool = NumWarps * 32 * kStaticRegCeiling;
   static_assert(kRegPoolRequested <= kCtaRegPool,
-                "O9/F-O5-B: the setmaxnreg split over-subscribes THIS CTA's register pool "
-                "(MaxThreadsPerBlock * static ceiling), which is smaller than 65536 "
-                "whenever 65536/MaxThreadsPerBlock is not a multiple of 8.  "
-                "USETMAXREG.TRY_ALLOC.CTAPOOL is an UNBOUNDED RETRY LOOP in SASS, so this "
-                "does not degrade -- it HANGS.  Sum of the per-warpgroup operands must be "
-                "<= NumWarps*32*kStaticRegCeiling/128 (480 at 20 warps, 512 at 16).  "
-                "Define O9_ALLOW_REG_OVERSUBSCRIBE=1 to build it anyway (negative control "
-                "only -- it will hang).");
-
+                "The warpgroup register allocation exceeds the CTA register pool");
   static_assert(NumRegsOther <= kStaticRegCeiling && NumRegsCorrection <= kStaticRegCeiling,
-                "O5: a dealloc target above the static ceiling is a no-op, not a dealloc, "
-                "and the pool arithmetic above would then be wrong.");
+                "Register-release targets must not exceed the initial allocation");
 };
 
 template <class ProblemShapeIn, class CollectiveMainloop, class CollectiveEpilogue,

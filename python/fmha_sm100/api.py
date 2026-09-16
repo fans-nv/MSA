@@ -759,44 +759,32 @@ def _fmha_sm100(
     max_score: Optional[torch.Tensor] = None,
     sm_scale: Optional[float] = None,
     q_scale: Optional[float] = None,
-    k_scale: Optional[float] = None,
-    v_scale: Optional[float] = None,
+    k_scale: Optional[Union[float, torch.Tensor]] = None,
+    v_scale: Optional[Union[float, torch.Tensor]] = None,
     o_scale: Optional[float] = None,
     output_maxscore: bool = True,
     output_o: bool = True,
     check_input_valid: bool = False,
-    nvfp4_kv: Optional[dict] = None,
 ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
-    """Run FMHA; ``nvfp4_kv`` selects the explicit vLLM packed-cache reader.
-
-    See :class:`fmha_sm100.nvfp4.Nvfp4KvCache`. Cache geometry and pointers
-    come from the descriptor, so ordinary K/V placeholders are not read.
-    Its device global scales own reconstruction; k_scale/v_scale must be
-    absent or one. Decode uses FP8 Q and an internal gamma=6 staging factor,
-    independently compensated in QK, PV, and split-KV reduction.
-    """
-    if nvfp4_kv is not None:
-        from .nvfp4 import validate_nvfp4_kv
-        validate_nvfp4_kv(nvfp4_kv, q.device)
-        k, v = nvfp4_kv["k_data"], nvfp4_kv["v_data"]
-        if not q.is_cuda or q.ndim != 3 or q.shape[-1] != 128:
-            raise ValueError("NVFP4 attention requires CUDA Q [tokens, heads, 128]")
-        if k_scale not in (None, 1.0) or v_scale not in (None, 1.0):
-            raise ValueError("NVFP4 cache scales belong in k_global_scale/v_global_scale")
-        if kv_indices is None:
-            raise ValueError("NVFP4 attention requires a physical page table")
-        if q.shape[1] % k.shape[1]:
-            raise ValueError("Q heads must be divisible by NVFP4 KV heads")
-
     if plan_info["MM-SA-Nv"]:
         return sparse_fmha(q=q, k=k, v=v, plan_info=plan_info, out=out, max_score=max_score, 
                 sm_scale=sm_scale, q_scale=q_scale, k_scale=k_scale, v_scale=v_scale, o_scale=o_scale,
                 kv_indices=kv_indices, output_maxscore=output_maxscore, output_o=output_o, q_offset_override=q_offset_override,
-                kv_block_indexes=kv_block_indexes, check_input_valid=check_input_valid,
-                nvfp4_kv=nvfp4_kv)
+                kv_block_indexes=kv_block_indexes, check_input_valid=check_input_valid)
 
-    if nvfp4_kv is not None and q.dtype != torch.float8_e4m3fn:
-        raise TypeError("Optimized NVFP4 decode requires FP8 E4M3 Q; use the BF16 prefill leaf for chunks")
+    is_nvfp4 = k.dtype == torch.uint8
+    if is_nvfp4:
+        pages, heads = k.shape[:2]
+        k_sf = k.as_strided((pages, heads, 128, 8),
+                           (k.stride(0), 1024, 8, 1),
+                           k.storage_offset() + heads * 8192)
+        v_sf = v.as_strided((pages, heads, 128, 8),
+                           (v.stride(0), 1024, 8, 1),
+                           v.storage_offset() + heads * 8192)
+        k = k.as_strided((pages, heads, 128, 64), (k.stride(0), 8192, 64, 1))
+        v = v.as_strided((pages, heads, 128, 64), (v.stride(0), 8192, 64, 1))
+        k_global_scale, v_global_scale = k_scale, v_scale
+        k_scale = v_scale = 1.0
 
     nnz_qo, num_qo_heads, head_dim_qk = q.shape
     if kv_indices is None:
@@ -806,7 +794,7 @@ def _fmha_sm100(
         nnz_kv, num_kv_heads, page_size, head_dim_vo = v.shape
         is_paged = True
 
-    if nvfp4_kv is not None:
+    if is_nvfp4:
         head_dim_vo = 128
     qo_total_len = nnz_qo
 
@@ -839,7 +827,7 @@ def _fmha_sm100(
     elif qo_offset is not None:
         assert qo_offset.device == qo_segment_lens.device
 
-    if check_input_valid and nvfp4_kv is None:
+    if check_input_valid:
         _validate_fmha_inputs(
             q, k, v, qo_segment_lens, kv_segment_lens,
             num_qo_heads, num_kv_heads, head_dim_qk, head_dim_vo,
@@ -940,15 +928,13 @@ def _fmha_sm100(
     nvfp4_args = ()
     _kv_dtype = None
     _nv_g_k = 1.0
-    if nvfp4_kv is not None:
+    if is_nvfp4:
         _kv_dtype = "nvfp4"
         _nv_g_k = 6.0
         nvfp4_args = (
-            nvfp4_kv["k_data"], nvfp4_kv["k_scale"],
-            nvfp4_kv["v_data"], nvfp4_kv["v_scale"],
-            k.stride(0), k.stride(1), nvfp4_kv["k_scale"].stride(1),
-            6.0, 6.0,
-            nvfp4_kv["k_global_scale"], nvfp4_kv["v_global_scale"],
+            k, k_sf, v, v_sf,
+            k.stride(0), k.stride(1), k_sf.stride(1),
+            6.0, 6.0, k_global_scale, v_global_scale,
         )
 
     variant_module = get_fmha_variant(
@@ -989,8 +975,8 @@ def _fmha_sm100(
         scale_softmax_log2 = float(q_scale * k_scale * _nv_g_k * sm_scale) * log2_e
         inv_scale_o = float(o_scale)
 
-        reduction_module = get_reduction_module(nvfp4=nvfp4_kv is not None)
-        reduction = (reduction_module.reduction if nvfp4_kv is None
+        reduction_module = get_reduction_module(nvfp4=is_nvfp4)
+        reduction = (reduction_module.reduction if not is_nvfp4
                      else reduction_module.reduction_nvfp4)
         reduction(
             workspace_o,
@@ -1005,7 +991,7 @@ def _fmha_sm100(
             num_kv_heads,
             pack_factor,
             torch.cuda.current_stream().cuda_stream,
-            *((nvfp4_kv["k_global_scale"],) if nvfp4_kv is not None else ()),
+            *((k_global_scale,) if is_nvfp4 else ()),
         )
 
     return out, max_score
@@ -1119,7 +1105,8 @@ def fmha_sm100(
         Dense layout ``[total_kv_len, num_kv_heads, head_dim]`` or paged layout
         ``[total_pages, num_kv_heads, page_size, head_dim]``.
     v : torch.Tensor
-        Same layout as ``k``.  The output head dimension follows ``v.shape[-1]``.
+        Same layout as ``k``. The output head dimension is 128 for NVFP4,
+        otherwise it follows ``v.shape[-1]``.
     plan_info : tuple
         Return value from ``fmha_sm100_plan`` for the same lengths, head layout,
         page size, and sparse/output mode.
@@ -1147,6 +1134,20 @@ def fmha_sm100(
         Runtime options forwarded to the kernel runner.  Common options are
         ``sm_scale``, ``q_scale``, ``k_scale``, ``v_scale``, ``o_scale``,
         ``output_maxscore``, ``output_o``, and ``check_input_valid``.
+
+    NVFP4 cache layout
+    ------------------
+    Pass K and V as uint8 tensors of shape ``[pages, Hkv, 128, 72]``.
+    Each side stores all packed data first (8192 bytes per head), followed
+    by E4M3 block scales (1024 bytes per head). The last dimension describes
+    storage size, not interleaved token rows. Each byte packs two E2M1 values,
+    and each block scale covers 16 values. K scales use ``token*8+group``;
+    V scales use ``(token//4)*32+group*4+token%4`` within each head.
+    K and V have the same page stride; views into a shared
+    ``[pages, 2*Hkv, 128, 72]`` allocation preserve that stride and offset.
+    ``k_scale`` and ``v_scale`` are CUDA float32 scalar tensors for NVFP4:
+    ``value = E2M1(code) * E4M3(block_scale) * global_scale``.
+    Use BF16 Q for prefill and E4M3 Q for decode. No cache conversion is needed.
 
     Returns
     -------
