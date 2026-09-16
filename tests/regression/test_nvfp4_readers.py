@@ -171,11 +171,16 @@ def reference(q, cache, raw, pages, used, qlen, *, staged=False, qscale=1.0):
 @pytest.mark.parametrize(
     "heads,qlen,used", [(1, 1, 127), (2, 33, 129), (1, 33, 257), (2, 1, 128)]
 )
-def test_prefill_layout_equivalence(heads, qlen, used):
+def test_prefill_layout_equivalence(heads, qlen, used, scalar_scales=False):
     require_sm100()
     from fmha_sm100 import build_k2q_csr, sparse_atten_nvfp4_kv_func
 
     cache, raw, sf = populated_cache(heads)
+    if scalar_scales:
+        for key in ("k_global_scale", "v_global_scale"):
+            scale = cache[key]
+            cache[key] = scale.reshape(())
+            assert cache[key].data_ptr() == scale.data_ptr()
     torch.manual_seed(12)
     q = (torch.randn((qlen, heads * 16, 128), device="cuda") * 0.1).bfloat16()
     cuq = torch.tensor([0, qlen], device="cuda", dtype=torch.int32)
@@ -240,6 +245,33 @@ def test_prefill_layout_equivalence(heads, qlen, used):
     torch.testing.assert_close(new, old, atol=0, rtol=0)
     expected = reference(q, cache, raw, pages[0], used, qlen)
     torch.testing.assert_close(new.float(), expected, atol=0.025, rtol=0.025)
+    if scalar_scales:
+        graph = torch.cuda.CUDAGraph()
+        with torch.cuda.graph(graph):
+            sparse_atten_nvfp4_kv_func(
+                q,
+                cache["k_data"],
+                cache["v_data"],
+                cache["k_scale"],
+                cache["v_scale"],
+                cache["k_global_scale"],
+                cache["v_global_scale"],
+                csr,
+                indices,
+                16,
+                kv_layout="vllm",
+                out=out,
+                **kwargs,
+            )
+        q.mul_(0.5)
+        graph.replay()
+        expected = reference(q, cache, raw, pages[0], used, qlen)
+        torch.testing.assert_close(out.float(), expected, atol=0.025, rtol=0.025)
+
+
+@pytest.mark.parametrize("heads", [1, 2])
+def test_prefill_scalar_scales_and_capture(heads):
+    test_prefill_layout_equivalence(heads, 33, 257, scalar_scales=True)
 
 
 @pytest.mark.parametrize(

@@ -929,6 +929,12 @@ def sparse_atten_nvfp4_kv_func(
         seqused_k,
         kv_layout,
     )
+    # Both forward and combine consume rank-one scale arguments. Keep scalar
+    # model buffers as zero-copy views, including while capturing CUDA graphs.
+    if k_global_scale is not None:
+        k_global_scale = k_global_scale.reshape(1)
+    if v_global_scale is not None:
+        v_global_scale = v_global_scale.reshape(1)
     total_q, head_q, dim = q.shape
     max_num_kv_blocks = _csr_row_capacity(k2q_row_ptr)
     temperature_lse_fast_path = (
@@ -987,8 +993,8 @@ def sparse_atten_nvfp4_kv_func(
         v if kv_layout == "vllm" else v.contiguous(),
         k_scale_128x4 if kv_layout == "vllm" else k_scale_128x4.contiguous(),
         v_scale_128x4 if kv_layout == "vllm" else v_scale_128x4.contiguous(),
-        None if k_global_scale is None else k_global_scale.reshape(-1).contiguous(),
-        None if v_global_scale is None else v_global_scale.reshape(-1).contiguous(),
+        k_global_scale,
+        v_global_scale,
         k2q_row_ptr.contiguous(),
         k2q_q_indices.contiguous(),
         k2q_qsplit_indices.contiguous(),

@@ -27,7 +27,9 @@ K `(t,s)` is at `t*8+s`; V is at `(t//4)*32+4*s+t%4` within one head.
 Views must be 16-byte aligned. Address products use 64-bit arithmetic.
 No full-cache copy or scale-layout conversion occurs in either reader.
 
-Global scales reconstruct `x = E2M1(code)*E4M3(sf)*alpha`. The owner validates
+Global scales may have shape `[]` or `[1]`; both readers preserve their
+storage and accept them during graph replay. Global scales reconstruct
+`x = E2M1(code)*E4M3(sf)*alpha`. The owner validates
 positive finite scales before writing pages and keeps them fixed while those
 pages are live. Readers consume device buffers without host synchronization.
 The decoder stages `E4M3(E2M1(code)*sf/6)` and compensates by `6*alpha`.
@@ -73,8 +75,8 @@ Coverage includes Hkv=1/2 (TP4/TP2 per-rank geometry), decode batches
 scales, nonunit Q/output multipliers, both FP8/NVFP4 load orders, and graph
 replay with changed Q, physical pages, and scale buffers. Prefill covers
 Q=1/33, K=127/128/129/257, ragged batches with changing used lengths, BF16
-and FP8 Q, legacy/new layout equivalence, storage offsets, and padded page
-strides. CPU tests also render both AOT templates for all 350 ordinary
+and FP8 Q, legacy/new layout equivalence, scalar scale buffers under graph
+capture, storage offsets, and padded page strides. CPU tests also render both AOT templates for all 350 ordinary
 variants without supplying NVFP4 options. A wheel build and installation
 check verifies public modules, embedded CUTLASS, and regular reader headers.
 
