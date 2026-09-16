@@ -26,7 +26,8 @@ _MM_SPARSE_DIR = os.path.join(
 if os.path.isdir(_MM_SPARSE_DIR) and _MM_SPARSE_DIR not in sys.path:
     sys.path.insert(0, os.path.abspath(_MM_SPARSE_DIR))
 
-from interface import sparse_atten_func
+from interface import sparse_atten_func, sparse_atten_nvfp4_kv_func
+from .nvfp4 import validate_nvfp4_kv
 from sparse_index_utils import build_k2q_csr
 from src.sm100.prepare_scheduler import SPARSE_SCHEDULE_MODEL
 from src.common.aot_cache import _key_to_path
@@ -266,6 +267,7 @@ def sparse_fmha(
     kv_block_indexes: Optional[torch.Tensor] = None,
     q_offset_override = None,
     check_input_valid: bool = False,
+    nvfp4_kv: Optional[dict] = None,
 ) -> Tuple[torch.Tensor, None]:
     """Run sparse prefill through ``sparse_atten_func`` using an FMHA-style API.
 
@@ -312,6 +314,9 @@ def sparse_fmha(
         raise ValueError("sparse_fmha requires kv_block_indexes")
     
 
+    if nvfp4_kv is not None:
+        validate_nvfp4_kv(nvfp4_kv, q.device)
+        k, v = nvfp4_kv["k_data"], nvfp4_kv["v_data"]
     qo_segment_lens = plan_info["qo_segment_lens"]
     cu_seqlens_q = plan_info["cu_seqlens_q"]
     cu_seqlens_k = plan_info["cu_seqlens_k"]
@@ -381,6 +386,26 @@ def sparse_fmha(
         )
 
     softmax_scale = sm_scale if sm_scale is not None else q.shape[-1] ** -0.5
+
+    if nvfp4_kv is not None:
+        if page_table is None:
+            raise ValueError("NVFP4 sparse prefill requires kv_indices")
+        if k_scale not in (None, 1.0) or v_scale not in (None, 1.0):
+            raise ValueError("Use the descriptor's device global scales for NVFP4")
+        result = sparse_atten_nvfp4_kv_func(
+            q, k, v, nvfp4_kv["k_scale"], nvfp4_kv["v_scale"],
+            nvfp4_kv["k_global_scale"], nvfp4_kv["v_global_scale"],
+            k2q_row_ptr, k2q_q_indices, topk,
+            cu_seqlens_q=cu_seqlens_q, cu_seqlens_k=cu_seqlens_k,
+            max_seqlen_q=max_seqlen_q, max_seqlen_k=max_seqlen_k,
+            blk_kv=blk_kv, causal=causal,
+            softmax_scale=softmax_scale * (1.0 if q_scale is None else q_scale),
+            page_table=page_table, seqused_k=seqused_k,
+            schedule=schedule, out=out, kv_layout="vllm",
+        )
+        if o_scale not in (None, 1.0):
+            result.mul_(o_scale)
+        return result, None
 
     # print(q.shape, k.shape)
     result = sparse_atten_func(
