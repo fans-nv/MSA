@@ -147,7 +147,7 @@ def prepare_decode_schedule(
     if int(max_seqlen_k) <= 0:
         raise ValueError("max_seqlen_k must be positive")
 
-    from src.sm100.fwd_decode.build_decode_schedule import build_decode_schedule
+    from .fwd_decode.build_decode_schedule import build_decode_schedule
 
     raw = build_decode_schedule(
         seqused_k,

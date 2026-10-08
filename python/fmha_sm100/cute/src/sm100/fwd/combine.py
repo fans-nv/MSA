@@ -21,13 +21,13 @@ import torch
 from cutlass.cute.nvgpu import cpasync
 from cutlass import Float32, Int32, Int64, Boolean, const_expr
 
-from src.common import utils
-from src.common.cute_dsl_utils import assume_tensor_aligned, torch2cute_dtype_map
-from src.common.seqlen_info import SeqlenInfo
+from ...common import utils
+from ...common.cute_dsl_utils import assume_tensor_aligned, torch2cute_dtype_map
+from ...common.seqlen_info import SeqlenInfo
 from cutlass.cute import FastDivmodDivisor
 
-from src.common.pack_gqa import PackGQAComb
-from src.common.tma_utils import (
+from ...common.pack_gqa import PackGQAComb
+from ...common.tma_utils import (
     stg128_fake_col_to_real_col,
     stg128_fp8_fake_col_to_real_col,
     stg128_half_fake_col_to_real_col,
@@ -1197,6 +1197,34 @@ def _get_cpasync_smem_layout_atom(dtype: Type[cutlass.Numeric], k_dim: int) -> c
     )
 
 
+def _combine_key(
+    capability, stages, D, k_block_size,
+    tile_m, num_splits, partial_dtype, out_dtype,
+    has_cu_seqlens, has_seqused, has_lse, return_temperature_lse,
+    has_split_counts, has_output_scale, use_pdl, min_blocks_per_mp,
+):
+    """Shared host cache identity; runtime and strict prewarm use the same tuple."""
+    return (
+        "combine",
+        capability,
+        stages,
+        D,
+        k_block_size,
+        tile_m,
+        num_splits,
+        partial_dtype,
+        out_dtype,
+        has_cu_seqlens,
+        has_seqused,
+        has_lse,
+        bool(return_temperature_lse),
+        has_split_counts,
+        has_output_scale,
+        use_pdl,
+        min_blocks_per_mp,
+    )
+
+
 def combine(
     o_partial_fake,
     lse_partial,
@@ -1347,27 +1375,14 @@ def combine(
     # (see the occupancy note below).
     stages = 3 if is_sm107 else 2
 
-    key = (
-        "combine",
-        capability,
-        stages,
-        D,
-        k_block_size,
-        tile_m,
-        num_splits,
-        partial_dtype,
-        out_dtype,
-        has_cu_seqlens,
-        has_seqused,
-        has_lse,
-        bool(return_temperature_lse),
-        has_split_counts,
-        has_output_scale,
-        use_pdl,
-        min_blocks_per_mp,
+    key = _combine_key(
+        capability, stages, D, k_block_size,
+        tile_m, num_splits, partial_dtype, out_dtype,
+        has_cu_seqlens, has_seqused, has_lse, return_temperature_lse,
+        has_split_counts, has_output_scale, use_pdl, min_blocks_per_mp,
     )
     if key not in _combine_compile_cache:
-        from src.common.aot_cache import try_load_aot, save_aot
+        from ...common.aot_cache import try_load_aot, save_aot
 
         loaded = try_load_aot(key)
         if loaded is not None:

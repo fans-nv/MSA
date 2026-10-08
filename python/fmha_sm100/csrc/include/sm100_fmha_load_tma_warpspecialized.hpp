@@ -84,7 +84,8 @@ struct Sm100FmhaLoadTmaWarpspecialized {
   // P0: OnlyScore mode never reads V — skip every V slot in the KV pipeline.
   // mma() gates the matching wait_V/release_V under `kNeedOutput` so producer
   // (loader) and consumer (mma) stay step-locked on the pipeline state.
-  static constexpr bool kNeedV = (kSparseAttnMode != SparseAttnMode::OnlyScore);
+  static constexpr bool kNeedV = (kSparseAttnMode != SparseAttnMode::OnlyScore
+                               && kSparseAttnMode != SparseAttnMode::OnlyScoreIcp);
 
   using TileShapeQK = typename CollectiveMmaQK::TileShape;
   using TileShapePV = typename CollectiveMmaPV::TileShape;
@@ -97,6 +98,66 @@ struct Sm100FmhaLoadTmaWarpspecialized {
                 "MSA_NVFP4_KV_MODE >= 2 requires the paged KV path (KVPageSize > 0); the "
                 "non-paged load lambdas do not write a k2::StageTag.");
 
+  // ---- refined-icp-v1: THE LIVE FRAGMENT BOUND (DIRECT_TABLE_CONTRACT §4) ----------
+  // How many logical blocks of this request THIS RANK actually holds index rows for,
+  // derived from the EXACT device KV length `L` (get<1>(problem_shape), which under ICP
+  // is the GLOBAL length -- see the mainloop's icp_local_blocks comment):
+  //
+  //     local_blocks(L, r) = floor(L / B) + ((L mod B) > r * R)
+  //
+  // with R = this rank's row count inside a compound page and B = R * W the compound
+  // page's token count (128 in production; both are DERIVED here rather than written as
+  // literals so a variant built at another page granularity cannot silently disagree).
+  // The comparison is STRICTLY greater-than: at L == B*q + r*R rank r's first row of
+  // block q is the token at global position B*q + r*R, which is position L, i.e. one
+  // past the last live token.  `>=` would hand the loader a block whose index rows the
+  // writer never wrote (fused_indexer_nvfp4_kv_write.cu:665-669 owns position p iff
+  // (p % B) / R == r, so it writes that row only once p reaches L).
+  //
+  // WHY THIS IS NOT A SECOND, COMPETING COUNT.  It is algebraically identical to the
+  // block-cyclic form the trip counts use, `ceil((ceil(L/R) - r) / W)`
+  // (`compute_effective_end` below, and the mainloop's `icp_local_blocks`): writing
+  // L = qB + s with 0 <= s < B gives ceil(L/R) = qW + ceil(s/R), and since
+  // ceil(s/R) - r lies in [-(W-1), W] the outer ceil contributes 1 exactly when
+  // ceil(s/R) > r, i.e. when s > r*R.  Proven for every L >= 0 and r in [0, W).  The
+  // two forms may therefore never disagree, which is what lets the kernel-wide
+  // empty-work decision (kernel header `is_empty_work`, which uses the OTHER form)
+  // dominate the page clamp below.
+  //
+  // `kv_len` IS `segment_lens[batch_idx]`, a live device read (`apply_variable_length`,
+  // fmha_fusion.hpp:369-378).  It is deliberately NOT the host length vector the work
+  // decomposition was sized from: the caller may overwrite the plan's `kv_segment_lens`
+  // IN PLACE with tighter, exact lengths after the plan is built -- vLLM's
+  // `seq_lens_cpu_upper_bound` still counts REJECTED Eagle3 drafts, so as a bound it is
+  // optimistic, and at every compound-page boundary a rejected draft crosses it would
+  // buy one column past the request's live end.  Every consumer of `get<1>` tightens
+  // together with this one: `compute_effective_end`, the mainloop's
+  // `get_full_trip_count` / `icp_local_blocks`, `is_empty_work`, and the W5 validity
+  // pass all read the same value, so the loader and the MMA stay step-locked and the
+  // advertised wave stays consistent with what was scored.  Nothing here may be
+  // re-derived from the host list.
+  //
+  // PRECONDITION: W >= 2 and KVPageSize > 0, i.e. an ICP variant with a direct table.
+  // That is the only place this is called from, and the host refuses the call
+  // otherwise (`page_size * W == 128` in the run binding), so it is not re-checked
+  // here -- a device-side guard could only return a wrong-but-quiet 0.
+  CUTLASS_DEVICE static int icp_local_blocks_exact(int kv_len, int packed_rank_c) {
+    int W = packed_rank_c & 15;
+    int r = packed_rank_c >> 4;
+    int R = KVPageSize;      // rows of the compound page this rank owns (ABI P1/P2)
+    int B = R * W;           // the compound page's token extent
+    int full = kv_len / B;
+    int rem = kv_len - full * B;
+    return full + ((rem > r * R) ? 1 : 0);
+  }
+
+  // K2: lifted VERBATIM out of run() so that the Dequant warpgroup and the Load warp
+  // compute `mask_tile_count` from ONE piece of code.  DESIGN §4.2 names divergence here
+  // -- through get_effective_trip_count, kEnablePaddingSkip, or the prologue/epilogue
+  // asymmetry -- as the hang risk.  Two copies of this arithmetic is exactly how that
+  // happens; there is now one.
+  // ParamsT is a template parameter only because `Params` is declared further down this
+  // class; it is always Load::Params.
   template <class BlkCoord, class ProblemShape, class ParamsT>
   CUTLASS_DEVICE static int compute_effective_end(BlkCoord const& blk_coord,
                                                   ProblemShape const& problem_shape,
@@ -109,6 +170,23 @@ struct Sm100FmhaLoadTmaWarpspecialized {
       valid_sparse_blocks = min(valid_sparse_blocks, params.kv_block_num);
       valid_sparse_blocks = max(valid_sparse_blocks, 1);
       full_trip = (valid_sparse_blocks * KVPageSize + full_tile_kv - 1) / full_tile_kv;
+    } else if constexpr (kSparseAttnMode == SparseAttnMode::OnlyScoreIcp) {
+      // ICP: mirror the mainloop's get_full_trip_count ICP branch exactly; loader,
+      // mainloop and kv_event_count() are all step-locked on this one count.
+      constexpr int full_tile_kv = get<1>(TileShape{});
+      int C = params.kv_block_num & 15;
+      int r = params.kv_block_num >> 4;
+      int gb_avail = (kv_len + KVPageSize - 1) / KVPageSize;
+      int offset_q = Mask::get_qo_offset(problem_shape);
+      int q_end = (int(get<0>(blk_coord)) + 1) * int(get<0>(TileShape{}));
+      int gb_causal = (q_end + offset_q + KVPageSize - 1) / KVPageSize;
+      int gb = gb_avail < gb_causal ? gb_avail : gb_causal;
+      int lb = (gb - r + C - 1) / C;
+      // Floor stays 1, step-locked with the identical floor in the mainloop's
+      // get_trip_count(); flooring at 0 hangs mma()'s prologue on a causally-
+      // empty tile.
+      if (lb < 1) lb = 1;
+      full_trip = (lb * KVPageSize + full_tile_kv - 1) / full_tile_kv;
     } else {
       full_trip = Mask{}.get_trip_count(blk_coord, TileShape{}, problem_shape);
     }
@@ -116,6 +194,36 @@ struct Sm100FmhaLoadTmaWarpspecialized {
   }
 
 #if MSA_NVFP4_KV_MODE >= 3
+  // ===================================================================================
+  // K2 / DESIGN §4.3 -- KV INGRESS: TWO 1-D BULK COPIES, NO TENSORMAP.
+  //
+  // One `(page, kv_head, side)` is 8192 contiguous packed-e2m1 bytes plus 1024 contiguous
+  // e4m3 block-scale bytes, at two base+stride pairs supplied from Python
+  // (k2::Nvfp4KvViews).  Both issues are credited to the SAME staging mbarrier, whose
+  // expected transaction count producer_acquire already set to
+  // PipelineKvStage::Params::transaction_bytes == 9216
+  // ($CUT/include/cutlass/pipeline/sm90_pipeline.hpp, PipelineTmaAsync::producer_acquire
+  // -> arrive_and_expect_tx).  Nothing else is needed: no cuTensorMap, no 4-bit data type,
+  // no swizzle mode, and the ring is written LINEARLY, which is exactly what K1's dequant
+  // loop wants.
+  //
+  // WHY NOT A 4-D cuTensorMap (rev 1's proposal): CU_TENSOR_MAP_DATA_TYPE_16U4_ALIGN16B
+  // requires boxDim[0] == 128 EXACTLY (64 and 256 both rejected, VERIFIED-LIVE R6 §7.2)
+  // and PADS 8 four-bit values into 16 B (cuda.h:23272), so the staging ring would be
+  // 16384 B/stage instead of 8192 -- silently doubling the SMEM problem.  R6 §7.2 also
+  // recorded a doc-vs-driver divergence, i.e. cuTensorMapEncodeTiled returning
+  // CUDA_SUCCESS is NOT proof of a legal descriptor.
+  //
+  // WHY NO gather4: tiles_per_page = 128/128 = 1, so one KV tile IS one page and the top-k
+  // indirection is an ordinary integer coordinate (physical_page, computed by the caller
+  // exactly as the fp8 path computes it).  The trtllm-gen `tmaDescSf = nullptr` gather4
+  // blocker therefore does not apply here either.
+  //
+  // SPARSITY SEMANTICS ARE PRESERVED EXACTLY: the caller has already mapped an invalid
+  // logical page to physical page 0, and the fp8 path does the same, relying on the mask
+  // (mainloop:1226-1239 pushes invalid pages to INT_MAX/2, :907-908 applies it).  We copy
+  // page 0's fp4 bytes for the same reason it copies page 0's fp8 bytes.
+  // ===================================================================================
   template <bool kIsV, class ParamsT, class TensorStorageType, class BarrierT>
   CUTLASS_DEVICE static void k2_bulk_load_stage(ParamsT const& params,
                                                 TensorStorageType& storage, BarrierT* mbar,
@@ -184,7 +292,37 @@ struct Sm100FmhaLoadTmaWarpspecialized {
     int q_stride_n_original = 0;
     int q_stride_h_original = 0;
     int h_r_original = 0;
+    // ---- refined-icp-v1: THE DIRECT COMPOUND-PAGE TABLE ----------------------------
+    // The ORDINARY rectangular block table, consumed directly instead of the packed
+    // per-rank page list.  `icp_block_table` is the table's STABLE BASE (offset 0, so
+    // the address is invariant to the live request count -- contract I-6), and
+    // `icp_block_table_row_stride` is an ADDRESS PITCH ONLY (contract I-1): it says
+    // where request i's row starts, and NOTHING about how many of that row's entries
+    // are live.  Null selects the packed-list path, which is unchanged.
+    // Placed AFTER h_r_original and BEFORE the nvfp4 block on purpose: every positional
+    // brace initialiser of this aggregate (fmha_cutlass_sm100.cuh:308, :329) stops at
+    // h_r_original, so appending here cannot re-interpret one of their elements.
+    int* icp_block_table = nullptr;
+    int icp_block_table_row_stride = 0;
+    // WHY A ROW ORIGIN EXISTS AT ALL.  "batch index IS table row" holds for the FIRST
+    // query chunk and for no other.  The indexer chunks one invocation by query rows
+    // (`icp_outer_chunk_tokens` is 1024 at 8k context but 128 at 1M, because the score
+    // plane costs `H_group * 8192 * 5` bytes per row), so a 512-token decode graph at
+    // 1M is FOUR invocations and chunk 3's batch index 0 is table row 384.  Addressing
+    // it as `batch_idx * row_stride` would read request 0's pages for it: in bounds,
+    // another tenant, finite and plausible.
+    // It is a HOST int and it is I-3-legal: on the decode band `require_uniform` makes
+    // `row_begin = t0 / query_len` a PER-GRAPH constant that does not depend on the
+    // live request count, and prefill never enters a FULL graph
+    // (`cudagraph_decode_phase_only`).  The table POINTER is still the base at storage
+    // offset 0, which is what I-6 actually protects -- a moving BASE is frozen wrong by
+    // capture, a per-graph constant ORIGIN is not.
+    int icp_block_table_row_begin = 0;
+#ifdef FMHA_GMEM_BOUNDS_CHECK
+    int icp_block_table_size = 0;
+#endif
 #if MSA_NVFP4_KV_MODE >= 3
+    // K2: the packed NVFP4 KV pool, as four independent views.  See k2_nvfp4_kv.hpp.
     k2::Nvfp4KvViews nvfp4_kv{};
 #endif
   };
@@ -224,6 +362,15 @@ struct Sm100FmhaLoadTmaWarpspecialized {
     int q_stride_h_orig = 0;
     int h_r_orig = 0;
     cute::TmaDescriptor tma_desc_q_pack;
+    // refined-icp-v1 direct table; see Arguments above.  Appended AFTER
+    // tma_desc_q_pack, which is where `to_underlying_arguments`' positional brace list
+    // ends, for the same reason.
+    int* icp_block_table = nullptr;
+    int icp_block_table_row_stride = 0;
+    int icp_block_table_row_begin = 0;
+#ifdef FMHA_GMEM_BOUNDS_CHECK
+    int icp_block_table_size = 0;
+#endif
 #if MSA_NVFP4_KV_MODE >= 3
     k2::Nvfp4KvViews nvfp4_kv{};
 #endif
@@ -292,7 +439,23 @@ struct Sm100FmhaLoadTmaWarpspecialized {
 #endif
                   args.ptr_Q, args.q_stride_n_original, args.q_stride_h_original, args.h_r_original,
                   tma_desc_q_pack};
+    // refined-icp-v1 direct table: copied EXPLICITLY for exactly the reason the
+    // `p.nvfp4_kv = args.nvfp4_kv` line below exists.  Both members sit past the end of
+    // the brace list above and both have default member initialisers, so omitting this
+    // compiles clean, links clean, and silently runs the whole batch against a null
+    // table -- i.e. the packed path, on a plan that has no packed list.
+    p.icp_block_table = args.icp_block_table;
+    p.icp_block_table_row_stride = args.icp_block_table_row_stride;
+    p.icp_block_table_row_begin = args.icp_block_table_row_begin;
+#ifdef FMHA_GMEM_BOUNDS_CHECK
+    p.icp_block_table_size = args.icp_block_table_size;
+#endif
 #if MSA_NVFP4_KV_MODE >= 3
+    // K3: `nvfp4_kv` is the last member of BOTH aggregates and both have a default member
+    // initialiser, so the brace list above leaves p.nvfp4_kv default-constructed (four
+    // nullptrs).  It must be copied EXPLICITLY.  Omitting this line compiles clean, links
+    // clean, and dies in the first bulk copy as `unspecified launch failure` with nothing
+    // pointing at the cause -- which is exactly what it did before this line existed.
     p.nvfp4_kv = args.nvfp4_kv;
 #endif
     return p;
@@ -583,14 +746,116 @@ struct Sm100FmhaLoadTmaWarpspecialized {
 
       int h_r = get<3, 0, 0>(params_problem_shape);
       int kv_head_idx = qo_head_idx / h_r;
-      int kv_page_start = KV_INDPTR_LOAD(params.kv_page_indptr, batch_idx, params.kv_page_indptr_size);
+
+      // ---- refined-icp-v1: ROW ADDRESS AND LIVE BOUND ARE TWO DIFFERENT THINGS ------
+      // The packed-list path derives BOTH from one CSR: `indptr[b]` is where the row
+      // starts and `indptr[b+1] - indptr[b]` is how many pages exist.  The direct-table
+      // path (DIRECT_TABLE_CONTRACT §5.1) separates them, because the table is
+      // RECTANGULAR and its row length carries no information about live pages:
+      //
+      //   row start  = (row_begin + batch_idx) * row_stride   <- address pitch (I-1)
+      //   live bound = local_blocks(L, r)                     <- EXACT device KV length
+      //
+      // Substituting the row capacity for the second is the failure this redesign is
+      // most exposed to: the tail of a row holds physical page IDs left behind by
+      // EVICTED requests, which are valid addresses pointing at another tenant's data,
+      // so the symptom is a plausible wrong answer rather than a fault
+      // (DIRECT_COMPOUND_PAGE_TABLE.md l.119-121, contract I-1).
+      //
+      // Direct mode is selected by the TABLE POINTER, not by a flag, and only inside
+      // the ICP variant: for every other `kSparseAttnMode` the left conjunct is a
+      // compile-time false and the whole branch folds away, so the packed path emits
+      // exactly the instructions it did before.
+      constexpr bool kIcpDirectEligible =
+          (kSparseAttnMode == SparseAttnMode::OnlyScoreIcp);
+      const bool use_direct_table =
+          kIcpDirectEligible && (params.icp_block_table != nullptr);
+
+      const int* page_table = params.kv_indices;
+      int kv_page_start = 0;
       int num_pages_batch = 0;
-      if constexpr (kSparseAttnMode != SparseAttnMode::Sparse) {
-        int kv_page_end = KV_INDPTR_LOAD(params.kv_page_indptr, batch_idx + 1, params.kv_page_indptr_size);
-        num_pages_batch = kv_page_end - kv_page_start;
+#ifdef FMHA_GMEM_BOUNDS_CHECK
+      int page_table_size = params.kv_indices_size;
+#endif
+      if (use_direct_table) {
+        // The whole request->row mapping, and it is still not a tensor: a per-graph
+        // host origin plus the batch index.  `row_begin` is 0 for the first query
+        // chunk and `t0 / query_len` for the rest -- see `icp_block_table_row_begin`
+        // in Arguments for why chunk 3 of a 1M-context decode graph is row 384 and
+        // not row 0.  The table pointer itself is still the base at offset 0 (I-6).
+        page_table = params.icp_block_table;
+        kv_page_start = (params.icp_block_table_row_begin + batch_idx)
+                      * params.icp_block_table_row_stride;
+        num_pages_batch = icp_local_blocks_exact(kv_len, params.kv_block_num);
+#ifdef FMHA_GMEM_BOUNDS_CHECK
+        page_table_size = params.icp_block_table_size;
+#endif
+      } else {
+        kv_page_start = KV_INDPTR_LOAD(params.kv_page_indptr, batch_idx, params.kv_page_indptr_size);
+        if constexpr (kSparseAttnMode != SparseAttnMode::Sparse) {
+          int kv_page_end = KV_INDPTR_LOAD(params.kv_page_indptr, batch_idx + 1, params.kv_page_indptr_size);
+          num_pages_batch = kv_page_end - kv_page_start;
+        }
       }
+      // ONE checked read for both paths, so the clamp and the load can never be applied
+      // to different arrays.  Without -DFMHA_GMEM_BOUNDS_CHECK both arms expand to the
+      // same `__ldg` and the branch disappears; with it, the two arrays report under
+      // their own names because they fail for different reasons.
+      auto load_page_entry = [&](int idx) -> int {
+#ifdef FMHA_GMEM_BOUNDS_CHECK
+        if (use_direct_table) return BLOCK_TABLE_LOAD(page_table, idx, page_table_size);
+        return KV_INDICES_LOAD(page_table, idx, page_table_size);
+#else
+        return KV_INDICES_LOAD(page_table, idx, 0);
+#endif
+      };
       constexpr int effective_tile_kv = get<1>(TileShapeQK{});
-      constexpr int tiles_per_page = KVPageSize / effective_tile_kv;
+
+      // ---- refined-icp-v1 --------------------------------------------------
+      // A compound page contributes only R = 128/W index rows to THIS rank
+      // (ABI P1/P2), so KVPageSize may be SMALLER than a 128-row compute tile.
+      // Two regimes:
+      //   KVPageSize >= tile : one page feeds `tiles_per_page` tiles (shipped).
+      //   KVPageSize <  tile : one tile needs `pages_per_tile` DIFFERENT pages.
+      // The refined route avoids the second regime entirely by BOUNDED FRAGMENT
+      // LOADING -- jit.py binds tile_kv to the page size, so effective_tile_kv
+      // == KVPageSize and tiles_per_page == 1 legitimately. `pages_per_tile` is
+      // computed and asserted anyway so that a future variant which does enter
+      // the second regime FAILS THE BUILD instead of silently misaddressing.
+      static_assert(KVPageSize > 0, "paged path only");
+      static_assert(effective_tile_kv > 0, "TileShapeQK KV extent must be > 0");
+      static_assert(KVPageSize >= effective_tile_kv
+                        ? (KVPageSize % effective_tile_kv == 0)
+                        : (effective_tile_kv % KVPageSize == 0),
+                    "refined-icp-v1: KVPageSize and TileShapeQK's KV extent must "
+                    "divide one another. A remainder leaves part of the compute "
+                    "tile unfed by any page, and no later masking can repair an "
+                    "unfed tile.");
+      constexpr int tiles_per_page = (KVPageSize >= effective_tile_kv)
+                                   ? (KVPageSize / effective_tile_kv) : 1;
+      constexpr int pages_per_tile = (KVPageSize >= effective_tile_kv)
+                                   ? 1 : (effective_tile_kv / KVPageSize);
+      // THE blocking-defect guard. A compile-time ZERO divisor is UB and nvcc
+      // does NOT fault: it emits only warning #39-D / #179-D, returns 0, and
+      // DELETES the dependent address computation, so `logical_page` and
+      // `sub_tile` become undefined and the loader silently reads the wrong
+      // page. Measured in this very kernel at KVPageSize=64/32: 12 warnings,
+      // ninja rc=0, a loadable .so, a launch and a sync that both report no
+      // CUDA error, and the stores simply gone. Nothing crashes.
+      static_assert(tiles_per_page >= 1 && pages_per_tile >= 1,
+                    "refined-icp-v1: tiles_per_page/pages_per_tile must be "
+                    ">= 1; a compile-time zero divisor is UB and nvcc silently "
+                    "deletes the dependent address computation.");
+      // TMA DESCRIPTOR BOUND. The gmem tensor's mode-0 extent is KVPageSize
+      // (`shape_K = make_shape(KVPageSize, ...)` in FwdRunner::run, paged arm)
+      // while the TMA atom's box comes from TileShapeQK. A box taller than the
+      // tensor extent is an out-of-bounds descriptor.
+      static_assert(effective_tile_kv <= KVPageSize || pages_per_tile > 1,
+                    "refined-icp-v1: the TMA box (TileShapeQK KV extent) is "
+                    "taller than the paged tensor's mode-0 extent (KVPageSize) "
+                    "and no multi-page gather is implemented for it.");
+      (void)pages_per_tile;
+      // ---- end refined-icp-v1 ----------------------------------------------
 
       int kv_block_offset = 0;
       if constexpr (kSparseAttnMode == SparseAttnMode::Sparse) {
@@ -620,10 +885,19 @@ struct Sm100FmhaLoadTmaWarpspecialized {
               : -1;
           page_for_lookup = (sparse_idx >= 0) ? sparse_idx : 0;
         } else {
+          // SPECULATIVE-LOAD CLAMP.  The pipeline is allowed to run ahead of the
+          // masked extent, so `logical_page` can exceed the live count; it is pulled
+          // back onto the LAST LIVE page, never onto the row's capacity.  Under the
+          // direct table `num_pages_batch` is the device-derived live bound above, so
+          // this clamp is exactly the one the packed indptr difference used to give.
+          // `num_pages_batch == 0` would make this -1; that work item never reaches
+          // here, because the kernel-wide `is_empty_work` decision
+          // (sm100_fmha_fwd_kernel_tma_warpspecialized.hpp:404-416) skips it in all
+          // five warp roles from the same device data.
           page_for_lookup = logical_page;
           page_for_lookup = min(page_for_lookup, num_pages_batch - 1);
         }
-        int physical_page = KV_INDICES_LOAD(params.kv_indices, kv_page_start + page_for_lookup, params.kv_indices_size);
+        int physical_page = load_page_entry(kv_page_start + page_for_lookup);
         { GPU_TRACE_SCOPE(LOAD_K); pipeline_kv.producer_acquire(pipeline_kv_producer_state); }
         if (lane_predicate) {
           K2_TAG_STAGE(/*is_v=*/false, physical_page);
@@ -651,10 +925,11 @@ struct Sm100FmhaLoadTmaWarpspecialized {
               : -1;
           page_for_lookup = (sparse_idx >= 0) ? sparse_idx : 0;
         } else {
+          // Same clamp, same reasoning, as load_K_tile above.
           page_for_lookup = logical_page;
           page_for_lookup = min(page_for_lookup, num_pages_batch - 1);
         }
-        int physical_page = KV_INDICES_LOAD(params.kv_indices, kv_page_start + page_for_lookup, params.kv_indices_size);
+        int physical_page = load_page_entry(kv_page_start + page_for_lookup);
         { GPU_TRACE_SCOPE(LOAD_V); pipeline_kv.producer_acquire(pipeline_kv_producer_state); }
         if (lane_predicate) {
           K2_TAG_STAGE(/*is_v=*/true, physical_page);

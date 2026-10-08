@@ -16,13 +16,13 @@ from cutlass.cute.nvgpu import cpasync
 import cuda.bindings.driver as cuda
 import torch
 
-from src.common import utils
-from src.common.aot_cache import save_aot, try_load_aot
-from src.common.cute_dsl_utils import compile_with_timing
-from src.common.cute_dsl_utils import assume_tensor_aligned, torch2cute_dtype_map
-from src.common.pack_gqa import PackGQAComb
-from src.common.seqlen_info import SeqlenInfo
-from src.common.tma_utils import stg128_half_fake_col_to_real_col
+from ..common import utils
+from ..common.aot_cache import save_aot, try_load_aot
+from ..common.cute_dsl_utils import compile_with_timing
+from ..common.cute_dsl_utils import assume_tensor_aligned, torch2cute_dtype_map
+from ..common.pack_gqa import PackGQAComb
+from ..common.seqlen_info import SeqlenInfo
+from ..common.tma_utils import stg128_half_fake_col_to_real_col
 
 
 class SparseAttentionForwardCombine:

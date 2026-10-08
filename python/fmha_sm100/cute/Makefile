@@ -15,7 +15,9 @@ PYTHON ?= python
 PIP ?= pip
 PYTEST ?= $(PYTHON) -m pytest
 
+export PYTHONPATH := $(abspath ../..):$(PYTHONPATH)
 TEST_FILE := test_sparse_atten.py
+TEST_MODULE := fmha_sm100.cute.test_sparse_atten
 PROFILE_DIR := profiles/ncu
 NCU_OUT ?= $(PROFILE_DIR)/sparse_atten
 
@@ -146,7 +148,7 @@ define NCU_PROFILE_RANGE
 		--target-processes $(NCU_TARGET_PROCESSES) \
 		--nvtx --nvtx-include "$(2)/" \
 		-f -o "$$OUT" \
-		$(PYTHON) -u $(TEST_FILE) $(NCU_BM_COMMON_ARGS) --backend $(3); \
+		$(PYTHON) -u -m $(TEST_MODULE) $(NCU_BM_COMMON_ARGS) --backend $(3); \
 	echo "Profile saved to $$OUT"
 endef
 
@@ -180,7 +182,7 @@ vt:
 	$(PYTEST) $(TEST_FILE) -v -x -s
 
 bb:
-	$(PYTHON) -u $(TEST_FILE) $(BENCH_ARGS)
+	$(PYTHON) -u -m $(TEST_MODULE) $(BENCH_ARGS)
 
 bm:
 	@mkdir -p $(PROFILE_DIR)
@@ -201,7 +203,7 @@ bm:
 	echo "=== NCU Profile [$$TAG] ($(TEST_FILE)) ==="; \
 	echo "=== Tip: run 'make bb' first if you want compile cache populated ==="; \
 	ncu --set full --clock-control none --nvtx $$NVTX -f -o "$$OUT" \
-		$(PYTHON) -u $(TEST_FILE) $(BM_ARGS); \
+		$(PYTHON) -u -m $(TEST_MODULE) $(BM_ARGS); \
 	echo "Profile saved to $$OUT"
 
 bm-cli:
@@ -222,7 +224,7 @@ bm-cli:
 	ncu --nvtx $$NVTX \
 		--metrics $(NCU_METRICS) \
 		--target-processes all \
-		$(PYTHON) -u $(TEST_FILE) $(BM_ARGS) || true
+		$(PYTHON) -u -m $(TEST_MODULE) $(BM_ARGS) || true
 
 ncu-cute:
 	$(call NCU_PROFILE_RANGE,cute,cute,cute)

@@ -30,19 +30,19 @@ import torch
 from cutlass import Float32, Int32
 from cutlass.cute.runtime import from_dlpack
 
-from src.sm100.fwd.combine import combine
-from src.sm100.fwd.atten_fwd import SparseAttentionForwardSm100
-from src.sm100.fwd.atten_fwd_nvfp4_kv import SparseAttentionForwardNvfp4KvSm100
-from src.sm100.prepare_scheduler import (
+from .src.sm100.fwd.combine import combine
+from .src.sm100.fwd.atten_fwd import SparseAttentionForwardSm100
+from .src.sm100.fwd.atten_fwd_nvfp4_kv import SparseAttentionForwardNvfp4KvSm100
+from .src.sm100.prepare_scheduler import (
     SparseAttentionSchedule,
     prepare_sparse_fwd_schedule_and_split,
 )
-from src.sm100.decode_schedule import (
+from .src.sm100.decode_schedule import (
     DecodeAttentionSchedule,
     prepare_decode_schedule,
 )
-from src.common.cute_dsl_utils import to_cute_tensor as to_cute_tensor_kvouter
-from src.common.tma_utils import (
+from .src.common.cute_dsl_utils import to_cute_tensor as to_cute_tensor_kvouter
+from .src.common.tma_utils import (
     create_q_gather4_tma_desc,
 )
 
@@ -303,6 +303,29 @@ def _validate_csr_varlen_inputs(
     return batch, head_kv
 
 
+def _validate_nvfp4_cache_layout(k, v, k_scale, v_scale, *, paged):
+    """Check the byte geometry shared with the fused serving-engine writer."""
+    expected_rank = 4 if paged else 3
+    for name, data, scale in (("k", k, k_scale), ("v", v, v_scale)):
+        expected = (*data.shape[:-1], data.shape[-1] // 8)
+        if scale.ndim != expected_rank or tuple(scale.shape) != expected:
+            raise ValueError(f"{name}_scale must have shape {expected}, got {tuple(scale.shape)}")
+        if scale.stride(-1) != 1 or data.stride(-1) != 1:
+            raise ValueError(f"{name} and {name}_scale must be contiguous in their last dimension")
+        if paged:
+            tokens, columns = scale.shape[-2:]
+            if scale.stride(2) != columns or scale.stride(1) < tokens * columns:
+                raise ValueError(f"{name}_scale requires HND cache layout with contiguous token rows and nonoverlapping heads")
+            if data.stride(1) <= data.stride(2):
+                raise ValueError(f"{name} requires HND cache layout (head stride > token stride)")
+        else:
+            heads, columns = scale.shape[1:]
+            if scale.stride(0) != heads * columns or scale.stride(1) != columns:
+                raise ValueError(f"flat {name}_scale must be contiguous")
+            if scale.shape[0] % 4:
+                raise ValueError("flat token-quad scales require total_k divisible by four")
+
+
 def _validate_csr_varlen_nvfp4_kv_inputs(
     q: torch.Tensor,
     k: torch.Tensor,
@@ -422,6 +445,10 @@ def _validate_csr_varlen_nvfp4_kv_inputs(
                     f"{name} is too small for 128x4 layout: got {tuple(scale.shape)}, "
                     f"need at least {(padded_scale_rows, padded_scale_cols)}"
                 )
+
+    if kv_layout == "vllm":
+        _validate_nvfp4_cache_layout(k, v, k_scale_128x4, v_scale_128x4,
+                                    paged=page_table is not None)
 
     if k2q_row_ptr.device != q.device or k2q_q_indices.device != q.device:
         raise ValueError("CSR metadata must be on the same device as q")
@@ -673,8 +700,8 @@ def _try_blackwell_sparse_prefill(
         return None
     _validate_fwd_schedule(schedule, q=q, k2q_q_indices=k2q_q_indices, head_kv=k.shape[1])
 
-    from src.blackwell_prefill.atten_fwd_sm100 import run_pagekv
-    from src.blackwell_prefill.combine import combine as blackwell_combine
+    from .src.blackwell_prefill.atten_fwd_sm100 import run_pagekv
+    from .src.blackwell_prefill.combine import combine as blackwell_combine
 
     partial = torch.empty((topK, *q.shape), dtype=torch.bfloat16, device=q.device)
     stats = torch.empty((topK, *q.shape[:2]), dtype=torch.float32, device=q.device)
@@ -902,6 +929,64 @@ def sparse_atten_func(
         enable_fp16_softmax=enable_fp16_softmax,
         enable_2x_fp8=enable_2x_fp8,
     )
+
+
+def sparse_atten_nvfp4_kv_cache_func(
+    q: torch.Tensor,
+    k: torch.Tensor,
+    v: torch.Tensor,
+    k_scale: torch.Tensor,
+    v_scale: torch.Tensor,
+    k_global_scale: Optional[torch.Tensor],
+    v_global_scale: Optional[torch.Tensor],
+    k2q_row_ptr: torch.Tensor,
+    k2q_q_indices: torch.Tensor,
+    topK: int,
+    *,
+    cu_seqlens_q: torch.Tensor,
+    cu_seqlens_k: torch.Tensor,
+    max_seqlen_q: int,
+    max_seqlen_k: int,
+    blk_kv: int = 128,
+    causal: bool = False,
+    softmax_scale: Optional[float] = None,
+    lse_temperature_scale: float = 1.0,
+    return_temperature_lse: bool = False,
+    partial_dtype: torch.dtype = torch.bfloat16,
+    return_softmax_lse: bool = False,
+    page_table: Optional[torch.Tensor] = None,
+    seqused_k: Optional[torch.Tensor] = None,
+    schedule: Optional[SparseAttentionSchedule] = None,
+    out: Optional[torch.Tensor] = None,
+):
+    """NVFP4 attention over native KV-cache K-linear/V-token-quad scales.
+
+    Rank-3/4 scale views retain their page/head byte strides. This entry point
+    performs no KV/scale repacking and is the ICP production path.
+    """
+    return sparse_atten_nvfp4_kv_func(
+        q, k, v,
+        k_scale, v_scale, k_global_scale,
+        v_global_scale, k2q_row_ptr, k2q_q_indices,
+        topK,
+        cu_seqlens_q=cu_seqlens_q,
+        cu_seqlens_k=cu_seqlens_k,
+        max_seqlen_q=max_seqlen_q,
+        max_seqlen_k=max_seqlen_k,
+        blk_kv=blk_kv,
+        causal=causal,
+        softmax_scale=softmax_scale,
+        lse_temperature_scale=lse_temperature_scale,
+        return_temperature_lse=return_temperature_lse,
+        partial_dtype=partial_dtype,
+        return_softmax_lse=return_softmax_lse,
+        page_table=page_table,
+        seqused_k=seqused_k,
+        schedule=schedule,
+        out=out,
+        kv_layout="vllm",
+    )
+
 
 
 def sparse_atten_nvfp4_kv_func(
@@ -1558,7 +1643,7 @@ class SparseDecodePagedAttentionWrapper:
             else:
                 # Kernel only needs a valid pointer; reuse cached dummy.
                 lse = self._lse_dummy
-        from src.sm100.fwd_decode import decode_forward_paged_fp8
+        from .src.sm100.fwd_decode import decode_forward_paged_fp8
         schedule = self.decode_schedule
         decode_forward_paged_fp8(
             q, k, v,
@@ -1761,7 +1846,7 @@ def _call_sparse_decode_forward_sm100_paged_fp8(
         if LSE_partial.dtype != torch.float32:
             raise TypeError(f"LSE_partial must be torch.float32, got {LSE_partial.dtype}")
 
-    from src.sm100.fwd_decode import decode_forward_paged_fp8
+    from .src.sm100.fwd_decode import decode_forward_paged_fp8
 
     decode_forward_paged_fp8(
         q,
@@ -1949,7 +2034,7 @@ def _call_sparse_forward_sm100_csr_varlen(
         bool(use_2x_fp8),
     )
     if key not in _compile_cache:
-        from src.common.aot_cache import try_load_aot, save_aot
+        from .src.common.aot_cache import try_load_aot, save_aot
 
         loaded = try_load_aot(key)
         if loaded is not None:
@@ -2026,6 +2111,40 @@ def _call_sparse_forward_sm100_csr_varlen(
             work_capacity,
         )
     return schedule
+
+
+def _nvfp4_forward_key(
+    kv_layout, head_kv, k, v,
+    k_scale_128x4, v_scale_128x4, head_dim, n_block_size,
+    qhead_per_kv, dtype, partial_dtype, causal,
+    paged_kv, use_prepare_scheduler, page_size, seqused_k,
+    return_temperature_lse, fp8_pair_dequant, has_k_global_scale, has_v_global_scale,
+):
+    """Shared host cache identity; runtime and strict prewarm use the same tuple."""
+    return (
+        ("sparse_forward_sm100_csr_varlen_nvfp4_kv_cache" if kv_layout == "vllm"
+         else "sparse_forward_sm100_csr_varlen_nvfp4_kv"),
+        kv_layout,
+        head_kv,
+        tuple(k.stride()),
+        tuple(v.stride()),
+        tuple(k_scale_128x4.stride()),
+        tuple(v_scale_128x4.stride()),
+        head_dim,
+        n_block_size,
+        qhead_per_kv,
+        dtype,
+        partial_dtype,
+        bool(causal),
+        bool(paged_kv),
+        bool(use_prepare_scheduler),
+        page_size,
+        bool(seqused_k is not None),
+        bool(return_temperature_lse),
+        bool(fp8_pair_dequant),
+        bool(has_k_global_scale),
+        bool(has_v_global_scale),
+    )
 
 
 def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
@@ -2129,31 +2248,15 @@ def _call_sparse_forward_sm100_csr_varlen_nvfp4_kv(
     if not use_prepare_scheduler or scheduler_metadata is None or work_count is None or work_capacity <= 0:
         raise RuntimeError("KVFP4 sparse forward requires a non-empty prepared schedule")
 
-    key = (
-        "sparse_forward_sm100_csr_varlen_nvfp4_kv",
-        kv_layout,
-        head_kv,
-        tuple(k.stride()),
-        tuple(v.stride()),
-        tuple(k_scale_128x4.stride()),
-        tuple(v_scale_128x4.stride()),
-        head_dim,
-        n_block_size,
-        qhead_per_kv,
-        dtype,
-        partial_dtype,
-        bool(causal),
-        bool(paged_kv),
-        bool(use_prepare_scheduler),
-        page_size,
-        bool(seqused_k is not None),
-        bool(return_temperature_lse),
-        bool(fp8_pair_dequant),
-        bool(has_k_global_scale),
-        bool(has_v_global_scale),
+    key = _nvfp4_forward_key(
+        kv_layout, head_kv, k, v,
+        k_scale_128x4, v_scale_128x4, head_dim, n_block_size,
+        qhead_per_kv, dtype, partial_dtype, causal,
+        paged_kv, use_prepare_scheduler, page_size, seqused_k,
+        return_temperature_lse, fp8_pair_dequant, has_k_global_scale, has_v_global_scale,
     )
     if key not in _compile_cache:
-        from src.common.aot_cache import try_load_aot, save_aot
+        from .src.common.aot_cache import try_load_aot, save_aot
 
         loaded = try_load_aot(key)
         if loaded is not None:

@@ -19,6 +19,9 @@ import os
 import torch
 from torch.utils.cpp_extension import load
 
+from .....icp.attention.nvfp4_prefill import k2q_extension_name, k2q_extension_path
+from .....icp import _jit_guard
+
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _SRC = os.path.join(_THIS_DIR, "build_k2q_csr.cu")
 
@@ -33,8 +36,11 @@ _extra_cuda_cflags = [
     "-I/usr/local/cuda/include/cccl",
 ]
 
+if not k2q_extension_path().is_file():
+    _jit_guard.on_compile("nvfp4", k2q_extension_name(), where=__name__)
+
 _ext = load(
-    name="sparse_build_k2q_csr_ext",
+    name=k2q_extension_name(),
     sources=[_SRC],
     extra_cflags=_extra_cflags,
     extra_cuda_cflags=_extra_cuda_cflags,

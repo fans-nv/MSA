@@ -334,3 +334,12 @@ runtime-contract changes, open an issue first to align on the public
 surface — `fmha_sm100.api`, `fmha_sm100.sparse` and
 `cute.interface` are the stable entry points; everything else
 is internal and may change without notice.
+
+## Indexer context parallelism
+
+The optional `fmha_sm100.icp` surface provides local scoring/selection and
+distributed candidate transport for the serving engine's compound KV layout.
+See [the integration contract](docs/ICP_INTEGRATION.md) for ownership, ABI,
+artifact staging, coexistence and fresh prewarm requirements. The KV writer
+remains in the serving engine. Imported source rights are recorded in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

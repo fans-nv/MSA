@@ -21,6 +21,7 @@ from pathlib import Path
 import jinja2
 
 from . import _jit_cache
+from .icp import _cache, _jit_guard
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,8 @@ def _compute_cache_base():
     explicit = os.environ.get("MINFER_FMHA_CACHE_DIR")
     if explicit:
         return Path(explicit)
-    base = Path(os.path.expanduser("~/.cache/minfer/fmha_sm100"))
+    base = (_cache.component_dir("fmha") if os.environ.get("ICP_CACHE_ROOT")
+            else Path(os.path.expanduser("~/.cache/minfer/fmha_sm100")))
     # Different build configs get separate cache dirs to avoid conflicts
     suffix = ""
     if os.environ.get("GPU_TRACE") is not None:
@@ -78,11 +80,15 @@ _FMHA_SM100_DISPATCH = [
         (1,    {"sparse_mode": "Full"}),
         (2,    {"sparse_mode": "OnlyScore"}),
         (None, {"sparse_mode": "Off"}),
+        (4,    {"sparse_mode": "OnlyScoreIcp"}),
     ]),
     ("int page_size", [
         (-1,  {"page_size": -1}),
         (128, {"page_size": 128}),
         # (256, {"page_size": 256}),
+        # One compute tile per compact index fragment of a compound page.
+        (64, {"page_size": 64, "tile_kv": "_128"}),
+        (32, {"page_size": 32, "tile_kv": "_64"}),
     ]),
     ("bool split_kv", [
         ("false", {"is_split_kv": "false"}),
@@ -111,7 +117,9 @@ def _kv_dtype_idx(kv_dtype):
 _FMHA_SM100_IMPOSSIBLE = lambda p: (
     (p.get("tile_q") == "_256" and p.get("single_wg") == "true") or
     (p.get("tile_q") == "_256" and p.get("is_split_kv") == "true") or
-    (p.get("page_size") == -1 and p.get("sparse_mode") == "Sparse") or
+    (p.get("page_size") == -1 and p.get("sparse_mode") in ("Sparse", "OnlyScoreIcp")) or
+    (p.get("sparse_mode") == "OnlyScoreIcp" and (
+        p.get("is_split_kv") == "true" or p.get("kv_mode", 0) != 0)) or
     (p.get("pack_factor", 1) > 1 and p.get("tile_q") == "_256") or
     # NVFP4 uses the FP8 single-softmax-warpgroup decoder with page-128 tiles.
     (p.get("kv_mode", 0) >= 3 and (
@@ -143,12 +151,13 @@ def _variant_key_from_runtime(dtype_code, qo_tile_size, single_wg,
         # Convert Python bool to string to match dispatch table ("true"/"false")
         if isinstance(runtime_val, bool):
             runtime_val = "true" if runtime_val else "false"
+        fallback_idx = len(dim_values) - 1
         for idx, (match_val, _) in enumerate(dim_values):
             if match_val is None:
+                fallback_idx = idx
+            elif match_val == runtime_val:
                 return idx
-            if match_val == runtime_val:
-                return idx
-        return len(dim_values) - 1
+        return fallback_idx
 
     runtime_vals = [dtype_code, qo_tile_size, single_wg, sparse_mode,
                     page_size, split_kv, pack_factor]
@@ -235,6 +244,13 @@ def _namespace():
 
 
 def _get_nvcc_flags(fmha=True, kv_mode=0, fast_math=True):
+    if not (_CUTLASS_INCLUDE / "cutlass/cutlass.h").is_file() or not (
+        _CUTLASS_UTIL_INCLUDE / "cutlass/util/host_tensor.h"
+    ).is_file():
+        raise RuntimeError(
+            "MSA requires its pinned CUTLASS headers in the installed package; "
+            "stage them with tools/stage_cutlass.py before building the wheel."
+        )
     tvm_include = _get_tvm_ffi_include()
     fmha_include = str(_FMHA_VARLEN_DIR / "include")
     cutlass_include = str(_CUTLASS_INCLUDE)
@@ -316,6 +332,7 @@ def _build_library(recipe, label, nvcc_flags, sources, jobs=1):
     every header it read, and the objects link into one shared library.
     """
     def builder(build_dir):
+        _jit_guard.on_compile("fmha", recipe.name, where=str(build_dir))
         logger.info("JIT compiling %s", label)
         library = build_dir / f"{recipe.name}.so"
         objects = [(build_dir / f"{Path(source).stem}.o", source) for source in sources(build_dir)]

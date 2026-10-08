@@ -15,7 +15,7 @@ from cutlass import Float32, Int32, Int64, const_expr
 from cutlass.cute import FastDivmodDivisor
 from cutlass.cute.nvgpu import cpasync
 
-from src.common.cute_dsl_utils import assume_tensor_aligned, torch2cute_dtype_map
+from ...common.cute_dsl_utils import assume_tensor_aligned, torch2cute_dtype_map
 
 
 class SparseDecodeForwardCombine:

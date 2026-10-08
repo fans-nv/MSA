@@ -205,8 +205,7 @@ def plan_warmup(
                          f"{q8kv4_prefill_adapter.PREFILL_BACKENDS}, got {prefill_backend!r}")
     if sparse_prefill:
         def build_k2q_csr():
-            from . import sparse  # noqa: F401  (puts the cute/ modules on sys.path)
-            import src.sm100.build_k2q_csr  # noqa: F401  (compiles on import)
+            from .cute.src.sm100 import build_k2q_csr  # noqa: F401 (compiles on import)
 
         items.append(WarmupItem("k2q CSR builder", build_k2q_csr))
         if kv_dtype == "nvfp4" and prefill_backend != "cute_dsl":

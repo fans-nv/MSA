@@ -6,7 +6,6 @@ from are unchanged: the import closure, within cute/, of the module that defines
 
 import importlib
 import importlib.util
-import sys
 from pathlib import Path
 
 import pytest
@@ -14,16 +13,21 @@ import pytest
 pytest.importorskip("cutlass")
 
 CUTE = Path(__file__).resolve().parents[2] / "python" / "fmha_sm100" / "cute"
-if str(CUTE) not in sys.path:
-    sys.path.insert(0, str(CUTE))
-aot_cache = importlib.import_module("src.common.aot_cache")
+aot_cache = importlib.import_module("fmha_sm100.cute.src.common.aot_cache")
 
 
 def test_the_closure_follows_the_kernel_module_imports():
-    closure = {str(path.relative_to(CUTE))
-               for path in aot_cache._import_closure([CUTE / "src/sm100/fwd/combine.py"])}
-    assert {"src/sm100/fwd/combine.py", "src/common/utils.py", "src/common/seqlen_info.py",
-            "src/__init__.py", "src/common/__init__.py"} <= closure
+    closure = {
+        str(path.relative_to(CUTE))
+        for path in aot_cache._import_closure([CUTE / "src/sm100/fwd/combine.py"])
+    }
+    assert {
+        "src/sm100/fwd/combine.py",
+        "src/common/utils.py",
+        "src/common/seqlen_info.py",
+        "src/__init__.py",
+        "src/common/__init__.py",
+    } <= closure
     assert "src/sm100/fwd/atten_fwd.py" not in closure, "another kernel"
     assert "src/common/aot_cache.py" not in closure, "the cache does not generate code"
 
@@ -60,9 +64,13 @@ def test_an_object_is_served_while_its_closure_is_unchanged(package, monkeypatch
     assert aot_cache.aot_object_path(key_a) and aot_cache.aot_object_path(key_b)
     assert aot_cache.aot_object_path(("kernel_a", 64)) == "", "another compile key"
 
-    (package / "src" / "kernel_b.py").write_text("from .common.helpers import X\nY = 2\n")
+    (package / "src" / "kernel_b.py").write_text(
+        "from .common.helpers import X\nY = 2\n"
+    )
     _fresh(monkeypatch)
-    assert aot_cache.aot_object_path(key_a), "kernel_b's module is not in kernel_a's closure"
+    assert aot_cache.aot_object_path(key_a), (
+        "kernel_b's module is not in kernel_a's closure"
+    )
     assert aot_cache.aot_object_path(key_b) == ""
 
     (package / "src" / "common" / "helpers.py").write_text("X = 3\n")
@@ -83,8 +91,10 @@ def test_unreadable_entries_are_misses(package):
 def test_the_compile_call_site_is_an_input(package, monkeypatch):
     """The module that calls save_aot builds the tensors and options cute.compile sees."""
     frontend = package / "frontend.py"
-    frontend.write_text("def compile_a(aot, key, compiled):\n"
-                        "    aot.save_aot(key, compiled, sources=['src/kernel_a.py'])\n")
+    frontend.write_text(
+        "def compile_a(aot, key, compiled):\n"
+        "    aot.save_aot(key, compiled, sources=['src/kernel_a.py'])\n"
+    )
     spec = importlib.util.spec_from_file_location("frontend", frontend)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -94,3 +104,32 @@ def test_the_compile_call_site_is_an_input(package, monkeypatch):
     frontend.write_text(frontend.read_text() + "# alignment changed\n")
     _fresh(monkeypatch)
     assert aot_cache.aot_object_path(key) == ""
+
+
+@pytest.mark.parametrize(
+    "prefix", ("fmha_sm100.cute", "vllm.third_party.minimax_msa.cute")
+)
+def test_qualified_helpers_invalidate_only_their_own_closure(
+    package, monkeypatch, prefix
+):
+    """Canonical and vendored imports retain header freshness after namespace migration."""
+    # Model this cache module being loaded under each package name; imports of
+    # a different package must not be mistaken for this copy's local sources.
+    monkeypatch.setattr(aot_cache, "_CUTE_PACKAGE", prefix)
+    (package / "src" / "kernel_a.py").write_text(
+        f"from {prefix}.src.common import helpers\n"
+    )
+    (package / "src" / "kernel_b.py").write_text(
+        "from unrelated_package.src.common import helpers\n"
+    )
+    helper = package / "src" / "common" / "helpers.py"
+    assert helper in aot_cache._import_closure([package / "src" / "kernel_a.py"])
+    assert helper not in aot_cache._import_closure([package / "src" / "kernel_b.py"])
+    key_a, key_b = ("qualified_a", 128), ("unrelated_b", 128)
+    aot_cache.save_aot(key_a, _Compiled(), sources=["src/kernel_a.py"])
+    aot_cache.save_aot(key_b, _Compiled(), sources=["src/kernel_b.py"])
+    assert aot_cache.aot_object_path(key_a) and aot_cache.aot_object_path(key_b)
+    helper.write_text("X = 2\n")
+    _fresh(monkeypatch)
+    assert aot_cache.aot_object_path(key_a) == ""
+    assert aot_cache.aot_object_path(key_b)

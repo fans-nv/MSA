@@ -84,12 +84,29 @@ struct FwdRunner {
 
   // NumQStages: 2 for Q-split (2,1,1), 1 for K-split (1,2,1)
   static constexpr int NumQStages = cute::size<0>(ThreadShape{});
-  static constexpr bool bNeedOutput = kSparseAttnMode != cutlass::fmha::collective::SparseAttnMode::OnlyScore;
+  // refined-icp-v1: OnlyScoreIcp is an OnlyScore mode -- it must agree with the
+  // mainloop kNeedOutput and the loader kNeedV or the KV pipeline
+  // producer/consumer desync and the kernel deadlocks.
+  static constexpr bool bNeedOutput = (kSparseAttnMode != cutlass::fmha::collective::SparseAttnMode::OnlyScore)
+                                   && (kSparseAttnMode != cutlass::fmha::collective::SparseAttnMode::OnlyScoreIcp);
   static constexpr int kPackFactor = cutlass::fmha::collective::pack_factor_of<ActiveMask>::value;
 
+  // Only the full-prefill TP2 index scorer gets the isolated deeper K ring.
+  // SingleSoftmaxWarpGroup belongs to the runner/kernel schedule, so pass the
+  // override explicitly instead of inadvertently changing short-query decode.
+  static constexpr int kIcpPrefillStageCountKV =
+      (!SingleSoftmaxWarpGroup && !IsSplitKV && KVPageSize == 64
+       && kSparseAttnMode == cutlass::fmha::collective::SparseAttnMode::OnlyScoreIcp
+       && sizeof(Element) == 1 && kPackFactor == 1
+       && cute::size<0>(TileShapeQK{}) == 128
+       && cute::size<1>(TileShapeQK{}) == 128
+       && cute::size<2>(TileShapeQK{}) == 128
+       && cute::size<0>(ThreadShape{}) == 1
+       && cute::size<1>(ThreadShape{}) == 2) ? 16 : 0;
   using Mainloop = cutlass::fmha::collective::Sm100FmhaFwdMainloopTmaWarpspecialized<
       Element, ElementAccumulatorQK, ElementAccumulatorPV, TileShapeQK, TileShapePV, StrideQ,
-      StrideK, StrideV, ActiveMask, ThreadShape, IsSplitKV, KVPageSize, kSparseAttnMode>;
+      StrideK, StrideV, ActiveMask, ThreadShape, IsSplitKV, KVPageSize, kSparseAttnMode,
+      kIcpPrefillStageCountKV>;
   using Epilogue = cutlass::fmha::collective::Sm100FmhaFwdEpilogueTmaWarpspecialized<
       ElementOut, ElementAccumulatorPV, typename Mainloop::TileShapePV, NumQStages, IsSplitKV, bNeedOutput, kPackFactor>;
   using Operation =
@@ -146,7 +163,35 @@ struct FwdRunner {
                          float dequant_g_k = 1.0f,
                          float dequant_g_v = 1.0f,
                          const float* nvfp4_k_global_scale = nullptr,
-                         const float* nvfp4_v_global_scale = nullptr) {
+                         const float* nvfp4_v_global_scale = nullptr,
+                         // ---- refined-icp-v1: OUT-OF-BAND VALIDITY PLANE -------------
+                         // ABI `refined-icp-v1.abi.1` W4/W8/W9.  Additive at the tail of
+                         // an already-defaulted list, so every existing call site
+                         // compiles and behaves unchanged with the plane absent.
+                         uint8_t* maybe_valid_score = nullptr,
+                         int valid_score_stride_t = 0,
+                         int valid_score_stride_h = 0,
+                         int valid_score_stride_k = 0,
+                         // ---- refined-icp-v1: THE DIRECT COMPOUND-PAGE TABLE --------
+                         // DIRECT_TABLE_CONTRACT §5.  `icp_block_table` is the ordinary
+                         // rectangular table's STABLE BASE (offset 0, invariant to the
+                         // live request count) and `icp_block_table_row_stride` is its
+                         // address pitch, a startup constant -- NOT a page count.  Null
+                         // keeps the packed-list path, which must and does survive (the
+                         // `icp_c == 1` production route uses the same CSR).  Additive
+                         // at the tail of an already-defaulted list.
+                         // Its bounds-check extent rides `pack_gqa.gmem_bounds`, the
+                         // same carrier every other table size already uses, rather
+                         // than an #ifdef'd extra parameter.
+                         int* icp_block_table = nullptr,
+                         int icp_block_table_row_stride = 0,
+                         // The table row this call's batch index 0 maps to.  NOT always
+                         // zero: the indexer chunks one invocation by query rows, so a
+                         // multi-chunk decode graph hands later chunks a batch whose
+                         // index 0 is row `t0 / query_len`.  A host int, and I-3-legal
+                         // because uniform decode query length makes it a per-graph
+                         // constant independent of the live request count.
+                         int icp_block_table_row_begin = 0) {
     cutlass::KernelHardwareInfo hw_info;
     hw_info.device_id = 0;
     hw_info.sm_count = (num_ctas > 0)
@@ -181,6 +226,23 @@ struct FwdRunner {
       }
 #else
       (void)arguments;
+#endif
+    };
+
+    // ---- refined-icp-v1: the ONE place the direct compound-page table is installed ---
+    // A lambda for the same reason `k3_install_nvfp4` is one: the Arguments aggregate is
+    // brace-initialised positionally at four places and those brace lists stop before
+    // these members, so assigning here is the only form that cannot mis-assign.  It is
+    // applied on BOTH the paged and the non-paged arm even though only the paged loader
+    // reads the table -- symmetry is what stops a later edit from updating one site and
+    // leaving the other silently on the packed path.
+    [[maybe_unused]] auto icp_install_direct_table = [&](auto& arguments) {
+      arguments.mainloop.load.icp_block_table = icp_block_table;
+      arguments.mainloop.load.icp_block_table_row_stride = icp_block_table_row_stride;
+      arguments.mainloop.load.icp_block_table_row_begin = icp_block_table_row_begin;
+#ifdef FMHA_GMEM_BOUNDS_CHECK
+      arguments.mainloop.load.icp_block_table_size =
+          pack_gqa.gmem_bounds.icp_block_table_size;
 #endif
     };
 
@@ -241,6 +303,16 @@ struct FwdRunner {
       epi_args.max_score_stride_t = max_score_stride_t;
       epi_args.max_score_stride_h = max_score_stride_h;
       epi_args.max_score_stride_k = max_score_stride_k;
+      // refined-icp-v1: the out-of-band uint8 validity plane (W4) and the ADVERTISED
+      // column extent Pwave (W3/W5).  The producer writes BOTH planes for every
+      // advertised cell, which is what makes a blanket -inf fill unnecessary (ABI W7)
+      // -- and what would make one actively harmful, since it would mask the very
+      // hole this contract exists to expose.
+      epi_args.ptr_ValidScore = maybe_valid_score;
+      epi_args.valid_score_stride_t = valid_score_stride_t;
+      epi_args.valid_score_stride_h = valid_score_stride_h;
+      epi_args.valid_score_stride_k = valid_score_stride_k;
+      epi_args.max_k_tiles = max_k_tiles;
 #ifdef FMHA_GMEM_BOUNDS_CHECK
       epi_args.max_score_numel = pack_gqa.gmem_bounds.max_score_numel;
 #endif
@@ -299,6 +371,7 @@ struct FwdRunner {
       }
 
       k3_install_nvfp4(arguments);
+      icp_install_direct_table(arguments);
 
       Operation op;
       size_t workspace_size = Operation::get_workspace_size(arguments);
@@ -366,6 +439,14 @@ struct FwdRunner {
       epi_args.max_score_stride_t = max_score_stride_t;
       epi_args.max_score_stride_h = max_score_stride_h;
       epi_args.max_score_stride_k = max_score_stride_k;
+      // refined-icp-v1 validity plane: null-propagated on the non-paged arm, which
+      // ICP never takes (page_size -1 x OnlyScoreIcp is an impossible variant).
+      // The contract is on the paged arm above.
+      epi_args.ptr_ValidScore = maybe_valid_score;
+      epi_args.valid_score_stride_t = valid_score_stride_t;
+      epi_args.valid_score_stride_h = valid_score_stride_h;
+      epi_args.valid_score_stride_k = valid_score_stride_k;
+      epi_args.max_k_tiles = max_k_tiles;
 #ifdef FMHA_GMEM_BOUNDS_CHECK
       epi_args.max_score_numel = pack_gqa.gmem_bounds.max_score_numel;
 #endif
@@ -418,6 +499,7 @@ struct FwdRunner {
       }
 
       k3_install_nvfp4(arguments);
+      icp_install_direct_table(arguments);
 
       Operation op;
       size_t workspace_size = Operation::get_workspace_size(arguments);
@@ -506,7 +588,20 @@ cudaError_t run_fmha_fwd(void* workspace_buffer, DTypeIn* q, DTypeIn* k, DTypeIn
                          float dequant_g_k = 1.0f,
                          float dequant_g_v = 1.0f,
                          const float* nvfp4_k_global_scale = nullptr,
-                         const float* nvfp4_v_global_scale = nullptr) {
+                         const float* nvfp4_v_global_scale = nullptr,
+                         // ---- refined-icp-v1: OUT-OF-BAND VALIDITY PLANE -------------
+                         // ABI `refined-icp-v1.abi.1` W4/W8/W9.  Additive at the tail of
+                         // an already-defaulted list, so every existing call site
+                         // compiles and behaves unchanged with the plane absent.
+                         uint8_t* maybe_valid_score = nullptr,
+                         int valid_score_stride_t = 0,
+                         int valid_score_stride_h = 0,
+                         int valid_score_stride_k = 0,
+                         // ---- refined-icp-v1: the direct compound-page table ---------
+                         // See FwdRunner::run above.  Null keeps the packed-list path.
+                         int* icp_block_table = nullptr,
+                         int icp_block_table_row_stride = 0,
+                         int icp_block_table_row_begin = 0) {
   return FwdRunner<DTypeIn, DTypeOut, IdType, TileShapeQK, TileShapePV, ActiveMask,
                    ThreadShape, IsSplitKV, SingleSoftmaxWarpGroup, KVPageSize, kSparseAttnMode>::run(
       workspace_buffer, q, k, v, qo_segment_lens, kv_segment_lens,
@@ -526,7 +621,10 @@ cudaError_t run_fmha_fwd(void* workspace_buffer, DTypeIn* q, DTypeIn* k, DTypeIn
       pack_gqa, num_ctas,
       nvfp4_k_data, nvfp4_k_scale, nvfp4_v_data, nvfp4_v_scale,
       nvfp4_page_stride, nvfp4_head_stride_data, nvfp4_head_stride_scale,
-      dequant_g_k, dequant_g_v, nvfp4_k_global_scale, nvfp4_v_global_scale);
+      dequant_g_k, dequant_g_v, nvfp4_k_global_scale, nvfp4_v_global_scale,
+      maybe_valid_score,
+      valid_score_stride_t, valid_score_stride_h, valid_score_stride_k,
+      icp_block_table, icp_block_table_row_stride, icp_block_table_row_begin);
 }
 
 };  // namespace flashinfer

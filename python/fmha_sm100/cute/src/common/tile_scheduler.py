@@ -20,8 +20,8 @@ from cutlass.utils import ClcDynamicPersistentTileScheduler, ClcDynamicPersisten
 
 from quack.cute_dsl_utils import ParamsBase
 
-import src.common.utils as utils
-from src.common.fast_math import clz
+from . import utils as utils
+from .fast_math import clz
 
 
 class SchedulingMode(IntEnum):

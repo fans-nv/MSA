@@ -18,11 +18,13 @@ dependencies = [
     "ninja",
     "pybind11",
     "cuda-python",
+    "numpy",
     "nvidia-cutlass-dsl>=4.6.0",
     "quack-kernels>=0.6.1",
 ]
 
 [project.optional-dependencies]
+test = ["pytest>=7"]
 # KV-outer sparse prefill (fmha_sm100.kvouter) is written against the
 # FlashAttention-4 CuTe internals of 4.0.0b15, which import only with
 # nvidia-cutlass-dsl 4.5.x (4.6 removed cute.core.ThrMma). Until kvouter is
@@ -30,6 +32,10 @@ dependencies = [
 # (nvidia-cutlass-dsl 4.5.x, quack-kernels 0.4.x); the legacy CuTe kernels run
 # on both stacks.
 kvouter = ["flash-attn-4==4.0.0b15"]
+
+[project.scripts]
+msa-icp-build-check = "fmha_sm100.icp._build:main"
+msa-icp-prewarm = "fmha_sm100.icp.prewarm:main"
 
 [project.urls]
 
@@ -40,28 +46,35 @@ kvouter = ["flash-attn-4==4.0.0b15"]
 #     the package directory so that JIT can locate them via __file__.
 #   * The CuTe-DSL sparse stack (python/fmha_sm100/cute/) is exposed through the
 #     importable `fmha_sm100.sparse` module (and lazily from the package root),
-#     which adds that directory to sys.path and re-exports the public sparse API.
+#     which uses package-relative imports and re-exports the public sparse API.
+# Native sources and pinned CUTLASS headers are runtime JIT inputs.
 [tool.setuptools]
 package-dir = { "" = "python" }
-# The cute/ sparse sources are loaded via sys.path.insert at runtime by
-# fmha_sm100/sparse.py (not imported as a submodule), so they are shipped as
-# package data.
-packages = ["fmha_sm100"]
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "licenses/*.txt"]
+
+[tool.setuptools.packages.find]
+where = ["python"]
+include = ["fmha_sm100", "fmha_sm100.*"]
+exclude = ["fmha_sm100.cutlass*"]
+namespaces = true
 
 [tool.setuptools.package-data]
 fmha_sm100 = [
-    "cute/**/*.py",
-    "cute/**/*.cu",
-    "cute/**/*.cuh",
-    "cute/**/*.h",
-    "cute/**/*.hpp",
-    "cute/**/*.md",
-    "cute/**/*.ini",
-    "cute/**/*.txt",
-    "cute/Makefile",
-    "csrc/**/*",
-    "decode_q8kv4/csrc/**/*",
-    "prefill_q8kv4/csrc/**/*",
-    "cutlass/include/**/*",
-    "cutlass/tools/util/include/**/*",
+    "cute/**/*.py", "cute/**/*.cu", "cute/**/*.cuh", "cute/**/*.h",
+    "cute/**/*.hpp", "cute/**/*.md", "cute/**/*.ini", "cute/**/*.txt",
+    "cute/Makefile", "csrc/**/*", "decode_q8kv4/csrc/**/*",
+    "prefill_q8kv4/csrc/**/*", "cutlass/include/**/*",
+    "cutlass/tools/util/include/**/*", "cutlass/LICENSE*", "cutlass/NOTICE*",
+    "cutlass/SOURCE.json",
+]
+"fmha_sm100.icp" = ["csrc/*.cu", "csrc/*.cuh", "abi/*.json", "COMMIT"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["**/*.pyc", "**/*.pyo", "**/*.so", "**/*.o", "**/*.a",
+       "**/*.ptx", "**/*.cubin"]
+
+[tool.pytest.ini_options]
+markers = [
+    "gpu: needs one CUDA device",
+    "distributed: needs an initialised process group with world_size >= 2",
 ]

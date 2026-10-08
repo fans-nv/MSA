@@ -28,18 +28,18 @@ from cutlass.cutlass_dsl import BaseDSL
 
 from quack import copy_utils
 
-from src.common.cute_dsl_utils import assume_tensor_aligned
-from src.common import utils
-from src.common import pipeline
-from src.common import mma_sm100_desc as sm100_desc
-from src.common import blackwell_helpers as sm100_helpers
-from src.common.softmax import SoftmaxSm100
-from src.common.named_barrier import NamedBarrierFwdSm100
-from src.common.mask import AttentionMask
-from src.common.seqlen_info import SeqlenInfoQK
+from ...common.cute_dsl_utils import assume_tensor_aligned
+from ...common import utils
+from ...common import pipeline
+from ...common import mma_sm100_desc as sm100_desc
+from ...common import blackwell_helpers as sm100_helpers
+from ...common.softmax import SoftmaxSm100
+from ...common.named_barrier import NamedBarrierFwdSm100
+from ...common.mask import AttentionMask
+from ...common.seqlen_info import SeqlenInfoQK
 # Shared raw PTX helpers and layout conversions used by the lean kernel.
-from src.common.paged_kv import PagedKVManager
-from src.common.tma_utils import (
+from ...common.paged_kv import PagedKVManager
+from ...common.tma_utils import (
     tma_gather4_cached,
     tma_gather4_prefetch,
     prefetch_tma_desc_raw,
@@ -80,6 +80,8 @@ class SparseAttentionForwardNvfp4KvSm100:
             raise NotImplementedError(
                 f"SparseAttentionForwardNvfp4KvSm100 currently supports only D=128, got D={head_dim}"
             )
+        if kv_layout not in ("legacy", "vllm"):
+            raise ValueError("kv_layout must be legacy or vllm")
         self.vllm_layout = kv_layout == "vllm"
         self.head_dim = 128
         self.qheadperkv = qheadperkv
@@ -1329,6 +1331,19 @@ class SparseAttentionForwardNvfp4KvSm100:
         return token_idx * num_heads_kv + head_kv_idx
 
     @cute.jit
+    def _flat_vllm_scale_offset(
+        self,
+        token_idx: Int32,
+        head_kv_idx: Int32,
+        num_heads_kv: Int32,
+        is_v: cutlass.Constexpr[bool],
+    ) -> Int64:
+        if const_expr(is_v):
+            return ((Int64(token_idx // 4) * Int64(num_heads_kv)
+                     + Int64(head_kv_idx)) * Int64(32) + Int64(token_idx % 4))
+        return (Int64(token_idx) * Int64(num_heads_kv) + Int64(head_kv_idx)) * Int64(8)
+
+    @cute.jit
     def _paged_kv_scale_row(
         self,
         page_idx: Int32,
@@ -1402,11 +1417,16 @@ class SparseAttentionForwardNvfp4KvSm100:
                     )
                 else:
                     token = k_batch_offset + token
-                    scale_row = self._flat_kv_scale_row(
-                        token,
-                        head_kv_idx,
-                        num_heads_kv,
-                    )
+                    if const_expr(self.vllm_layout):
+                        scale_row = self._flat_vllm_scale_offset(
+                            token, head_kv_idx, num_heads_kv, False,
+                        )
+                    else:
+                        scale_row = self._flat_kv_scale_row(
+                            token,
+                            head_kv_idx,
+                            num_heads_kv,
+                        )
                 smem_offset = row * Int32(self.head_dim // 2) + byte_col
                 s_ptr = cute.make_ptr(
                     cutlass.Int32,
@@ -1470,11 +1490,16 @@ class SparseAttentionForwardNvfp4KvSm100:
                 )
             else:
                 token = k_batch_offset + token
-                scale_row = self._flat_kv_scale_row(
-                    token,
-                    head_kv_idx,
-                    num_heads_kv,
-                )
+                if const_expr(self.vllm_layout):
+                    scale_row = self._flat_vllm_scale_offset(
+                        token, head_kv_idx, num_heads_kv, False,
+                    )
+                else:
+                    scale_row = self._flat_kv_scale_row(
+                        token,
+                        head_kv_idx,
+                        num_heads_kv,
+                    )
             smem_offset = row * Int32(self.head_dim // 2) + byte_col
             s_ptr = cute.make_ptr(
                 cutlass.Int32,
@@ -1579,11 +1604,16 @@ class SparseAttentionForwardNvfp4KvSm100:
                     )
                 else:
                     token = k_batch_offset + token
-                    scale_row = self._flat_kv_scale_row(
-                        token,
-                        head_kv_idx,
-                        num_heads_kv,
-                    )
+                    if const_expr(self.vllm_layout):
+                        scale_row = self._flat_vllm_scale_offset(
+                            token, head_kv_idx, num_heads_kv, True,
+                        )
+                    else:
+                        scale_row = self._flat_kv_scale_row(
+                            token,
+                            head_kv_idx,
+                            num_heads_kv,
+                        )
                 smem_offset = row * Int32(self.head_dim // 2) + byte_col
                 s_ptr = cute.make_ptr(
                     cutlass.Int32,
@@ -1648,11 +1678,16 @@ class SparseAttentionForwardNvfp4KvSm100:
                 )
             else:
                 token = k_batch_offset + token
-                scale_row = self._flat_kv_scale_row(
-                    token,
-                    head_kv_idx,
-                    num_heads_kv,
-                )
+                if const_expr(self.vllm_layout):
+                    scale_row = self._flat_vllm_scale_offset(
+                        token, head_kv_idx, num_heads_kv, True,
+                    )
+                else:
+                    scale_row = self._flat_kv_scale_row(
+                        token,
+                        head_kv_idx,
+                        num_heads_kv,
+                    )
             smem_offset = row * Int32(self.head_dim // 2) + byte_col
             s_ptr = cute.make_ptr(
                 cutlass.Int32,

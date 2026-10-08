@@ -54,6 +54,9 @@ make setup
 
 ## Quick Start
 
+The examples below use the installed `fmha_sm100` package. For an editable
+checkout, run `python -m pip install -e .` once from the repository root.
+
 The runtime API expects CUDA tensors for Q/K/V, `cu_seqlens_*`, CSR metadata,
 and the sparse attention schedule. The simplest production flow is:
 
@@ -67,8 +70,8 @@ Example:
 ```python
 import torch
 
-from interface import sparse_atten_func
-from sparse_index_utils import build_k2q_csr
+from fmha_sm100.cute.interface import sparse_atten_func
+from fmha_sm100.cute.sparse_index_utils import build_k2q_csr
 
 device = "cuda"
 dtype = torch.bfloat16
@@ -267,7 +270,7 @@ CSR metadata, build schedules, or copy data back to host.
 Example:
 
 ```python
-from fp4_indexer_interface import fp4_indexer_block_scores
+from fmha_sm100.cute.fp4_indexer_interface import fp4_indexer_block_scores
 
 scores = fp4_indexer_block_scores(
     q_fp4,
@@ -356,19 +359,19 @@ and benchmark CLI for the FP4 indexer.
 List the built-in benchmark cases:
 
 ```bash
-python test_fp4_indexer.py benchmark --list-cases
+python -m fmha_sm100.cute.test_fp4_indexer benchmark --list-cases
 ```
 
 Run the default suite across both FP4 formats and both scale layouts:
 
 ```bash
-python test_fp4_indexer.py benchmark --format both --scale-layout both
+python -m fmha_sm100.cute.test_fp4_indexer benchmark --format both --scale-layout both
 ```
 
 Run the production-style decode case:
 
 ```bash
-python test_fp4_indexer.py benchmark \
+python -m fmha_sm100.cute.test_fp4_indexer benchmark \
   --case decode_uniform \
   --format nvfp4 \
   --scale-layout preordered_mma
@@ -377,7 +380,7 @@ python test_fp4_indexer.py benchmark \
 Run one custom causal prefill shape:
 
 ```bash
-python test_fp4_indexer.py benchmark \
+python -m fmha_sm100.cute.test_fp4_indexer benchmark \
   --sq 4096 --skv 4096 --causal \
   --format nvfp4 \
   --scale-layout preordered_mma
@@ -393,7 +396,7 @@ Reference production-path measurements, captured 2026-05-21. The two
 columns are anonymized on the public README — `GPU1` is a higher-clock
 SM100 part, `GPU2` is a lower-clock SM100 part. The exact product
 mapping is intentionally not recorded in the open-source tree. Command:
-`python test_fp4_indexer.py benchmark --format both --scale-layout preordered_mma --causal --warmup 5 --iters 20 --repeats 5`.
+`python -m fmha_sm100.cute.test_fp4_indexer benchmark --format both --scale-layout preordered_mma --causal --warmup 5 --iters 20 --repeats 5`.
 
 | Case | Format | Scale Layout | Shape | GPU1 Eff TFLOPS | GPU2 Eff TFLOPS |
 |---|---|---|---|---:|---:|
@@ -520,13 +523,13 @@ entrypoint for this repo. It uses the public interface only.
 Default sparse attention benchmark:
 
 ```bash
-python test_sparse_atten.py benchmark
+python -m fmha_sm100.cute.test_sparse_atten benchmark
 ```
 
 Sparse page attention benchmark:
 
 ```bash
-python test_sparse_atten.py benchmark --paged --causal --page-size 64 --seqused-trim 17
+python -m fmha_sm100.cute.test_sparse_atten benchmark --paged --causal --page-size 64 --seqused-trim 17
 ```
 
 The output is reported in TFLOPS.
@@ -534,7 +537,7 @@ The output is reported in TFLOPS.
 Customer sink-pattern benchmark:
 
 ```bash
-python test_sparse_atten.py benchmark \
+python -m fmha_sm100.cute.test_sparse_atten benchmark \
   --customer-case both \
   --backend cute \
   --q2k-pattern sink \
@@ -545,7 +548,7 @@ FP8 sink-pattern benchmark runs the bf16 baseline first, then fp8, and prints
 `fp8_vs_bf16_fwd_speedup`:
 
 ```bash
-python test_sparse_atten.py benchmark \
+python -m fmha_sm100.cute.test_sparse_atten benchmark \
   --customer-case both \
   --backend cute \
   --q2k-pattern sink \
@@ -564,7 +567,7 @@ Quantized KV prefill benchmarks for the customer ring48k sink-pattern case:
 
 ```bash
 # NVFP4 KV + BF16 Q, paged KV
-python test_sparse_atten.py benchmark \
+python -m fmha_sm100.cute.test_sparse_atten benchmark \
   --nvfp4-kv --paged \
   --customer-case ring48k \
   --q2k-pattern sink \
@@ -575,7 +578,7 @@ python test_sparse_atten.py benchmark \
   --warmup 10 --iters 100
 
 # NVFP4 KV + FP8 Q, paged KV
-python test_sparse_atten.py benchmark \
+python -m fmha_sm100.cute.test_sparse_atten benchmark \
   --nvfp4-kv --paged \
   --customer-case ring48k \
   --q2k-pattern sink \
@@ -586,7 +589,7 @@ python test_sparse_atten.py benchmark \
   --warmup 10 --iters 100
 
 # FP8 KV + BF16 Q, paged KV
-python test_sparse_atten.py benchmark \
+python -m fmha_sm100.cute.test_sparse_atten benchmark \
   --paged --fp8-kv \
   --customer-case ring48k \
   --q2k-pattern sink \
@@ -596,7 +599,7 @@ python test_sparse_atten.py benchmark \
   --warmup 10 --iters 100
 
 # FP8 Q/K/V storage, FP8 QK, BF16 PV, non-paged KV
-python test_sparse_atten.py benchmark \
+python -m fmha_sm100.cute.test_sparse_atten benchmark \
   --mixed-fp8-qkv-pv-bf16 \
   --customer-case ring48k \
   --q2k-pattern sink \
@@ -617,7 +620,7 @@ Or directly:
 
 ```bash
 ncu --profile-from-start no --set full -o profiles/ncu/ncu_all \
-  python test_sparse_atten.py benchmark --profile
+  python -m fmha_sm100.cute.test_sparse_atten benchmark --profile
 ```
 
 Nsight Systems e2e profile for `build_k2q_csr -> fwd`:
@@ -627,7 +630,7 @@ nsys profile --force-overwrite=true --sample=none --cpuctxsw=none \
   --trace=cuda,nvtx \
   --capture-range=cudaProfilerApi --capture-range-end=stop \
   -o nsys_reports/sparse_e2e_example_both_sink \
-  python example.py --case both --warmup 1 --iters 1 --profile
+  python -m fmha_sm100.cute.example --case both --warmup 1 --iters 1 --profile
 ```
 
 This captures only the measured profiler range, after warmup/compile. The NVTX
@@ -678,7 +681,7 @@ for the exact formula.
 
 ```python
 import math, torch
-from interface import SparseDecodePagedAttentionWrapper
+from fmha_sm100.cute.interface import SparseDecodePagedAttentionWrapper
 
 device = "cuda"
 B, Sq, head_kv, qhead_per_kv, dim = 32, 8, 4, 16, 128

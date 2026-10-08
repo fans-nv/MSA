@@ -19,7 +19,7 @@ from cutlass.cute import FastDivmodDivisor
 
 from quack.cute_dsl_utils import ParamsBase
 
-from src.common.tile_scheduler import SchedulingMode, WorkTileInfo
+from ...common.tile_scheduler import SchedulingMode, WorkTileInfo
 
 
 @dataclass
