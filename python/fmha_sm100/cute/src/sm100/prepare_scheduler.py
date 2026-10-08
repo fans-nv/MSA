@@ -18,8 +18,8 @@ import cutlass.cute as cute
 import torch
 from cutlass import Int32, const_expr
 
-from src.common import copy_utils, utils
-from src.common.cute_dsl_utils import (
+from ..common import copy_utils, utils
+from ..common.cute_dsl_utils import (
     assume_tensor_aligned,
     to_cute_tensor as to_cute_tensor_kvouter,
 )
@@ -497,7 +497,7 @@ def _get_sparse_prepare_fwd_split_atomic(
         "sparse_prepare_fwd_split_atomic_sm100_csr_varlen",
     )
     if key not in _PREPARE_COMPILE_CACHE:
-        from src.common.aot_cache import try_load_aot, save_aot
+        from ..common.aot_cache import try_load_aot, save_aot
 
         loaded = try_load_aot(key)
         if loaded is not None:
@@ -537,7 +537,7 @@ def _get_sparse_prepare_flat_schedule(
         "sparse_prepare_flat_schedule_sm100_csr_varlen",
     )
     if key not in _PREPARE_COMPILE_CACHE:
-        from src.common.aot_cache import try_load_aot, save_aot
+        from ..common.aot_cache import try_load_aot, save_aot
 
         loaded = try_load_aot(key)
         if loaded is not None:

@@ -39,8 +39,8 @@ from typing import Iterable
 
 import torch
 
-from interface import sparse_atten_func, SparseDecodePagedAttentionWrapper
-from src.sm100.prepare_k2q_csr import SparseK2qCsrBuilderSm100
+from .interface import sparse_atten_func, SparseDecodePagedAttentionWrapper
+from .src.sm100.prepare_k2q_csr import SparseK2qCsrBuilderSm100
 
 
 @dataclass(frozen=True)

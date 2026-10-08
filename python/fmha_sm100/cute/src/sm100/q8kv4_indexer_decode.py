@@ -26,7 +26,7 @@ from cutlass.cutlass_dsl import BaseDSL, T, dsl_user_op
 
 import cuda.bindings.driver as cuda
 
-from src.common import utils as common_utils
+from ..common import utils as common_utils
 
 # QMUL4 is public PTX from CUDA 13.4; older DSL backends and SM107, whose ptxas
 # rejects it, take the exact FP16 path.

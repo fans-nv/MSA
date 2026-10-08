@@ -27,10 +27,10 @@ from typing import Optional
 import pytest
 import torch
 
-import interface as sparse_interface
-from interface import sparse_atten_func, sparse_atten_nvfp4_kv_func
-from sparse_index_utils import build_k2q_csr, build_k2q_csr_torch_reference
-from src.sm100.prepare_scheduler import (
+from . import interface as sparse_interface
+from .interface import sparse_atten_func, sparse_atten_nvfp4_kv_func
+from .sparse_index_utils import build_k2q_csr, build_k2q_csr_torch_reference
+from .src.sm100.prepare_scheduler import (
     prepare_sparse_fwd_schedule_and_split,
 )
 
@@ -442,7 +442,7 @@ def _make_synthetic_nvfp4_tensor(
 ) -> object:
     """Create deterministic packed NVFP4 data with unit block/global scales."""
 
-    from quantize import Nvfp4QuantizedTensor
+    from .quantize import Nvfp4QuantizedTensor
 
     if shape[-1] % 16 != 0:
         raise ValueError("NVFP4 synthetic shape requires D divisible by 16")
@@ -480,7 +480,7 @@ def _make_synthetic_nvfp4_tensor(
 
 def _quantize_bf16_to_nvfp4_or_skip(x: torch.Tensor) -> object:
     _install_flash_attn3_stub_for_te_import()
-    from quantize import quantize_bf16_to_nvfp4_128x4
+    from .quantize import quantize_bf16_to_nvfp4_128x4
 
     try:
         return quantize_bf16_to_nvfp4_128x4(x)
@@ -489,7 +489,7 @@ def _quantize_bf16_to_nvfp4_or_skip(x: torch.Tensor) -> object:
 
 
 def _dequant_nvfp4_to_bf16(qx: object, *, include_global_scale: bool = True) -> torch.Tensor:
-    from quantize import dequantize_nvfp4_128x4_to_bf16
+    from .quantize import dequantize_nvfp4_128x4_to_bf16
 
     return dequantize_nvfp4_128x4_to_bf16(
         qx,

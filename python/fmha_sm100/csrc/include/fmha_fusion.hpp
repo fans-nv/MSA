@@ -41,7 +41,11 @@ enum class SparseAttnMode {
   Off,
   OnlyScore,
   Full,
-  Sparse
+  Sparse,
+  // refined-icp-v1: the OnlyScore epilogue driven by a block-cyclic ICP coordinate map.
+  // Reuses Sparse's per-page mask-coordinate derivation but replaces the
+  // kv_block_indexes indirection with the affine map pos = page_idx*C + r.
+  OnlyScoreIcp
 };
 
 struct NoMask {

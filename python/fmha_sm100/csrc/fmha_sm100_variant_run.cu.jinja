@@ -55,8 +55,18 @@ void FMHAVariantRun_{{ variant_name }}(ffi::TensorView workspace_buffer, ffi::Te
                     ffi::TensorView nvfp4_k_global_scale,
                     ffi::TensorView nvfp4_v_global_scale
 {% endif %}
+{% if sparse_mode == "OnlyScoreIcp" %}
+                    ,
+                    Optional<ffi::TensorView> maybe_valid_score,
+                    Optional<ffi::TensorView> maybe_icp_block_table,
+                    int64_t icp_block_table_row_stride,
+                    int64_t icp_block_table_row_begin
+{% endif %}
                     ) {
   bool is_paged = maybe_kv_indices.has_value();
+{% if sparse_mode == "OnlyScoreIcp" %}
+  is_paged = is_paged || maybe_icp_block_table.has_value();
+{% endif %}
   int head_dim_qk = q.size(2);
   int head_dim_vo = {{ "128" if kv_mode >= 3 else "is_paged ? v.size(3) : v.size(2)" }};
   int num_qo_heads = q.size(1);
@@ -197,6 +207,88 @@ void FMHAVariantRun_{{ variant_name }}(ffi::TensorView workspace_buffer, ffi::Te
                             ? static_cast<int>(maybe_kv_block_indexes.value().size(2))
                             : 0;
 
+{% if sparse_mode == "OnlyScoreIcp" %}
+  // ---- refined-icp-v1: the direct compound-page table ------------------------------
+  // Checked, not trusted.  Every condition below is one whose silent alternative is a
+  // read of the WRONG PAGE that still lands inside the cache and still returns finite
+  // numbers, which is the failure signature this whole redesign trades into
+  // (DIRECT_TABLE_CONTRACT §C / I-1).  None of these touches device memory.
+  params.icp_block_table_ptr = nullptr;
+  params.icp_block_table_row_stride = 0;
+  params.icp_block_table_row_begin = 0;
+  if (maybe_icp_block_table.has_value()) {
+    const auto& bt = maybe_icp_block_table.value();
+    TVM_FFI_ICHECK(encode_dlpack_dtype(bt.dtype()) == int32_code)
+        << "icp_block_table must be int32";
+    TVM_FFI_ICHECK(bt.ndim() == 2)
+        << "icp_block_table must be 2D [num_requests, max_blocks_per_req]; got ndim="
+        << bt.ndim();
+    TVM_FFI_ICHECK(icp_block_table_row_stride > 0)
+        << "icp_block_table_row_stride must be positive; it is the row address pitch";
+    // The pitch is an ADDRESS pitch, so it must be the tensor's real row stride.  A
+    // caller that passed the logical column count of a padded table would address every
+    // row but the first at the wrong offset -- in bounds, wrong tenant.
+    TVM_FFI_ICHECK(bt.stride(0) == icp_block_table_row_stride)
+        << "icp_block_table row stride " << icp_block_table_row_stride
+        << " != tensor stride(0) " << bt.stride(0);
+    TVM_FFI_ICHECK(bt.stride(1) == 1)
+        << "icp_block_table must be row-contiguous (stride(1) == 1); got " << bt.stride(1);
+    // The rows this call actually addresses are
+    // [row_begin, row_begin + batch_size), and they must all exist.  A short table
+    // does not fault -- the row it lands on is another request's, or another chunk's.
+    TVM_FFI_ICHECK(icp_block_table_row_begin >= 0)
+        << "icp_block_table_row_begin must be non-negative; got "
+        << icp_block_table_row_begin;
+    TVM_FFI_ICHECK(icp_block_table_row_begin + params.batch_size <= bt.size(0))
+        << "icp_block_table rows [" << icp_block_table_row_begin << ", "
+        << (icp_block_table_row_begin + params.batch_size) << ") do not fit a table of "
+        << bt.size(0) << " rows";
+    params.icp_block_table_ptr = static_cast<int*>(bt.data_ptr());
+    params.icp_block_table_row_stride = static_cast<int>(icp_block_table_row_stride);
+    params.icp_block_table_row_begin = static_cast<int>(icp_block_table_row_begin);
+  } else {
+    TVM_FFI_ICHECK(icp_block_table_row_begin == 0)
+        << "icp_block_table_row_begin was given without icp_block_table";
+  }
+{% if sparse_mode == "OnlyScoreIcp" %}
+  // The direct table replaces the packed list, but `kv_indices` is ALSO how
+  // `_fmha_sm100` decides a call is paged, so the caller passes the SAME TENSOR as both
+  // and they cannot diverge.  What is refused is two DIFFERENT page directories in one
+  // call, which would leave "which one did the loader use" a property of a pointer test
+  // rather than of the call.  The buffer identity is the check, not the presence.
+  if (maybe_icp_block_table.has_value() && maybe_kv_indices.has_value()) {
+    TVM_FFI_ICHECK(maybe_kv_indices.value().data_ptr()
+                   == maybe_icp_block_table.value().data_ptr())
+        << "SparseAttnMode::OnlyScoreIcp received a packed page list AND a different "
+           "direct compound-page table; pass the table as both, or the packed list "
+           "alone";
+    // A packed list comes with an indptr; the direct table must not.  This is the one
+    // that actually separates the two modes.
+    TVM_FFI_ICHECK(!maybe_kv_page_indptr.has_value())
+        << "a direct-table call must not carry kv_page_indptr: the row origin/pitch and "
+           "the device KV lengths replace the CSR entirely";
+  }
+  if (maybe_icp_block_table.has_value()) {
+    // R == KVPageSize is not visible in this translation unit as a template parameter,
+    // but it IS visible as the paged tensor's mode-0 extent, which is what the kernel's
+    // `icp_local_blocks_exact` uses as R.  R * W == 128 is the ownership layout the
+    // consumer's fused producer implements under the ICP producer-plan ABI;
+    // W arrives packed in kv_block_num, so check the product here, on the host, where a
+    // mismatch is a message instead of a silently shifted fragment bound.
+    const int icp_w = params.kv_block_num & 15;
+    TVM_FFI_ICHECK(icp_w >= 2 && page_size * icp_w == 128)
+        << "direct-table ICP needs page_size * W == 128 (ABI G13/P3); got page_size="
+        << page_size << " W=" << icp_w;
+    TVM_FFI_ICHECK((params.kv_block_num >> 4) < icp_w)
+        << "icp_rank " << (params.kv_block_num >> 4) << " is outside [0, " << icp_w << ")";
+  }
+{% else %}
+  TVM_FFI_ICHECK(!maybe_icp_block_table.has_value())
+      << "the direct compound-page table is a SparseAttnMode::OnlyScoreIcp input; "
+         "variant {{ variant_name }} would accept the pointer and never read it";
+{% endif %}
+
+{% endif %}
   params.pack_factor = static_cast<int>(pack_factor);
   params.num_ctas = static_cast<int>(packed_work_range.size(0));
 
@@ -282,8 +374,26 @@ void FMHAVariantRun_{{ variant_name }}(ffi::TensorView workspace_buffer, ffi::Te
   params.gmem_bounds.segment_lens_size = static_cast<int>(qo_segment_lens.size(0));
   params.gmem_bounds.kv_page_indptr_size = maybe_kv_page_indptr.has_value()
       ? static_cast<int>(maybe_kv_page_indptr.value().size(0)) : 0;
+{% if sparse_mode == "OnlyScoreIcp" %}
+  // `size(0)` is the element count for a flat packed list but the ROW count for the
+  // rectangular direct table (which the caller passes as `kv_indices` too, so that
+  // `_fmha_sm100` sees a paged call).  Use the real element count in that case, or the
+  // bounds checker would report a false OOB on every row past the first.
+  params.gmem_bounds.kv_indices_size = maybe_kv_indices.has_value()
+      ? static_cast<int>(maybe_kv_indices.value().ndim() == 2
+                             ? maybe_kv_indices.value().size(0)
+                                   * maybe_kv_indices.value().stride(0)
+                             : maybe_kv_indices.value().size(0)) : 0;
+  // rows x row_stride, i.e. the WHOLE table.  It bounds walking off the table, not off a
+  // row; a row overrun lands in the next request's row and is invisible here by
+  // construction (that is what the device-derived live bound is for).
+  params.gmem_bounds.icp_block_table_size = maybe_icp_block_table.has_value()
+      ? static_cast<int>(maybe_icp_block_table.value().size(0)
+                         * maybe_icp_block_table.value().stride(0)) : 0;
+{% else %}
   params.gmem_bounds.kv_indices_size = maybe_kv_indices.has_value()
       ? static_cast<int>(maybe_kv_indices.value().size(0)) : 0;
+{% endif %}
   params.gmem_bounds.max_score_numel = maybe_max_score.has_value()
       ? static_cast<int>(maybe_max_score.value().size(0)
                          * maybe_max_score.value().size(1)
@@ -298,6 +408,54 @@ void FMHAVariantRun_{{ variant_name }}(ffi::TensorView workspace_buffer, ffi::Te
       ? static_cast<int>(maybe_qo_offsets.value().size(0)) : 0;
 #endif
 
+{% if sparse_mode == "OnlyScoreIcp" %}
+  // ---- refined-icp-v1: validity plane ----------------------------------------------
+  // Checked, not trusted.  `-inf` is a LEGAL score (ABI W12), so a missing validity
+  // plane cannot be detected downstream by inspecting values -- it has to fail HERE.
+  params.valid_score_ptr = nullptr;
+  if (maybe_valid_score.has_value()) {
+    const auto& vs = maybe_valid_score.value();
+    TVM_FFI_ICHECK(vs.ndim() == 3) << "valid_score must be 3D";
+    TVM_FFI_ICHECK(encode_dlpack_dtype(vs.dtype()) == uint8_code)
+        << "valid_score must be uint8 (ABI refined-icp-v1.abi.1 W4/W9)";
+    TVM_FFI_ICHECK(maybe_max_score.has_value())
+        << "valid_score without max_score is meaningless (ABI W4: the two planes are "
+           "shape-matched)";
+    const auto& ms = maybe_max_score.value();
+    TVM_FFI_ICHECK(vs.size(0) == ms.size(0) && vs.size(1) == ms.size(1) &&
+                   vs.size(2) == ms.size(2))
+        << "valid_score must be shape-matched to max_score (ABI W4); got ["
+        << vs.size(0) << ", " << vs.size(1) << ", " << vs.size(2) << "] vs ["
+        << ms.size(0) << ", " << ms.size(1) << ", " << ms.size(2) << "]";
+    params.valid_score_ptr = static_cast<uint8_t*>(vs.data_ptr());
+    // The score plane's own (t,h,k) strides were resolved above from the SAME shape,
+    // so resolving the validity strides by the same case analysis is unnecessary:
+    // take them positionally from the shape-matched tensor.
+    if (ms.size(0) == vs.size(0) && params.max_score_stride_t == static_cast<int>(ms.stride(0))) {
+      params.valid_score_stride_t = static_cast<int>(vs.stride(0));
+      params.valid_score_stride_h = static_cast<int>(vs.stride(1));
+      params.valid_score_stride_k = static_cast<int>(vs.stride(2));
+    } else {
+      // [H,K,T] layout: max_score strides were taken as (2,0,1) -> (t,h,k).
+      params.valid_score_stride_t = static_cast<int>(vs.stride(2));
+      params.valid_score_stride_h = static_cast<int>(vs.stride(0));
+      params.valid_score_stride_k = static_cast<int>(vs.stride(1));
+    }
+  }
+  // ICP is the mode whose output ABI this plane versions.  sparse_mode 4
+  // (`OnlyScoreIcp`) at output-ABI version 2 (`kIcpScoreAbiVersion`) REQUIRES it:
+  // an unmigrated caller must fail loudly here rather than read an in-band -inf
+  // as "empty".
+{% if sparse_mode == "OnlyScoreIcp" %}
+  TVM_FFI_ICHECK(params.valid_score_ptr != nullptr)
+      << "SparseAttnMode::OnlyScoreIcp output ABI version "
+      << FMHACutlassSM100Params::kIcpScoreAbiVersion
+      << " (refined-icp-v1.abi.1 W4/W5) requires the out-of-band uint8 validity plane; "
+         "the caller passed none.  ABI version 1 (in-band -inf) is SUPERSEDED: -inf is "
+         "a legal representable score (W12) and cannot encode invalidity.";
+{% endif %}
+
+{% endif %}
   cudaError_t status = {{ func_name }}(params);
   TVM_FFI_ICHECK_EQ(status, cudaSuccess)
       << "FMHA variant {{ variant_name }} failed: " << cudaGetErrorString(status);

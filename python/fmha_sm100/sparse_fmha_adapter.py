@@ -14,26 +14,18 @@ Usage:
 
 from __future__ import annotations
 
-import os
-import sys
 from typing import Optional, Tuple
 
 import torch
 
 from .nvfp4_kv import nvfp4_head_slot_views
 
-_MM_SPARSE_DIR = os.path.join(
-    os.path.dirname(__file__), ".", "cute"
-)
-if os.path.isdir(_MM_SPARSE_DIR) and _MM_SPARSE_DIR not in sys.path:
-    sys.path.insert(0, os.path.abspath(_MM_SPARSE_DIR))
-
-from interface import (
+from .cute.interface import (
     sparse_atten_func, sparse_atten_nvfp4_kv_func, _supports_blackwell_prefill,
 )
-from sparse_index_utils import build_k2q_csr
-from src.sm100.prepare_scheduler import SPARSE_SCHEDULE_MODEL
-from src.common.aot_cache import aot_object_path
+from .cute.sparse_index_utils import build_k2q_csr
+from .cute.src.sm100.prepare_scheduler import SPARSE_SCHEDULE_MODEL
+from .cute.src.common.aot_cache import aot_object_path
 
 from . import q8kv4_prefill_adapter
 

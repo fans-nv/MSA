@@ -8,7 +8,7 @@ import cutlass
 import cutlass.cute as cute
 from cutlass import Int32, const_expr
 
-from src.common.seqlen_info import SeqlenInfoQK
+from .seqlen_info import SeqlenInfoQK
 
 
 @dataclass(frozen=True)

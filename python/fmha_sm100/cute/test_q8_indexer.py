@@ -17,8 +17,8 @@ import numpy as np
 import pytest
 import torch
 
-import q8_indexer_interface
-from q8_indexer_interface import (
+from . import q8_indexer_interface
+from .q8_indexer_interface import (
     BatchDecodeIndexerQ8KV4Wrapper,
     BatchDecodeIndexerQ8KV8Wrapper,
     BatchPrefillIndexerQ8KV8Wrapper,

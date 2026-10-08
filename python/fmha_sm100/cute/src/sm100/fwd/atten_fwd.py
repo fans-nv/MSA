@@ -33,19 +33,19 @@ from cutlass.cutlass_dsl import BaseDSL
 
 from quack import copy_utils
 
-from src.common.cute_dsl_utils import assume_tensor_aligned
-from src.common import utils
-from src.common import pipeline
-from src.common import mma_sm100_desc as sm100_desc
-from src.common import blackwell_helpers as sm100_helpers
-from src.common import rubin_helpers as sm107_mma_helpers
-from src.common.softmax import SoftmaxSm100
-from src.common.named_barrier import NamedBarrierFwdSm100
-from src.common.mask import AttentionMask
-from src.common.seqlen_info import SeqlenInfoQK
+from ...common.cute_dsl_utils import assume_tensor_aligned
+from ...common import utils
+from ...common import pipeline
+from ...common import mma_sm100_desc as sm100_desc
+from ...common import blackwell_helpers as sm100_helpers
+from ...common import rubin_helpers as sm107_mma_helpers
+from ...common.softmax import SoftmaxSm100
+from ...common.named_barrier import NamedBarrierFwdSm100
+from ...common.mask import AttentionMask
+from ...common.seqlen_info import SeqlenInfoQK
 # Shared raw PTX helpers and layout conversions used by the lean kernel.
-from src.common.paged_kv import PagedKVManager
-from src.common.tma_utils import (
+from ...common.paged_kv import PagedKVManager
+from ...common.tma_utils import (
     tma_gather4_cached,
     tma_gather4_prefetch,
     prefetch_tma_desc_raw,

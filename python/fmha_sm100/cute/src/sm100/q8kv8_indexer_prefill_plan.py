@@ -7,7 +7,7 @@ import cutlass
 import cutlass.cute as cute
 import cuda.bindings.driver as cuda
 
-from src.sm100.q8kv8_indexer_prefill import Q8KV8PrefillIndexerSm100
+from .q8kv8_indexer_prefill import Q8KV8PrefillIndexerSm100
 
 
 class Q8KV8PrefillIndexerPlanReset:

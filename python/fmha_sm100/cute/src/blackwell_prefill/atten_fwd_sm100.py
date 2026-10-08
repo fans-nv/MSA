@@ -26,34 +26,34 @@ import cutlass.utils.blackwell_helpers as sm100_utils
 
 logger = logging.getLogger(__name__)
 
-from src.common import copy_utils
-from src.common import (
+from ..common import copy_utils
+from ..common import (
     blackwell_helpers as sm100_helpers,
 )
-from src.common import mma_sm100_desc as sm100_desc
-from src.common import pipeline
-from src.common import utils
-from src.common.aot_cache import (
+from ..common import mma_sm100_desc as sm100_desc
+from ..common import pipeline
+from ..common import utils
+from ..common.aot_cache import (
     save_aot,
     try_load_aot,
 )
 from quack.cute_dsl_utils import ParamsBase
-from src.common.cute_dsl_utils import (
+from ..common.cute_dsl_utils import (
     assume_tensor_aligned,
     exit_thread_if,
     to_cute_tensor,
 )
-from src.common.mask import AttentionMask
-from src.common.named_barrier import (
+from ..common.mask import AttentionMask
+from ..common.named_barrier import (
     NamedBarrierFwdSm100,
 )
-from src.common.paged_kv import PagedKVManager
-from src.common.seqlen_info import SeqlenInfoQK
-from src.common.softmax import (
+from ..common.paged_kv import PagedKVManager
+from ..common.seqlen_info import SeqlenInfoQK
+from ..common.softmax import (
     LOG2_FP8_PROBABILITY_SCALE,
     SoftmaxSm100,
 )
-from src.common.tma_utils import (
+from ..common.tma_utils import (
     create_q_gather4_tma_desc,
     tma_gather4_cached,
     tma_gather4_prefetch,
@@ -64,7 +64,7 @@ from src.common.tma_utils import (
     stg_128_bf16_cs,
     stg_128_f16_cs,
 )
-from src.sm100.prepare_scheduler import (
+from ..sm100.prepare_scheduler import (
     SparseAttentionSchedule,
 )
 

@@ -14,7 +14,7 @@ import torch
 from cutlass import Int32
 from cutlass.cute.runtime import make_ptr
 
-from src.sm100.fp4_indexer import (
+from .src.sm100.fp4_indexer import (
     Fp4FormatSpec,
     Fp4IndexerDecodePackedQSm100,
     Fp4IndexerDecodeQPackSm100,

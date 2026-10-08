@@ -18,6 +18,13 @@ struct GmemBounds {
   int segment_lens_size;
   int kv_page_indptr_size;
   int kv_indices_size;
+  // refined-icp-v1 direct table: element count of the WHOLE rectangular block
+  // table (rows x row_stride).  It bounds walking off the END OF THE TABLE, not
+  // off the end of a ROW -- a row overrun lands in the next request's row, which
+  // is in bounds and therefore invisible here.  That case is what the live
+  // fragment bound (contract I-1) exists to prevent; this field is the net under
+  // it, not a substitute for it.
+  int icp_block_table_size;
   int max_score_numel;
   int kv_block_indexes_numel;
   int split_kv_size;
@@ -82,6 +89,12 @@ __device__ __forceinline__ bool gmem_range_ok(
 // Macros for paged KV reads
 #define KV_INDPTR_LOAD(ptr, idx, sz)  gmem_load_checked((ptr), (idx), (sz), "kv_page_indptr")
 #define KV_INDICES_LOAD(ptr, idx, sz) gmem_load_checked((ptr), (idx), (sz), "kv_indices")
+// refined-icp-v1 direct table.  A SEPARATE name from KV_INDICES_LOAD even though
+// the expansion is identical, because the two arrays fail differently: an OOB on
+// `kv_indices` is a packed-list/indptr disagreement, an OOB on the block table is
+// a row-stride or request-mapping error.  A shared diagnostic string would make
+// the two indistinguishable in the one place they are reported.
+#define BLOCK_TABLE_LOAD(ptr, idx, sz) gmem_load_checked((ptr), (idx), (sz), "icp_block_table")
 
 #else  // FMHA_GMEM_BOUNDS_CHECK not defined
 
@@ -93,5 +106,6 @@ __device__ __forceinline__ bool gmem_range_ok(
 #define SEG_LEN_LOAD(vl, idx, sz)  (vl).segment_lens[(idx)]
 #define KV_INDPTR_LOAD(ptr, idx, sz)  __ldg(&(ptr)[(idx)])
 #define KV_INDICES_LOAD(ptr, idx, sz) __ldg(&(ptr)[(idx)])
+#define BLOCK_TABLE_LOAD(ptr, idx, sz) __ldg(&(ptr)[(idx)])
 
 #endif  // FMHA_GMEM_BOUNDS_CHECK

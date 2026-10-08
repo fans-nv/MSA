@@ -263,6 +263,31 @@ struct Sm100FmhaFwdKernelTmaWarpspecialized {
     return apply_variable_length(params.problem_shape, batch_idx);
   }
 
+  // No KV tiles for this work item: kv_len == 0, or an ICP shard with no local pages.
+  // Skipping them keeps the loader's `min(page_for_lookup, num_pages_batch - 1)`
+  // page clamp in bounds.
+  //
+  // refined-icp-v1 DIRECT TABLE: this is now load-bearing for BOTH page sources.  With
+  // the packed list `num_pages_batch` was an indptr difference; with the direct table it
+  // is `icp_local_blocks_exact(L, r)` in the loader, which is the SAME function as
+  // `icp_local_blocks` below (proof in the loader's comment), so the two still agree and
+  // this decision still dominates the clamp.  Both forms return 0 on an empty shard, and
+  // both are computed from device data by every warp role -- do NOT convert this into a
+  // per-role early exit, and do NOT alter the deliberate floor-0 / floor-1 asymmetry
+  // (mainloop :196-198 floors at 0 so the per-page `page_idx >= nloc` guard fires;
+  // :280-281 floors at 1 so mma()'s prologue does not hang).  This function is what
+  // reconciles them.
+  template <class LogicalProblemShape>
+  CUTLASS_DEVICE static bool is_empty_work(LogicalProblemShape const& logical_problem_shape,
+                                           Params const& params) {
+    if (get<1>(logical_problem_shape) == 0) return true;
+    if constexpr (CollectiveMainloop::kNeedIcp) {
+      return CollectiveMainloop::icp_local_blocks(
+                 logical_problem_shape, params.mainloop.load.kv_block_num) == 0;
+    }
+    return false;
+  }
+
   CUTLASS_DEVICE void operator()(const Params& params, char* smem) {
     GPU_TRACE_INIT;
 
@@ -384,7 +409,7 @@ struct Sm100FmhaFwdKernelTmaWarpspecialized {
           continue;
         }
 
-        if (get<1>(logical_problem_shape) == 0) {  // kv_len == 0
+        if (is_empty_work(logical_problem_shape, params)) {
           work_idx++;
           continue;
         }
@@ -582,7 +607,17 @@ struct Sm100FmhaFwdKernelTmaWarpspecialized {
           continue;
         }
 
-        if (get<1>(logical_problem_shape) == 0) {
+        if (is_empty_work(logical_problem_shape, params)) {
+          // refined-icp-v1, ABI W5: the shard is empty, but the wave is
+          // still ADVERTISED.  Write the whole advertised extent invalid before
+          // skipping, so the consumer cannot read a previous wave's values out of
+          // the persistent scratch.  The SKIP CONDITION IS UNCHANGED and no
+          // pipeline operation is added -- this header requires every role's skip
+          // condition to stay verbatim, at each of its skip sites.  No-op unless
+          // kNeedIcp and a validity plane was supplied.
+          mainloop.icp_write_invalid_wave(blk_coord, params.mainloop,
+                                          params.problem_shape,
+                                          logical_problem_shape, epilogue);
           continue;
         }
 
@@ -593,6 +628,9 @@ struct Sm100FmhaFwdKernelTmaWarpspecialized {
           if (CollectiveMainloop::get_effective_trip_count(
                   blk_coord, logical_problem_shape,
                   kv_tile_begin, kv_tile_end, params.mainloop.load.kv_block_num) <= 0) {
+            mainloop.icp_write_invalid_wave(blk_coord, params.mainloop,
+                                            params.problem_shape,
+                                            logical_problem_shape, epilogue);
             continue;
           }
           mainloop.template softmax<kSingleSoftmaxWarpGroup>(
@@ -627,7 +665,8 @@ struct Sm100FmhaFwdKernelTmaWarpspecialized {
           continue;
         }
 
-        if (get<1>(logical_problem_shape) == 0) {
+        // Correction must still commit here: the Epilogue warp has no empty-work guard.
+        if (is_empty_work(logical_problem_shape, params)) {
           mainloop.correction_empty(blk_coord, params.mainloop, logical_problem_shape,
                                     params.problem_shape, shared_storage.epilogue,
                                     pipeline_corr_epi, pipeline_corr_epi_producer_state, epilogue);
@@ -689,7 +728,8 @@ struct Sm100FmhaFwdKernelTmaWarpspecialized {
           continue;
         }
 
-        if (get<1>(logical_problem_shape) == 0) {
+        // Skip the item, not just the loop: mma()'s prologue consumes a KV stage unconditionally.
+        if (is_empty_work(logical_problem_shape, params)) {
           continue;
         }
 
@@ -781,7 +821,8 @@ struct Sm100FmhaFwdKernelTmaWarpspecialized {
           if (get<0>(blk_coord) * get<0>(TileShape{}) >= get<0>(logical_problem_shape)) {
             continue;
           }
-          if (get<1>(logical_problem_shape) == 0) {  // kv_len == 0
+          // Every warp role uses the same empty-work predicate.
+          if (is_empty_work(logical_problem_shape, params)) {  // kv_len == 0, or empty shard
             continue;
           }
 

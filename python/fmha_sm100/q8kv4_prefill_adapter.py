@@ -166,7 +166,7 @@ def run(
     usable_sm_count = int(plan_info.get("usable_SM_count", -1))
     if usable_sm_count > 0:
         # The fused builder sizes its schedule for the whole device; build it separately.
-        from src.sm100.prepare_scheduler import prepare_sparse_fwd_schedule_and_split
+        from .cute.src.sm100.prepare_scheduler import prepare_sparse_fwd_schedule_and_split
 
         k2q_row_ptr, k2q_q_indices = build_k2q_csr(
             q2k, cu_seqlens_q, cu_seqlens_k, _PAGE_SIZE, return_schedule=False, **common

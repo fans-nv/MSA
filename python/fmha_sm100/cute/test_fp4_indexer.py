@@ -9,7 +9,7 @@ import statistics
 import pytest
 import torch
 
-from fp4_indexer_interface import (
+from .fp4_indexer_interface import (
     fp4_indexer_block_scores,
     fp4_indexer_mma_scale_shape,
     fp4_indexer_mma_scale_storage_shape,
@@ -17,7 +17,7 @@ from fp4_indexer_interface import (
     fp4_indexer_mma_scale_stride,
     fp4_indexer_reorder_scales_for_mma_cute,
 )
-from src.sm100.fp4_indexer import normalize_fp4_format
+from .src.sm100.fp4_indexer import normalize_fp4_format
 
 
 def _has_sm100_cuda() -> bool:

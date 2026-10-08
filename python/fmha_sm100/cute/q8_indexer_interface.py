@@ -39,11 +39,11 @@ import torch
 from cutlass import Int32
 from cutlass.cute.runtime import from_dlpack
 
-from src.common.aot_cache import save_aot, try_load_aot
-from src.sm100.q8kv4_indexer_decode import Q8KV4DecodeIndexerSm100
-from src.sm100.q8kv8_indexer_decode import Q8KV8DecodeIndexerSm100
-from src.sm100.q8kv8_indexer_prefill import Q8KV8PrefillIndexerSm100
-from src.sm100.q8kv8_indexer_prefill_plan import (
+from .src.common.aot_cache import save_aot, try_load_aot
+from .src.sm100.q8kv4_indexer_decode import Q8KV4DecodeIndexerSm100
+from .src.sm100.q8kv8_indexer_decode import Q8KV8DecodeIndexerSm100
+from .src.sm100.q8kv8_indexer_prefill import Q8KV8PrefillIndexerSm100
+from .src.sm100.q8kv8_indexer_prefill_plan import (
     Q8KV8PrefillIndexerPlanBuild,
     Q8KV8PrefillIndexerPlanReset,
 )

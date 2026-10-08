@@ -44,6 +44,26 @@ import cutlass.cute as cute
 _SCHEMA = 2
 _CUTE_ROOT = Path(__file__).resolve().parents[2]  # cute/
 _AOT_DISABLE = os.environ.get("MM_SPARSE_ATTN_AOT_DISABLE", "0") == "1"
+_CUTE_PACKAGE = (__package__.removesuffix(".src.common")
+                 if __package__.endswith(".src.common") else None)
+
+
+def _cache_root():
+    override = os.environ.get("MM_SPARSE_ATTN_AOT_CACHE")
+    if override:
+        return override
+    if os.environ.get("ICP_CACHE_ROOT"):
+        from ....icp import _cache
+
+        return str(_cache.component_dir("nvfp4") / "aot")
+    return os.path.expanduser("~/.cache/minfer/mm_sparse_attn")
+
+
+def _on_cache_miss(key):
+    if os.environ.get("ICP_CACHE_ROOT") or os.environ.get("ICP_RUNTIME_JIT"):
+        from ....icp import _jit_guard
+
+        _jit_guard.on_compile("nvfp4", str(key[0]), where="cute.aot_cache")
 
 
 def _toolchain_manifest():
@@ -59,10 +79,7 @@ def _toolchain_manifest():
 
 _MANIFEST = _toolchain_manifest()
 _AOT_CACHE_DIR = os.path.join(
-    os.environ.get(
-        "MM_SPARSE_ATTN_AOT_CACHE",
-        os.path.expanduser("~/.cache/minfer/mm_sparse_attn"),
-    ),
+    _cache_root(),
     f"v{_SCHEMA}",
     hashlib.sha256(json.dumps(_MANIFEST, sort_keys=True).encode()).hexdigest()[:16],
 )
@@ -108,6 +125,10 @@ def _source_files(sources) -> list[Path]:
 
 def _resolve_import(name: str) -> list[Path]:
     """The cute/ files executed by importing a dotted name: package __init__s, then the module."""
+    # Both canonical and vendored MSA use package-qualified imports. Resolve
+    # their transitive inputs against this copy's cute/ tree.
+    if _CUTE_PACKAGE and name.startswith(_CUTE_PACKAGE + "."):
+        name = name[len(_CUTE_PACKAGE) + 1:]
     files = []
     parts = name.split(".")
     for depth in range(1, len(parts) + 1):
@@ -189,9 +210,11 @@ def aot_object_path(key: tuple) -> str:
 
 def try_load_aot(key: tuple):
     if _AOT_DISABLE:
+        _on_cache_miss(key)
         return None
     obj_path = _valid_object(key)
     if obj_path is None:
+        _on_cache_miss(key)
         return None
     func_name = str(key[0])
     try:
@@ -202,6 +225,7 @@ def try_load_aot(key: tuple):
         return getattr(_loaded_modules[obj_path], func_name)
     except Exception as e:
         print(f"[aot_cache] Failed to load {obj_path}: {e}")
+        _on_cache_miss(key)
         return None
 
 

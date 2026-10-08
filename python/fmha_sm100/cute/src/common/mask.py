@@ -8,8 +8,8 @@ import cutlass
 import cutlass.cute as cute
 from cutlass import Float32, Int32, Uint32, const_expr
 
-import src.common.utils as utils
-from src.common.seqlen_info import SeqlenInfoQK
+from . import utils as utils
+from .seqlen_info import SeqlenInfoQK
 
 MaskGenFn: TypeAlias = Callable[[int], Uint32]
 MASK_R2P_CHUNK_SIZE: int = 32

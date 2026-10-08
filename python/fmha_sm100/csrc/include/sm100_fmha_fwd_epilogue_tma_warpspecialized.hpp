@@ -171,6 +171,17 @@ struct Sm100FmhaFwdEpilogueTmaWarpspecialized {
     // max_qo_len / kPackFactor_ at descriptor build time (kPackFactor_ is a
     // compile-time template constant, max_qo_len is the packed length).
     bool qo_len_uniform = false;
+
+    // ---- refined-icp-v1: OUT-OF-BAND VALIDITY PLANE, ABI W4/W8/W9 ------------------
+    // uint8 [Qchunk, 4, Pwave], shape-matched to the score plane, caller-owned, with
+    // explicit strides (W8/W9).  `max_k_tiles` is Pwave, the ADVERTISED column extent
+    // -- the producer must write every one of those cells (W5), so the kernel needs it
+    // as a number, not only as a layout shape.
+    uint8_t* ptr_ValidScore = nullptr;
+    int valid_score_stride_t = 0;
+    int valid_score_stride_h = 0;
+    int valid_score_stride_k = 0;
+    int max_k_tiles = 0;
   };
 
   using TMA_O = decltype(make_tma_copy(
@@ -244,6 +255,13 @@ struct Sm100FmhaFwdEpilogueTmaWarpspecialized {
     // valid=true means descriptor was successfully built host-side.
     CUtensorMap tma_desc_o_direct;
     bool tma_store_o_direct_valid = false;
+
+    // ---- refined-icp-v1: OUT-OF-BAND VALIDITY PLANE, ABI W4/W8/W9 ------------------
+    uint8_t* ptr_ValidScore = nullptr;
+    int valid_score_stride_t = 0;
+    int valid_score_stride_h = 0;
+    int valid_score_stride_k = 0;
+    int max_k_tiles = 0;
   };
 
   template <class ProblemShape>
@@ -339,7 +357,12 @@ struct Sm100FmhaFwdEpilogueTmaWarpspecialized {
 #endif
             args.ptr_O_direct, args.num_qo_heads_orig, args.head_dim_vo,
             args.remaining_h_r,
-            tma_desc_o_direct, tma_store_o_direct_valid};
+            tma_desc_o_direct, tma_store_o_direct_valid,
+            // refined-icp-v1: validity plane, appended at the TAIL of this
+            // aggregate initializer so every preceding member keeps its position.
+            args.ptr_ValidScore,
+            args.valid_score_stride_t, args.valid_score_stride_h,
+            args.valid_score_stride_k, args.max_k_tiles};
     return p;
   }
 

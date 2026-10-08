@@ -19,7 +19,7 @@ import torch
 from cutlass import Float32, Int32, const_expr
 from cutlass.cute.nvgpu import cpasync, tcgen05
 
-from src.common import pipeline as common_pipeline
+from ..common import pipeline as common_pipeline
 
 
 FP4_FORMAT = Literal["mxfp4", "nvfp4"]

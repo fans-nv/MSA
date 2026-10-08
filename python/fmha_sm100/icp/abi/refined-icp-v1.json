@@ -1,0 +1,108 @@
+{
+  "abi_version": "refined-icp-v1.abi.1",
+  "candidate": {
+    "id_dtype": "int32",
+    "id_offset": 4,
+    "invalid_block_id": -1,
+    "score_dtype": "float32",
+    "score_offset": 0,
+    "size_bytes": 8
+  },
+  "carrier": {
+    "dtype": "int32",
+    "peer_split_int32_elements": "2 * Qchunk * Hlocal * 16",
+    "recv_shape": "[W, Qchunk, Hlocal, 16, 2]  axis0 = source",
+    "send_shape": "[W, Qchunk, Hlocal, 16, 2]  axis0 = destination",
+    "total_bytes": "512 * Qchunk",
+    "view_reshape_permitted": false,
+    "words": [
+      "score_bits_bitcast",
+      "global_block_id"
+    ]
+  },
+  "contract_family": "refined-icp-v1",
+  "frozen_date": "2026-09-12",
+  "geometry": {
+    "B": 128,
+    "D_head": 128,
+    "H_local": {
+      "2": 2,
+      "4": 1
+    },
+    "K_select": 16,
+    "R": {
+      "2": 64,
+      "4": 32
+    },
+    "global_index_q_heads": 4,
+    "global_main_kv_heads": 4,
+    "index_key_heads": 1,
+    "qcapacity_alignment": 4,
+    "supported_W": [
+      2,
+      4
+    ]
+  },
+  "ordering": {
+    "dedup": "max-reduce by global id BEFORE selecting distinct winners",
+    "forcing": "reserved final slot, injected once; never score +inf",
+    "nan": "fails the invocation",
+    "primary": "score descending",
+    "secondary": "global block id ascending",
+    "signed_zero": "-0.0 flushes to +0.0"
+  },
+  "output": {
+    "dtype": "int32",
+    "inactive_count": 0,
+    "negative_id_in_prefix_permitted": false,
+    "shape": "[Qcapacity, Hlocal, 16]",
+    "suffix": -1,
+    "valid_prefix": "distinct ascending, length min(16, ceil((p+1)/128))"
+  },
+  "page_bytes": {
+    "fp8_e4m3/W2": {
+      "compound": 73728,
+      "index": 8192,
+      "main": 65536
+    },
+    "fp8_e4m3/W4": {
+      "compound": 36864,
+      "index": 4096,
+      "main": 32768
+    },
+    "nvfp4/W2": {
+      "compound": 45056,
+      "index": 8192,
+      "main": 36864
+    },
+    "nvfp4/W4": {
+      "compound": 22528,
+      "index": 4096,
+      "main": 18432
+    }
+  },
+  "placement": {
+    "compact_prefix": "L_r(N) = floor(N/128)*R + clamp(N%128 - r*R, 0, R)",
+    "global_token": "128*b + r*R + j",
+    "owner_rank": "u // R",
+    "owner_row": "u % R",
+    "visibility": "0 <= 128*b + r*R + j < kv_visible_end  and  <= p"
+  },
+  "score_wave": {
+    "advertised_cells": "Qchunk * 4 * Pwave   (wave-bounded, NOT Kglobal)",
+    "bytes": "16*Qchunk*Npart*Ppart score + 4*Qchunk*Npart*Ppart validity",
+    "in_band_sentinel_permitted": false,
+    "kglobal_wide_buffer_permitted": false,
+    "prefix_count_permitted": false,
+    "score": {
+      "dtype": "float32",
+      "shape": "[Qchunk, 4, Pwave]"
+    },
+    "valid": {
+      "dtype": "uint8",
+      "shape": "[Qchunk, 4, Pwave]"
+    },
+    "validity_is_out_of_band": true
+  },
+  "source_baseline_commit": "26b68add0690efe272c43420cf9607e193e8ec0c"
+}
