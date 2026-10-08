@@ -9,7 +9,7 @@ import re
 
 packet = Path(__file__).resolve().parent
 workspace = packet.parents[1]
-destination = workspace / "review/gitlab-human-review-20261008"
+destination = workspace / "review/github-human-review-20261008"
 assert not destination.exists(), "Refusing to replace an existing review checkout"
 destination.mkdir()
 manifest = json.loads((packet / "manifest.json").read_text())
@@ -36,9 +36,9 @@ for name in ("vllm-01-offload.patch", "vllm-02-runtime.patch", "vllm-03-writer.p
 
 links = {
     "../../worktrees/vllm-icp-public/":
-        "https://gitlab-master.nvidia.com/fans/vllm/-/blob/516bd9a9d9962aff25582f774a49640e022bf348/",
+        "https://github.com/fans-nv/vllm/blob/516bd9a9d9962aff25582f774a49640e022bf348/",
     "../../worktrees/msa-dev-public/":
-        "https://gitlab-master.nvidia.com/fans/MSA/-/blob/0f658079c9ea9ab63c76b975b7ee4dd54a198334/",
+        "https://github.com/fans-nv/MSA/blob/0f658079c9ea9ab63c76b975b7ee4dd54a198334/",
 }
 inventory = {}
 

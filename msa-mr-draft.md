@@ -40,6 +40,6 @@ graph, distributed and paired performance evidence must accompany submission.
 
 Prepared with Codex assistance and parallel agent review; not submitted.
 The human submitter must review the changes and resolve the source-release
-provenance items inherited from the earlier consolidation packet before
-public distribution. Existing license notices are preserved; this draft
-does not assert a new license grant.
+provenance items inherited from the earlier consolidation packet. Those
+items remain open in this GitHub fork review publication. Existing license
+notices are preserved; publication does not assert a new license grant.

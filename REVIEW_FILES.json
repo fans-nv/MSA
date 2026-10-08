@@ -97,8 +97,8 @@
     "human-review-checklist.md": {
       "source": "human-review-checklist.md",
       "source_sha256": "56cdef68e35244ca5e72184a454b0e8eb2efa1c03a779a1a13f4c12f6bdc8e3c",
-      "published_sha256": "f04acdaf56a88b18ef2d4e29416848dba2748b1971f35520c21206ac4fde6f05",
-      "bytes": 13703
+      "published_sha256": "555e0c023cbca7f5e20d8bcb45e6fc4c9ca47c12d5a8a8786cf55b70e8ec9081",
+      "bytes": 13644
     },
     "logs/artifacts-final/commands.json": {
       "source": "logs/artifacts-final/commands.json",
@@ -1909,8 +1909,8 @@
     "msa-mr-draft.md": {
       "source": "msa-mr-draft.md",
       "source_sha256": "ecf773d7d23fbe82d14cbd166ff1fa1e530a1eb6aabdd47e3852102599a5ce72",
-      "published_sha256": "ecf773d7d23fbe82d14cbd166ff1fa1e530a1eb6aabdd47e3852102599a5ce72",
-      "bytes": 2684
+      "published_sha256": "03965bd9037ba0a01e5af4d1fd25d95a11d2663bea859691065403723c705f52",
+      "bytes": 2722
     },
     "msa-public-compatibility.md": {
       "source": "msa-public-compatibility.md",
@@ -1927,8 +1927,8 @@
     "prepare_human_review.py": {
       "source": "prepare_human_review.py",
       "source_sha256": "51e52a4fb2aab2279e6581af825c5373578e300db4aadb7b03a05f480d800019",
-      "published_sha256": "51e52a4fb2aab2279e6581af825c5373578e300db4aadb7b03a05f480d800019",
-      "bytes": 3747
+      "published_sha256": "c30df4c8327d19ff52d339bd3f15c10dc0eb6058188ac7f0e514755ec763e996",
+      "bytes": 3721
     },
     "public-nvfp4-review.md": {
       "source": "public-nvfp4-review.md",
@@ -2077,8 +2077,8 @@
     "vllm-human-review-mr.md": {
       "source": "vllm-human-review-mr.md",
       "source_sha256": "9023284d0ab938abb9dcef66128970bc389bbe553a6ab42883d8e0fd8b03c93c",
-      "published_sha256": "9023284d0ab938abb9dcef66128970bc389bbe553a6ab42883d8e0fd8b03c93c",
-      "bytes": 4483
+      "published_sha256": "fc351a2b98560e3e3720b907c0fb90fdb137798e0b20e532e6086ca915870bcf",
+      "bytes": 4464
     },
     "writer-design.md": {
       "source": "writer-design.md",
@@ -2101,8 +2101,30 @@
     "README.md": {
       "source": "HUMAN-REVIEW.md",
       "source_sha256": "51ff3c4521d495a6125db117b9dc9827759e2c7046fe4c3b86fb5b041578eba6",
-      "published_sha256": "51ff3c4521d495a6125db117b9dc9827759e2c7046fe4c3b86fb5b041578eba6",
-      "bytes": 6250
+      "published_sha256": "ea96f9fb583caac4baf184920fd1bff515aa74f13a43ca69ebd951c81591f7a7",
+      "bytes": 6391
     }
+  },
+  "publication_target": {
+    "service": "GitHub",
+    "repositories": [
+      "fans-nv/MSA",
+      "fans-nv/vllm"
+    ],
+    "visibility": "public",
+    "source_branch": "review/icp-consolidation-20261008",
+    "base_branch": "review/icp-base-20261008",
+    "notes_branch": "review/icp-review-notes-20261008"
+  },
+  "publication_transforms": {
+    "prior_notes_commit": "c7a5d2a36af810bbaa324e9df6ee171f0e3ae569",
+    "description": "Update repository links and publication wording for author-requested public GitHub fork review; preserve source revisions and historical validation receipts.",
+    "changed_files": [
+      "human-review-checklist.md",
+      "msa-mr-draft.md",
+      "prepare_human_review.py",
+      "vllm-human-review-mr.md",
+      "README.md"
+    ]
   }
 }

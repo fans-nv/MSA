@@ -1,14 +1,14 @@
 # ICP consolidation: human review
 
-Review the paired source branches below. This is an internal review candidate:
+Review the paired source branches below. This is a GitHub fork review candidate:
 CPU tests, native compilation and packaging checks passed; GPU correctness,
 distributed execution, graph replay, model evaluation and retained serving
 performance have not been verified for these commits.
 
 | Repository | Candidate | Pinned review base | Review diff |
 | --- | --- | --- | --- |
-| [fans/MSA](https://gitlab-master.nvidia.com/fans/MSA) | `0f658079c9ea9ab63c76b975b7ee4dd54a198334` | MSA dev `ed4e40efcb5895aba1a3554d62cd1dcaf77920cb` | [MSA changes](https://gitlab-master.nvidia.com/fans/MSA/-/compare/review%2Ficp-base-20261008...review%2Ficp-consolidation-20261008) |
-| [fans/vllm](https://gitlab-master.nvidia.com/fans/vllm) | `516bd9a9d9962aff25582f774a49640e022bf348` | Public main `242e4213fc9845ff6fe607af1aee626fd8acc990` | [vLLM changes](https://gitlab-master.nvidia.com/fans/vllm/-/compare/review%2Ficp-base-20261008...review%2Ficp-consolidation-20261008) |
+| [fans-nv/MSA](https://github.com/fans-nv/MSA) | `0f658079c9ea9ab63c76b975b7ee4dd54a198334` | MSA dev `ed4e40efcb5895aba1a3554d62cd1dcaf77920cb` | [MSA changes](https://github.com/fans-nv/MSA/compare/review%2Ficp-base-20261008...review%2Ficp-consolidation-20261008) |
+| [fans-nv/vllm](https://github.com/fans-nv/vllm) | `516bd9a9d9962aff25582f774a49640e022bf348` | Public main `242e4213fc9845ff6fe607af1aee626fd8acc990` | [vLLM changes](https://github.com/fans-nv/vllm/compare/review%2Ficp-base-20261008...review%2Ficp-consolidation-20261008) |
 
 Both source branches are named `review/icp-consolidation-20261008`; both
 comparison bases are `review/icp-base-20261008`. Use the pinned base for this
@@ -20,6 +20,9 @@ validation. Existing repository defaults are not the comparison targets.
 The `review/icp-review-notes-20261008` branch contains these notes and selected
 evidence, separate from the exact tested source commits. The publication
 receipt in the preparing workspace records remote verification after pushing.
+Both GitHub destination repositories are public. Fork publication is
+requested by the author; source-release provenance review remains open
+and no new license grant is asserted.
 
 ## Review order and ownership
 
@@ -64,7 +67,7 @@ maintenance cost as well as its smaller core-runtime boundary.
 [Manifest](manifest.json) SHA256 is
 `0c2a96870fed4b22fe550fc4402b5cd9cd2867922b20f6fd5c4f1387d484d1b1`.
 The manifest's `published: false` records the sealed local checkpoint; the
-later publication receipt supersedes that field only for internal branch
+later publication receipt supersedes that field only for GitHub fork branch
 publication. It does not change any qualification result.
 
 Local vLLM host runs used `--noconftest` and disabled plugin autoload. Some

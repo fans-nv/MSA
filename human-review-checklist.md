@@ -1,11 +1,11 @@
-# Internal human review: ICP consolidation into MSA and public vLLM
+# Human review: ICP consolidation into MSA and public vLLM
 
-**Prepared for review in `fans/MSA` and `fans/vLLM`; not upstream merge-ready.**
+**Prepared for review in `fans-nv/MSA` and `fans-nv/vllm`; not upstream merge-ready.**
 The candidates are committed, source-bound host checks and artifact checks pass,
 and the configured vLLM commit hooks pass. GPU numerical correctness, full-model
 graph replay, TP2 execution, synchronization checks, model evaluation and serving
 performance remain pending. This report applies the repository's
-[PR checklist](https://gitlab-master.nvidia.com/fans/vllm/-/blob/516bd9a9d9962aff25582f774a49640e022bf348/.agents/skills/pr-checklist/SKILL.md)
+[PR checklist](https://github.com/fans-nv/vllm/blob/516bd9a9d9962aff25582f774a49640e022bf348/.agents/skills/pr-checklist/SKILL.md)
 to existing evidence; it does not claim human approval or repeat the tests.
 
 | Candidate | Frozen commit | Base |
@@ -20,7 +20,7 @@ No existing PR/MR review threads were supplied for this report.
 
 ## Re-review
 
-This is an initial internal review packet. There are no supplied conversation,
+This is an initial GitHub fork review packet. There are no supplied conversation,
 review-submission or inline threads to resolve. When feedback arrives, record
 each concrete concern and its disposition, and update the description to match
 the resulting source. Before any upstream PR, refresh duplicate-work checks;
@@ -143,7 +143,7 @@ the frozen sources; [manifest](manifest.json) binds artifacts and patch trees.
 - **4.1 Description/context — template and companion draft prepared.**
   [vLLM draft](vllm-human-review-mr.md) and [MSA draft](msa-mr-draft.md) describe
   the feature, ownership and admission. The vLLM description retains the
-  repository's [PR template](https://gitlab-master.nvidia.com/fans/vllm/-/blob/516bd9a9d9962aff25582f774a49640e022bf348/.github/PULL_REQUEST_TEMPLATE.md)
+  repository's [PR template](https://github.com/fans-nv/vllm/blob/516bd9a9d9962aff25582f774a49640e022bf348/.github/PULL_REQUEST_TEMPLATE.md)
   sections and checklist, with exact companion links, measured results and
   unchecked human/target-validation gates. Before upstream submission, add
   finalized predecessor/blocking links and refresh duplicate-work context.
@@ -171,15 +171,15 @@ the frozen sources; [manifest](manifest.json) binds artifacts and patch trees.
   are not qualified. Focus on cache ABI/strides, qualified ICP versus ordinary
   writer arithmetic, prewarm identities, actual-phase routing and final resource
   lifetime. The offload fix can receive separate review.
-- **4.5 Contribution requirements — internal preparation only.** The frozen
+- **4.5 Contribution requirements — fork review preparation only.** The frozen
   vLLM commit has `Co-authored-by: Codex` and human `Signed-off-by:` trailers;
   both drafts disclose AI assistance. The
-  [local contributing guide](https://gitlab-master.nvidia.com/fans/vllm/-/blob/516bd9a9d9962aff25582f774a49640e022bf348/docs/contributing/README.md)
-  and [AGENTS.md](https://gitlab-master.nvidia.com/fans/vllm/-/blob/516bd9a9d9962aff25582f774a49640e022bf348/AGENTS.md) require human
+  [local contributing guide](https://github.com/fans-nv/vllm/blob/516bd9a9d9962aff25582f774a49640e022bf348/docs/contributing/README.md)
+  and [AGENTS.md](https://github.com/fans-nv/vllm/blob/516bd9a9d9962aff25582f774a49640e022bf348/AGENTS.md) require human
   ownership, end-to-end validation, model evaluations and duplicate-work checks
-  before upstream submission. Imported MSA source-release provenance still
-  needs rights-holder clearance before public distribution; preserved notices
-  and internal review do not grant a new license.
+  before upstream submission. Imported MSA source-release provenance review
+  remains open in this public fork publication; preserved notices and fork
+  publication do not grant a new license.
 
 ## Human follow-up before upstream submission
 

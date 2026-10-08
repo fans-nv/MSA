@@ -5,11 +5,11 @@
 ## Overview
 
 Add optional TP2 indexer context parallelism using companion MSA dev kernels
-and vLLM's existing fused KV writer. Prepare this change for internal human
-review; target-GPU and serving validation remain pending.
+and vLLM's existing fused KV writer. Prepare this change for human review in
+the author's GitHub forks; target-GPU and serving validation remain pending.
 
-Candidate: [vLLM `516bd9a9`](https://gitlab-master.nvidia.com/fans/vllm/-/commit/516bd9a9d9962aff25582f774a49640e022bf348),
-paired with [MSA `0f658079`](https://gitlab-master.nvidia.com/fans/MSA/-/commit/0f658079c9ea9ab63c76b975b7ee4dd54a198334).
+Candidate: [vLLM `516bd9a9`](https://github.com/fans-nv/vllm/commit/516bd9a9d9962aff25582f774a49640e022bf348),
+paired with [MSA `0f658079`](https://github.com/fans-nv/MSA/commit/0f658079c9ea9ab63c76b975b7ee4dd54a198334).
 Compare `review/icp-consolidation-20261008` against `review/icp-base-20261008`.
 
 ## Claims
@@ -37,7 +37,7 @@ public port.
 | Q8KV4 host extension | Both namespaces build/load, including reversed cache-only loading |
 | GPU numerics, full-model graphs, TP2, model evaluation and performance | Not run; required before upstream submission |
 
-The [review notes](https://gitlab-master.nvidia.com/fans/vllm/-/blob/review/icp-review-notes-20261008/README.md)
+The [review notes](https://github.com/fans-nv/vllm/blob/review/icp-review-notes-20261008/README.md)
 contain source-bound receipts, commands and limitations. In the recorded workspace:
 
 ```bash
