@@ -1,0 +1,58 @@
+Passed
+- hook id: check-test-tethering
+- duration: 2.01s
+Run mypy for the oldest supported Python version....................................................Passed
+Lint PNG exports from excalidraw................................................(no files to check)Skipped
+Check SPDX headers..................................................................................Passed
+Check root lazy imports.............................................................................Passed
+Check for spaces in all filenames...................................................................Passed
+Update Dockerfile dependency graph..................................................................Passed
+Test non-root entrypoint wrapper................................................(no files to check)Skipped
+Check for forbidden imports.........................................................................Passed
+Prevent new 'torch.cuda' APIs call..................................................................Passed
+Validate configuration has default values and that each field has a docstring.......................Passed
+Validate docker/versions.json matches Dockerfile................................(no files to check)Skipped
+Check for boolean ops in with-statements............................................................Passed
+Rust - Normalize Cargo manifests with autoinherit...............................(no files to check)Skipped
+Rust - Sort Cargo manifest sections.............................................(no files to check)Skipped
+Rust - Format code..............................................................(no files to check)Skipped
+Suggestion..........................................................................................Passed
+- hook id: suggestion
+- duration: 0s
+
+To bypass all the pre-commit hooks, add --no-verify to git commit. To skip a specific hook, prefix the commit command with SKIP=<hook-id>.
+
+Sign-off Commit..........................................................Passed
+- hook id: signoff-commit
+- duration: 0.01s
+[work/icp-public-vllm 516bd9a9] [MiniMax M3] Add opt-in ICP integration with shared MSA kernels
+ 52 files changed, 10941 insertions(+), 197 deletions(-)
+ create mode 100644 csrc/libtorch_stable/fused_minimax_m3_icp.cuh
+ create mode 100644 requirements/minimax_m3_icp.txt
+ create mode 100644 tests/kernels/test_fused_minimax_m3_icp_writer.py
+ create mode 100644 tests/kernels/test_fused_minimax_m3_icp_writer_api.py
+ create mode 100644 tests/kernels/test_minimax_m3_icp_device_plan.py
+ create mode 100644 tests/models/minimax_m3/test_compound_page.py
+ create mode 100644 tests/models/minimax_m3/test_compound_runtime.py
+ create mode 100644 tests/models/minimax_m3/test_compound_spec.py
+ create mode 100644 tests/models/minimax_m3/test_icp_dependency.py
+ create mode 100644 tests/models/minimax_m3/test_icp_exchange_route.py
+ create mode 100644 tests/models/minimax_m3/test_icp_indexer_windows.py
+ create mode 100644 tests/models/minimax_m3/test_icp_live_metadata.py
+ create mode 100644 tests/models/minimax_m3/test_icp_main_attention.py
+ create mode 100644 tests/models/minimax_m3/test_icp_metadata_binding.py
+ create mode 100644 tests/models/minimax_m3/test_icp_offload_admission.py
+ create mode 100644 tests/models/minimax_m3/test_icp_prefill_r13.py
+ create mode 100644 tests/models/minimax_m3/test_icp_prefill_selector_mode.py
+ create mode 100644 tests/models/minimax_m3/test_indexer_qkv_replication.py
+ create mode 100644 tests/v1/simple_kv_offload/test_shutdown.py
+ create mode 100644 vllm/models/minimax_m3/common/compound_page.py
+ create mode 100644 vllm/models/minimax_m3/common/compound_spec.py
+ create mode 100644 vllm/models/minimax_m3/common/indexer_icp.py
+ create mode 100644 vllm/models/minimax_m3/nvidia/indexer_icp.py
+ create mode 100644 vllm/models/minimax_m3/nvidia/msa_icp.py
+ create mode 100644 vllm/models/minimax_m3/nvidia/msa_icp_main.py
+ create mode 100644 vllm/models/minimax_m3/nvidia/ops/icp_dispatch.py
+ create mode 100644 vllm/models/minimax_m3/nvidia/ops/icp_metadata.py
+ create mode 100644 vllm/models/minimax_m3/nvidia/sparse_attention_icp.py
+

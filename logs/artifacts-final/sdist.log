@@ -1,0 +1,1412 @@
+/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py:82: SetuptoolsDeprecationWarning: `project.license` as a TOML table is deprecated
+!!
+
+        ********************************************************************************
+        Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0).
+
+        This deprecation is overdue, please update your project and remove deprecated
+        calls to avoid build errors in the future.
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  corresp(dist, value, root_dir)
+/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py:55: SetuptoolsDeprecationWarning: 'tool.setuptools.license-files' is deprecated in favor of 'project.license-files' (available on setuptools>=77.0.0).
+!!
+
+        ********************************************************************************
+
+        This deprecation is overdue, please update your project and remove deprecated
+        calls to avoid build errors in the future.
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license-files for details.
+        ********************************************************************************
+
+!!
+  _apply_tool_table(dist, config, filename)
+running sdist
+running egg_info
+creating python/fmha_sm100.egg-info
+writing python/fmha_sm100.egg-info/PKG-INFO
+writing dependency_links to python/fmha_sm100.egg-info/dependency_links.txt
+writing entry points to python/fmha_sm100.egg-info/entry_points.txt
+writing requirements to python/fmha_sm100.egg-info/requires.txt
+writing top-level names to python/fmha_sm100.egg-info/top_level.txt
+writing manifest file 'python/fmha_sm100.egg-info/SOURCES.txt'
+reading manifest file 'python/fmha_sm100.egg-info/SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+warning: no files found matching 'NOTICE*' under directory 'python/fmha_sm100/cutlass'
+warning: no previously-included files matching '*.py[cod]' found anywhere in distribution
+warning: no previously-included files matching '*.so' found anywhere in distribution
+warning: no previously-included files matching '*.o' found anywhere in distribution
+warning: no previously-included files matching '*.a' found anywhere in distribution
+warning: no previously-included files matching '*.ptx' found anywhere in distribution
+warning: no previously-included files matching '*.cubin' found anywhere in distribution
+no previously-included directories found matching '.venv'
+no previously-included directories found matching 'build'
+no previously-included directories found matching 'dist'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+adding license file 'THIRD_PARTY_NOTICES.md'
+adding license file 'licenses/Apache-2.0.txt'
+adding license file 'licenses/BSD-3-Clause-CUTLASS.txt'
+adding license file 'licenses/BSD-3-Clause-NVIDIA.txt'
+writing manifest file 'python/fmha_sm100.egg-info/SOURCES.txt'
+running check
+creating fmha_sm100-0.1.1
+creating fmha_sm100-0.1.1/docs
+creating fmha_sm100-0.1.1/licenses
+creating fmha_sm100-0.1.1/python/fmha_sm100
+creating fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+creating fmha_sm100-0.1.1/python/fmha_sm100/csrc
+creating fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+creating fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/indexer_topk
+creating fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+creating fmha_sm100-0.1.1/python/fmha_sm100/csrc/kvouter
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src/blackwell_prefill
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/build_k2q_csr
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode
+creating fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode/build_decode_schedule
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/util
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/thread
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/warp
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail/collective
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/schedules
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/thread
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/pipeline
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/platform
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/thread
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/thread
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/collective
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/thread
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/warp
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/detail
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/thread
+creating fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/api
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/src
+creating fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/templates
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp/abi
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp/attention
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp/attention/nvfp4_prefill
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/decode
+creating fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/prefill
+creating fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+creating fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4
+creating fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/api
+creating fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/collective
+creating fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/common
+creating fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/device
+creating fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/kernel
+creating fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/templates
+creating fmha_sm100-0.1.1/tests
+creating fmha_sm100-0.1.1/tests/icp
+creating fmha_sm100-0.1.1/tests/icp/scorer/integration
+creating fmha_sm100-0.1.1/tests/icp/scorer/regression
+creating fmha_sm100-0.1.1/tests/integration
+creating fmha_sm100-0.1.1/tests/jit_cache
+creating fmha_sm100-0.1.1/tests/q8kv4
+creating fmha_sm100-0.1.1/tests/q8kv4_prefill
+creating fmha_sm100-0.1.1/tests/regression
+creating fmha_sm100-0.1.1/tests/smoke
+creating fmha_sm100-0.1.1/tests/warmup
+creating fmha_sm100-0.1.1/tools
+copying files to fmha_sm100-0.1.1...
+copying LICENSE -> fmha_sm100-0.1.1
+copying MANIFEST.in -> fmha_sm100-0.1.1
+copying NOTICE -> fmha_sm100-0.1.1
+copying README.md -> fmha_sm100-0.1.1
+copying THIRD_PARTY_NOTICES.md -> fmha_sm100-0.1.1
+copying pyproject.toml -> fmha_sm100-0.1.1
+copying docs/ICP_INTEGRATION.md -> fmha_sm100-0.1.1/docs
+copying licenses/Apache-2.0.txt -> fmha_sm100-0.1.1/licenses
+copying licenses/BSD-3-Clause-CUTLASS.txt -> fmha_sm100-0.1.1/licenses
+copying licenses/BSD-3-Clause-NVIDIA.txt -> fmha_sm100-0.1.1/licenses
+copying python/fmha_sm100/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/_jit_cache.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/api.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/bench_utils.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/icp_decode_score.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/jit.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/msa_warmup.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/nvfp4_kv.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/q8kv4_decode_adapter.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/q8kv4_prefill_adapter.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/sparse.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100/sparse_fmha_adapter.py -> fmha_sm100-0.1.1/python/fmha_sm100
+copying python/fmha_sm100.egg-info/PKG-INFO -> fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+copying python/fmha_sm100.egg-info/SOURCES.txt -> fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+copying python/fmha_sm100.egg-info/dependency_links.txt -> fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+copying python/fmha_sm100.egg-info/entry_points.txt -> fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+copying python/fmha_sm100.egg-info/requires.txt -> fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+copying python/fmha_sm100.egg-info/top_level.txt -> fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+copying python/fmha_sm100/csrc/fmha_sm100_inst.jinja -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/fmha_sm100_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/fmha_sm100_plan.cu -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/fmha_sm100_plan.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/fmha_sm100_reduction.cu -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/fmha_sm100_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/fmha_sm100_variant_run.cu.jinja -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/gmem_bounds_check.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/indexer_topk_select.cu -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/q8kv4_indexer_decode.cu -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/sparse_topk_select.cu -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/tvm_ffi_utils.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc
+copying python/fmha_sm100/csrc/include/allocator.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/cutlass_utils.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/dequant_nvfp4_e4m3.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/exception.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/fmha.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/fmha_common.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/fmha_cutlass_sm100.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/fmha_fusion.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/fmha_options.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/fmha_tile_scheduler.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/gather_tensor.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/gpu_trace.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/k2_nvfp4_kv.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/mask.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/plan.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/pow_2.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/sm100_fmha_fwd_epilogue_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/sm100_fmha_fwd_kernel_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/sm100_fmha_fwd_mainloop_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/sm100_fmha_load_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/sm100_fmha_reduction.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/sparse_topk_select.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/utils.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/vec_dtypes.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include
+copying python/fmha_sm100/csrc/include/indexer_topk/m3_topk.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/indexer_topk
+copying python/fmha_sm100/csrc/include/indexer_topk/topk_select.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/indexer_topk
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/arguments.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/collective.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/config.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/kernel.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/nvfp4_to_e4m3.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/params.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/runner.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/include/q8kv4_indexer/traits.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/include/q8kv4_indexer
+copying python/fmha_sm100/csrc/kvouter/bindings.cpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/kvouter
+copying python/fmha_sm100/csrc/kvouter/cute_sparse_kvouter.cpp -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/kvouter
+copying python/fmha_sm100/csrc/kvouter/cute_sparse_kvouter.h -> fmha_sm100-0.1.1/python/fmha_sm100/csrc/kvouter
+copying python/fmha_sm100/cute/Makefile -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/README.md -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/example.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/fp4_indexer_interface.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/interface.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/pytest.ini -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/q8_indexer_interface.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/quantize.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/requirements.txt -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/sparse_index_utils.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/test_fp4_indexer.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/test_q8_indexer.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/test_sparse_atten.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute
+copying python/fmha_sm100/cute/src/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src
+copying python/fmha_sm100/cute/src/blackwell_prefill/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/blackwell_prefill
+copying python/fmha_sm100/cute/src/blackwell_prefill/atten_fwd_sm100.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/blackwell_prefill
+copying python/fmha_sm100/cute/src/blackwell_prefill/combine.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/blackwell_prefill
+copying python/fmha_sm100/cute/src/common/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/aot_cache.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/barrier.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/blackwell_helpers.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/block_info.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/copy_utils.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/cute_dsl_utils.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/fast_math.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/mask.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/mma_sm100_desc.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/named_barrier.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/pack_gqa.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/paged_kv.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/pipeline.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/rubin_helpers.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/rubin_softmax_helpers.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/seqlen_info.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/softmax.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/tile_scheduler.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/tma_utils.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/common/utils.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/common
+copying python/fmha_sm100/cute/src/sm100/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/decode_schedule.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/fp4_indexer.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/prepare_k2q_csr.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/prepare_scheduler.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/q8kv4_indexer_decode.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/q8kv8_indexer_decode.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/q8kv8_indexer_prefill.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/q8kv8_indexer_prefill_plan.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100
+copying python/fmha_sm100/cute/src/sm100/build_k2q_csr/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/build_k2q_csr
+copying python/fmha_sm100/cute/src/sm100/build_k2q_csr/build_k2q_csr.cu -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/build_k2q_csr
+copying python/fmha_sm100/cute/src/sm100/fwd/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd
+copying python/fmha_sm100/cute/src/sm100/fwd/atten_fwd.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd
+copying python/fmha_sm100/cute/src/sm100/fwd/atten_fwd_nvfp4_kv.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd
+copying python/fmha_sm100/cute/src/sm100/fwd/combine.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd
+copying python/fmha_sm100/cute/src/sm100/fwd_decode/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode
+copying python/fmha_sm100/cute/src/sm100/fwd_decode/atten_fwd.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode
+copying python/fmha_sm100/cute/src/sm100/fwd_decode/combine.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode
+copying python/fmha_sm100/cute/src/sm100/fwd_decode/tile_scheduler.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode
+copying python/fmha_sm100/cute/src/sm100/fwd_decode/build_decode_schedule/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode/build_decode_schedule
+copying python/fmha_sm100/cute/src/sm100/fwd_decode/build_decode_schedule/build_decode_schedule.cu -> fmha_sm100-0.1.1/python/fmha_sm100/cute/src/sm100/fwd_decode/build_decode_schedule
+copying python/fmha_sm100/cutlass/LICENSE.txt -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass
+copying python/fmha_sm100/cutlass/SOURCE.json -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass
+copying python/fmha_sm100/cutlass/include/cute/config.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/int_tuple.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/layout_composed.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/pointer.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/pointer_base.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/pointer_flagged.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/pointer_sparse.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/pointer_swizzle.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/stride.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/swizzle.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/swizzle_layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/tensor.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/tensor_impl.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/tensor_zip.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/underscore.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute
+copying python/fmha_sm100/cutlass/include/cute/algorithm/axpby.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/clear.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/cooperative_copy.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/cooperative_gemm.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/copy.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/fill.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/functional.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/gemm.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/prefer.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/prefetch.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/tensor_algorithms.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/tensor_reduce.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/algorithm/tuple_algorithms.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/algorithm
+copying python/fmha_sm100/cutlass/include/cute/arch/cluster_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/cluster_sm90.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/config.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm100_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm50.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm75.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm80.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm90.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm90_desc.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/copy_sm90_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm100_desc.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm100_umma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm107_desc.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm107_umma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm120.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm120_sparse.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm61.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm70.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm75.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm80.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm89.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm90.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm90_desc.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm90_gmma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm90_gmma_ext.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm90_gmma_sparse.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/mma_sm90_gmma_sparse_ext.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/simd_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/tmem_allocator_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/tmem_capacity_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/arch/util.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/arch
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_atom.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm100_im2col.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm100_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm50.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm75.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm80.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm90.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm90_im2col.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm90_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/copy_traits_sm90_tma_swizzle.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_atom.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm100.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm100_frag.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm107.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm120.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm120_sparse.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm61.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm70.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm75.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm80.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm89.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm90.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm90_gmma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm90_gmma_ext.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm90_gmma_sparse.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/mma_traits_sm90_gmma_sparse_ext.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/atom/partitioner.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/atom
+copying python/fmha_sm100/cutlass/include/cute/container/alignment.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/container/array.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/container/array_aligned.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/container/array_subbyte.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/container/bit_field.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/container/cuda_types.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/container/tuple.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/container/type_list.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/container
+copying python/fmha_sm100/cutlass/include/cute/numeric/arithmetic_tuple.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/complex.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/int.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/integer_sequence.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/integral_constant.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/integral_ratio.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/math.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/numeric_types.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/numeric/real.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/numeric
+copying python/fmha_sm100/cutlass/include/cute/util/debug.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/util
+copying python/fmha_sm100/cutlass/include/cute/util/print.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/util
+copying python/fmha_sm100/cutlass/include/cute/util/print_latex.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/util
+copying python/fmha_sm100/cutlass/include/cute/util/print_svg.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/util
+copying python/fmha_sm100/cutlass/include/cute/util/print_tensor.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/util
+copying python/fmha_sm100/cutlass/include/cute/util/type_traits.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cute/util
+copying python/fmha_sm100/cutlass/include/cutlass/aligned_buffer.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/array.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/array_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/array_subbyte.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/barrier.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/bfloat16.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/blas3.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/blas3_types.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/block_striped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/cluster_launch.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/constants.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/coord.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/core_io.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/cuda_host_adapter.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/cutlass.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/device_kernel.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/exmy_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/fast_math.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/float8.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/float_subbyte.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/floating_point_nvrtc.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/functional.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/gemm_coord.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/gemm_coord.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/half.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/integer_subbyte.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/kernel_hardware_info.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/kernel_hardware_info.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/kernel_launch.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/matrix.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/matrix_coord.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/matrix_shape.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/numeric_conversion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/numeric_size.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/numeric_types.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/pitch_linear_coord.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/predicate_vector.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/quaternion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/real.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/relatively_equal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/semaphore.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/subbyte_reference.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/tensor_coord.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/tensor_ref.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/tensor_ref_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/tensor_view.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/tensor_view_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/tfloat32.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/trace.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/uint128.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/uint256.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/version.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/wmma_array.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/workspace.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass
+copying python/fmha_sm100/cutlass/include/cutlass/arch/arch.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/barrier.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/cache_operation.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/config.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/grid_dependency_control.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/memory.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/memory_sm75.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/memory_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm100.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm50.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm60.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm61.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm70.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm75.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm89.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sm90.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sparse_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/mma_sparse_sm89.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/reg_reconfig.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/simd.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/simd_sm60.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/simd_sm61.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/synclog.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/wmma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/wmma_sm70.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/wmma_sm72.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/arch/wmma_sm75.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/arch
+copying python/fmha_sm100/cutlass/include/cutlass/conv/conv2d_problem_size.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv
+copying python/fmha_sm100/cutlass/include/cutlass/conv/conv3d_problem_size.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv
+copying python/fmha_sm100/cutlass/include/cutlass/conv/convnd_problem_shape.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv
+copying python/fmha_sm100/cutlass/include/cutlass/conv/convolution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv
+copying python/fmha_sm100/cutlass/include/cutlass/conv/detail.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv
+copying python/fmha_sm100/cutlass/include/cutlass/conv/dispatch_policy.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/collective_builder.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/collective_conv.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/detail.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/sm100_implicit_gemm_umma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/sm90_implicit_gemm_gmma_ss_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders/sm100_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders/sm100_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders/sm90_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders/sm90_gmma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/conv/device/conv_universal_adapter.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/device
+copying python/fmha_sm100/cutlass/include/cutlass/conv/device/direct_convolution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/device
+copying python/fmha_sm100/cutlass/include/cutlass/conv/device/implicit_gemm_convolution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/device
+copying python/fmha_sm100/cutlass/include/cutlass/conv/device/implicit_gemm_convolution_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/device
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/conv_universal.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_dgrad.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_fprop.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_fprop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_fprop_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_fprop_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_fprop_with_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_group_fprop.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_wgrad.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv2d_wgrad_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv3d_dgrad.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv3d_fprop.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv3d_fprop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv3d_fprop_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_conv3d_wgrad.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_deconv2d.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_deconv2d_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_deconv3d.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_deconv3d_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/default_depthwise_fprop.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/direct_convolution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/implicit_gemm_convolution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/implicit_gemm_convolution_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/implicit_gemm_convolution_strided_dgrad.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/implicit_gemm_convolution_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/implicit_gemm_convolution_with_fused_epilogue.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/sm100_implicit_gemm_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/kernel/sm90_implicit_gemm_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/conv/thread/depthwise_mma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/thread
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_dgrad_filter_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_dgrad_filter_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_dgrad_output_gradient_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_dgrad_output_gradient_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_few_channels.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_fixed_channels.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_few_channels.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_fixed_channels.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_wgrad_activation_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_wgrad_activation_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_wgrad_output_gradient_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv2d_wgrad_output_gradient_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_dgrad_filter_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_dgrad_filter_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_dgrad_output_gradient_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_dgrad_output_gradient_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_fprop_activation_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_fprop_activation_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_fprop_filter_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_fprop_filter_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_wgrad_activation_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_wgrad_activation_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_wgrad_output_gradient_tile_access_iterator_analytic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/conv3d_wgrad_output_gradient_tile_access_iterator_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_direct_conv_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_fprop_activation_tile_access_iterator_direct_conv_fixed_stride_dilation.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_fprop_activation_tile_access_iterator_direct_conv_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_fprop_direct_conv_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_fprop_filter_tile_access_iterator_direct_conv_optimized.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_fprop_pipelined.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_mma_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/depthwise_mma_core_with_lane_access_size.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/implicit_gemm_fprop_fusion_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/implicit_gemm_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/implicit_gemm_pipelined.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/implicit_gemm_wgrad_fusion_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/predicated_scale_bias_vector_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/predicated_scale_bias_vector_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/threadblock/threadblock_swizzle.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/conv/warp/mma_depthwise_simt.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/warp
+copying python/fmha_sm100/cutlass/include/cutlass/conv/warp/mma_depthwise_simt_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/warp
+copying python/fmha_sm100/cutlass/include/cutlass/conv/warp/scale_bias_relu_transform.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/conv/warp
+copying python/fmha_sm100/cutlass/include/cutlass/detail/blockwise_scale_layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/cluster.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/collective.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/dependent_false.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/helper_macros.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/mainloop_fusion_helper_scale_factor.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/mma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/sm100_blockscaled_layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/sm100_mixed_dtype_blockwise_layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/sm100_tmem_helper.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/sm103_blockscaled_layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/sm107_blockscaled_layout.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail
+copying python/fmha_sm100/cutlass/include/cutlass/detail/collective/mixed_input_utils.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail/collective
+copying python/fmha_sm100/cutlass/include/cutlass/detail/collective/moe_stride_utils.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail/collective
+copying python/fmha_sm100/cutlass/include/cutlass/detail/collective/sm103_kernel_type.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/detail/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/dispatch_policy.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/collective_builder.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/collective_epilogue.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/default_epilogue.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/default_epilogue_array.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/detail.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/epilogue_tensor_broadcast.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm100_epilogue_array_nosmem.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm100_epilogue_array_planar_complex_nosmem.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm100_epilogue_array_planar_complex_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm100_epilogue_array_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm100_epilogue_nosmem.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm100_epilogue_planar_complex_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm100_epilogue_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm70_epilogue_vectorized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm70_epilogue_vectorized_array.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm90_epilogue_array_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm90_epilogue_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/sm90_epilogue_tma_warpspecialized_bias_elementwise.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders/sm100_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders/sm103_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders/sm107_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders/sm120_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders/sm120_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders/sm90_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders/sm90_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/callbacks.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/operations.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm100_callbacks_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm100_visitor_compute_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm100_visitor_store_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm120_callbacks_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm120_visitor_store_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm90_callbacks_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm90_visitor_compute_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm90_visitor_load_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm90_visitor_store_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm90_visitor_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion/sm90_visitor_topk_softmax.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/activation.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/conversion_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/detail.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_bias_elementwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_bias_relu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_clamp.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_dgelu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_drelu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_gelu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_generic.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_generic_with_scaling.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_hardswish.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_leaky_relu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_relu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_relu0.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_residual_block.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_sigmoid.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_silu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_tensor_broadcast.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/linear_combination_with_elementwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/reduction_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/thread/scale_type.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/thread
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_complex_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_complex_tensor_op_blas3.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_direct_store.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_simt.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_tensor_op_blas3.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_volta_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_with_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_epilogue_wmma_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_thread_map_simt.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_thread_map_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_thread_map_volta_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/default_thread_map_wmma_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/direct_store_epilogue_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_base_streamk.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_depthwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_direct_store.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_gemm_k_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_smem_accumulator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_streamk_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_visitor_with_softmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_with_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_with_scaling_factor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_with_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_with_visitor_callbacks.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/epilogue_workspace.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/interleaved_epilogue.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/output_iterator_parameter.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/output_tile_thread_map.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_affine.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_affine_layout_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_blas3.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_conv.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_direct_conv.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_predicates.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/predicated_tile_iterator_strided_dgrad.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/shared_load_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/shared_load_iterator_mixed.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/shared_load_iterator_pitch_linear.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion/visitor_2x.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion/visitor_compute.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion/visitor_load.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion/visitor_store.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion/visitors.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/threadblock/fusion
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/fragment_iterator_complex_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/fragment_iterator_gaussian_complex_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/fragment_iterator_simt.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/fragment_iterator_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/fragment_iterator_volta_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/fragment_iterator_wmma_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/simt_policy.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/tensor_op_policy.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/tile_iterator_simt.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/tile_iterator_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/tile_iterator_tensor_op_mixed.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/tile_iterator_volta_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/tile_iterator_wmma_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/volta_tensor_op_policy.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/epilogue/warp/wmma_tensor_op_policy.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/epilogue/warp
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/device/detail.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/device
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/device/dist_gemm_universal_wrapper.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/device
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/device/full_barrier.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/device
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/kernel/detail.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/kernel/dist_gemm_kernel_wrapper.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/kernel/full_barrier.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/schedules/dist_gemm_1d_schedules.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/schedules
+copying python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/schedules/dist_gemm_base_schedule.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/experimental/distributed/schedules
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/dispatch_policy.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/gemm_enumerated_types.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/group_array_problem_shape.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/collective_builder.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/collective_builder_decl.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/collective_mma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/collective_mma_decl.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/fp8_accumulation.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized_rcggemm.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_mixed_tma_cpasync_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_sparse_mma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_array_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_array_warpspecialized_blockwise_scaling.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_array_warpspecialized_emulated.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_array_warpspecialized_interleaved_complex_emulated.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_array_warpspecialized_interleaved_complex_tf32.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_array_warpspecialized_planar_complex.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_array_warpspecialized_rcggemm.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_cpasync_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_mixed_tma_cpasync_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_warpspecialized_blockwise_scaling.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_warpspecialized_emulated.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_warpspecialized_interleaved_complex_emulated.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_warpspecialized_interleaved_complex_tf32.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_warpspecialized_mixed_input.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_mma_warpspecialized_planar_complex.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm100_sparse_mma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm107_blockscaled_mma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm107_mma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_blockscaled_mma_array_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_blockscaled_mma_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_blockscaled_sparse_mma_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_mma_array_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_mma_array_tma_blockwise_scaling.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_mma_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_mma_tma_blockwise_scaling.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm120_sparse_mma_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm70_mma_twostage.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm80_mma_array_multistage.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm80_mma_multistage.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_array_tma_gmma_rs_warpspecialized_mixed_input.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_array_tma_gmma_ss_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_array_tma_gmma_ss_warpspecialized_fp8.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_array_tma_gmma_ss_warpspecialized_fp8_blockwise_scaling.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_multistage_gmma_rs_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_multistage_gmma_ss_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_tma_gmma_rs_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_tma_gmma_rs_warpspecialized_mixed_input.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_tma_gmma_ss.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_tma_gmma_ss_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_tma_gmma_ss_warpspecialized_fp8.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_mma_tma_gmma_ss_warpspecialized_fp8_blockwise_scaling.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_sparse_mma_tma_gmma_ss_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/sm90_sparse_mma_tma_gmma_ss_warpspecialized_fp8.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_9xBF16_interleaved_complex_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_9xBF16_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_blockscaled_mixed_tma_cpasync_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_blockscaled_sparse_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_blockscaled_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_blockwise_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_cpasync_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_interleaved_complex_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_mixed_input_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_mixed_tma_cpasync_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_pipeline_carveout.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_planar_complex_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_simt_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_sparse_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm100_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm103_blockscaled_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm107_blockscaled_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm107_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm107_sparse_config.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm107_umma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm120_array_mma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm120_blockscaled_mma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm120_blockscaled_sparse_mma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm120_blockwise_mma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm120_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm120_mma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm120_sparse_mma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm1xx_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm1xx_sparse_config.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm90_common.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm90_gmma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm90_sparse_config.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders/sm90_sparse_gmma_builder.inl -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/collective/builders
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/base_grouped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/default_gemm_configuration.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/ell_gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_array.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_batched.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_blockwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_grouped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_layernorm_mainloop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_sparse.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_sparse_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_sparse_universal_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_sparse_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_sparse_with_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_splitk_parallel.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_universal_adapter.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_universal_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_universal_streamk_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_universal_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_universal_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemm_with_k_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemv.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/gemv_blockscaled.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/rank_2k.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/rank_2k_grouped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/rank_k.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/symm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/device/trmm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/device
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_ell_gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_grouped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_grouped_per_group_scale.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_grouped_softmax_mainloop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_layernorm_mainloop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_planar_complex_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_sparse.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_sparse_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_sparse_universal_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_sparse_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_sparse_with_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_splitk_parallel.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_streamk_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_universal_with_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_with_broadcast.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_with_k_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemm_with_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_gemv.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_rank_2k.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_rank_2k_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_rank_2k_grouped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_rank_2k_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_rank_k.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_rank_k_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_rank_k_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_symm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_symm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_symm_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_trmm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_trmm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/default_trmm_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/ell_gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_array.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_batched.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_blockwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_grouped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_grouped_per_group_scale.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_grouped_problem_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_grouped_softmax_mainloop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_layernorm_mainloop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_pipelined.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_planar_complex_array.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_sparse_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_sparse_universal_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_splitk_parallel.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_streamk_with_fused_epilogue.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_transpose_operands.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_universal.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_universal_blockwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_universal_decl.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_universal_streamk.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_universal_with_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_universal_with_visitor_streamk.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_with_fused_epilogue.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemm_with_k_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemv.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemv_batched_strided.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/gemv_blockscaled.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/grouped_problem_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/params_sparse_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/params_universal_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/rank_2k_grouped.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/rank_2k_grouped_problem_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/rank_2k_transpose_operands.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/rank_2k_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/rank_k_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_array_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_array_tma_warpspecialized_input_transform.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_array_tma_warpspecialized_mma_transform.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_cpasync_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_mixed_tma_cpasync_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_tma_warpspecialized_input_transform.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_tma_warpspecialized_mixed_input_transform.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_gemm_tma_warpspecialized_mma_transform.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_sparse_gemm_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_tile_scheduler.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_tile_scheduler_group.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm100_tile_scheduler_stream_k.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm103_blockscaled_gemm_array_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm103_blockscaled_gemm_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm107_gemm_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm120_gemm_tma_warpspecialized_cooperative_asymmetric_dma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm70_gemm.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm70_gemm_array.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_array_tma_warpspecialized_cooperative.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_array_tma_warpspecialized_pingpong.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_tma.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_cooperative.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_pingpong.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_warpspecialized_cooperative.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_gemm_warpspecialized_pingpong.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_tile_scheduler.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_tile_scheduler_group.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sm90_tile_scheduler_stream_k.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sparse_gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sparse_gemm_with_absmax.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/sparse_gemm_with_visitor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/static_tile_scheduler.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/symm_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/tile_scheduler.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/tile_scheduler_detail.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/tile_scheduler_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/kernel/trmm_universal.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/thread/mma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/thread
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/thread/mma_sm50.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/thread
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/thread/mma_sm60.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/thread
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/thread/mma_sm61.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/thread
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_ell_mma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_gemv_core.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_simt.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_sm70.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_sm75.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_sparse_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_with_access_size.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_with_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_core_wmma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_layernorm_mainloop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_multistage_blockwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_planar_complex_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_planar_complex_pipelined.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_softmax_mainloop_fusion.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_mma_with_reduction.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_multistage_mma_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_multistage_mma_complex_core.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_multistage_mma_complex_core_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_multistage_trmm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_sparse_mma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/default_trmm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/ell_mma_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/ell_mma_pipelined.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/gemv.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/index_remat.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_blas3_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_layernorm_mainloop_fusion_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_multistage_blockwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_pipelined.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_planar_complex_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_planar_complex_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_planar_complex_pipelined.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_singlestage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_softmax_mainloop_fusion_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_sparse_base.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_sparse_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/mma_with_reduction_multistage.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/threadblock_swizzle.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock/threadblock_swizzle_streamk.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/default_mma_complex_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/default_mma_sparse_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/default_mma_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/default_mma_tensor_op_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/default_mma_with_reduction_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/default_mma_wmma_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/layernorm_scale_bias_transform.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_complex_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_complex_tensor_op_fast_f32.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_complex_tensor_op_tile_iterator_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_gaussian_complex_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_gaussian_complex_tensor_op_tile_iterator_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_mixed_input_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_simt.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_simt_policy.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_simt_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_sparse_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_fast_f32.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_fragment_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_policy.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_sm70.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_tile_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_tile_iterator_sm70.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_tile_iterator_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_tile_iterator_sparse.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_tile_iterator_wmma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_tensor_op_wmma.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/mma_with_reduction_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/scale_bias_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/softmax_scale_bias_transform.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/gemm/warp/tile_iterator_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/gemm/warp
+copying python/fmha_sm100/cutlass/include/cutlass/layout/layout.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/matrix.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/permute.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/pitch_linear.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/tensor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/tensor_op_multiplicand_sm70.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/tensor_op_multiplicand_sm75.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/tensor_op_multiplicand_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/layout/vector.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/layout
+copying python/fmha_sm100/cutlass/include/cutlass/pipeline/pipeline.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/pipeline
+copying python/fmha_sm100/cutlass/include/cutlass/pipeline/sm100_pipeline.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/pipeline
+copying python/fmha_sm100/cutlass/include/cutlass/pipeline/sm90_pipeline.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/pipeline
+copying python/fmha_sm100/cutlass/include/cutlass/platform/platform.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/platform
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/threadblock_swizzle.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/device/reduce_split_k.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/device
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/device/tensor_reduce.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/device
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/device/tensor_reduce_affine_contiguous.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/device
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/device/tensor_reduce_affine_strided.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/device
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/kernel/reduce_softmax_final.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/kernel/reduce_split_k.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/kernel/tensor_reduce_affine_contiguous.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/kernel/tensor_reduce_affine_strided.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/thread/reduce.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/thread
+copying python/fmha_sm100/cutlass/include/cutlass/reduction/thread/reduction_operators.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/reduction/thread
+copying python/fmha_sm100/cutlass/include/cutlass/thread/matrix.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/thread
+copying python/fmha_sm100/cutlass/include/cutlass/transform/pitch_linear_thread_map.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform
+copying python/fmha_sm100/cutlass/include/cutlass/transform/collective/sm90_wgmma_transpose.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/collective
+copying python/fmha_sm100/cutlass/include/cutlass/transform/device/transform_universal_adapter.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/device
+copying python/fmha_sm100/cutlass/include/cutlass/transform/kernel/filter_format_transformer.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/transform/kernel/sm90_sparse_gemm_compressor.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/transform/kernel/sparse_gemm_compressor.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/kernel
+copying python/fmha_sm100/cutlass/include/cutlass/transform/thread/transpose.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/thread
+copying python/fmha_sm100/cutlass/include/cutlass/transform/thread/unary_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/thread
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/ell_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/ell_predicated_tile_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/ell_predicated_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_scale_bias_vector_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_scale_bias_vector_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_tile_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_tile_access_iterator_2dthreadtile.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_tile_access_iterator_params.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_tile_access_iterator_triangular_matrix.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_tile_iterator_2dthreadtile.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_tile_iterator_triangular_matrix.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/predicated_vector_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_scale_bias_vector_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_access_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_access_iterator_pitch_linear.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_access_iterator_pitch_linear_direct_conv.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_access_iterator_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_access_iterator_tensor_op_sm80.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_iterator_pitch_linear.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_iterator_pitch_linear_2dthreadtile.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_iterator_tensor_op.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/regular_tile_iterator_tensor_op_sm70.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/threadblock/vector_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/threadblock
+copying python/fmha_sm100/cutlass/include/cutlass/transform/warp/vector_fragment_iterator.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/include/cutlass/transform/warp
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/GPU_Clock.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/command_line.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/cublas_wrappers.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/debug.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_dump.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_groupnorm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_layernorm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_memory.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_nchw_to_nhwc.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_nhwc_padding.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_nhwc_pooling.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_nhwc_to_nchw.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_rmsnorm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/device_utils.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/distribution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/exceptions.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/gett_commandline.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/helper_cuda.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/host_reorder.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/host_tensor.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/host_tensor_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/host_uncompress.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/index_sequence.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/mixed_dtype_utils.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/packed_stride.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/print_error.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/tensor_view_io.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/type_traits.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/detail/inner_product.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/detail
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/detail/linear_to_coordinate.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/detail
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/convolution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/gemm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/gemm_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/gett.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/rank_2k_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/tensor_compare.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/tensor_fill.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/tensor_foreach.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/tensor_reduce.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/tensor_relu.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/kernel/gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/kernel
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/kernel/tensor_elementwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/kernel
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/kernel/tensor_foreach.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/kernel
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/thread/gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/device/thread
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/conv.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/convolution.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/error_metrics.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/gemm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/gemm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/gemm_planar_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/gett.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/rank_2k.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/rank_2k_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/rank_k_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/symm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/symm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_compare.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_compare.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_copy.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_elementwise.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_fill.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_fill.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_foreach.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_norm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_reduce.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/tensor_reduce.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/trmm.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host/trmm_complex.h -> fmha_sm100-0.1.1/python/fmha_sm100/cutlass/tools/util/include/cutlass/util/reference/host
+copying python/fmha_sm100/decode_q8kv4/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4
+copying python/fmha_sm100/decode_q8kv4/_build_utils.py -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4
+copying python/fmha_sm100/decode_q8kv4/build.py -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4
+copying python/fmha_sm100/decode_q8kv4/interface.py -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4
+copying python/fmha_sm100/decode_q8kv4/jit.py -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4
+copying python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/api
+copying python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/api
+copying python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/api
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_correction_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_fp4_transform.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_fwd_epilogue_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_fwd_mainloop_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_kv_transform_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_load_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_mma_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_page_offsets_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_pipeline.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_selection_ring.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_softmax_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_storage.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/decode_attention_params.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/exception.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_common.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_fusion.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_options.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_tile_scheduler.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/nvfp4_to_e4m3.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/sm100_fmha_q8kv4_traits.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/sm100_mma_n8.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/tvm_ffi_utils.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/utils.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/decode_attention_plan.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/decode_attention_reduction.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/fmha.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/fmha_cutlass_sm100.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/plan.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/sm100_fmha_reduction.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/decode_q8kv4/csrc/include/sm100/kernel/sm100_fmha_fwd_kernel_tma_warpspecialized.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/include/sm100/kernel
+copying python/fmha_sm100/decode_q8kv4/csrc/src/decode_attention_plan.cu -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/src
+copying python/fmha_sm100/decode_q8kv4/csrc/src/decode_attention_reduction.cu -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/src
+copying python/fmha_sm100/decode_q8kv4/csrc/templates/decode_attention_inst.cu.jinja -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/templates
+copying python/fmha_sm100/decode_q8kv4/csrc/templates/decode_attention_run.cu.jinja -> fmha_sm100-0.1.1/python/fmha_sm100/decode_q8kv4/csrc/templates
+copying python/fmha_sm100/icp/COMMIT -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/_build.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/_cache.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/_jit_guard.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/_symmetric_window.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/candidate_exchange.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/candidates.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/carrier.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/exchange.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/exchange_plan.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/fused_exchange.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/local_indexer.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/merge.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/merge_reference.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/prewarm.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/tiled_exchange.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp
+copying python/fmha_sm100/icp/abi/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/abi
+copying python/fmha_sm100/icp/abi/__main__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/abi
+copying python/fmha_sm100/icp/abi/refined-icp-v1.json -> fmha_sm100-0.1.1/python/fmha_sm100/icp/abi
+copying python/fmha_sm100/icp/abi/refined_icp_v1.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/abi
+copying python/fmha_sm100/icp/attention/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/attention
+copying python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/attention/nvfp4_prefill
+copying python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/attention/nvfp4_prefill
+copying python/fmha_sm100/icp/csrc/carrier_pack.cu -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/fused_exchange.cu -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/fused_exchange.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/k2_merge.cu -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/k5_exchange.cu -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/k5t_exchange.cu -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/local_candidates.cu -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/local_candidates.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/local_candidates_full_row.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/local_candidates_prefill_full_row.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/local_candidates_rs.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/local_candidates_rs_control.cu -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/csrc/merge_topk.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/icp/csrc
+copying python/fmha_sm100/icp/scorer/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer
+copying python/fmha_sm100/icp/scorer/decode/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/decode
+copying python/fmha_sm100/icp/scorer/decode/_icp_decode_score_kernel.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/decode
+copying python/fmha_sm100/icp/scorer/decode/_icp_decode_score_utils.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/decode
+copying python/fmha_sm100/icp/scorer/decode/icp_decode_score.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/decode
+copying python/fmha_sm100/icp/scorer/prefill/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/prefill
+copying python/fmha_sm100/icp/scorer/prefill/api.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/prefill
+copying python/fmha_sm100/icp/scorer/prefill/jit.py -> fmha_sm100-0.1.1/python/fmha_sm100/icp/scorer/prefill
+copying python/fmha_sm100/kvouter/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/kvouter/aot_export.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/kvouter/build_kvouter_index.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/kvouter/cpp_backend.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/kvouter/interface.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/kvouter/sparse_fwd_kvouter.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/kvouter/sparse_fwd_kvouter_combine.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/kvouter/sparse_fwd_kvouter_load_balance_schedule.py -> fmha_sm100-0.1.1/python/fmha_sm100/kvouter
+copying python/fmha_sm100/prefill_q8kv4/__init__.py -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4
+copying python/fmha_sm100/prefill_q8kv4/build.py -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4
+copying python/fmha_sm100/prefill_q8kv4/interface.py -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4
+copying python/fmha_sm100/prefill_q8kv4/jit.py -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4
+copying python/fmha_sm100/prefill_q8kv4/csrc/api/prefill_attention_api.cpp -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/api
+copying python/fmha_sm100/prefill_q8kv4/csrc/api/prefill_attention_api.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/api
+copying python/fmha_sm100/prefill_q8kv4/csrc/api/prefill_attention_binding.cpp -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/api
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/collective/sm100_prefill_attention_fp4_transform.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/collective/sm100_prefill_attention_mainloop.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/collective
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/common/nvfp4_to_e4m3.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/common/prefill_attention_config.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/common/prefill_attention_math.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/common
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/device/prefill_attention.hpp -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/device/prefill_attention_launch.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/device
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/kernel/sm100_prefill_attention_kernel.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/kernel
+copying python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/kernel/sm100_prefill_attention_shared_storage.cuh -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/include/sm100/kernel
+copying python/fmha_sm100/prefill_q8kv4/csrc/templates/prefill_attention_inst.cu.jinja -> fmha_sm100-0.1.1/python/fmha_sm100/prefill_q8kv4/csrc/templates
+copying tests/conftest.py -> fmha_sm100-0.1.1/tests
+copying tests/icp/conftest.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_abi.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_candidate_mapping.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_candidates.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_carrier_pack.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_decode_selection_fast.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_exchange.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_fused_exchange.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_local_indexer.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_merge_key.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_msa_candidate_composition.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_prefill_selection_fast.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_prefill_tiny_warp.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_prewarm_cache.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_q8kv4_prewarm.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_selector_prevalidated.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_symmetric_window_host.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/test_tiled_exchange.py -> fmha_sm100-0.1.1/tests/icp
+copying tests/icp/scorer/integration/_icp_decode_whole_reference.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/icp_decode_fixtures.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/icp_device_plan_fixtures.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/icp_device_plan_harness.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/icp_prefill_fixtures.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_decode_aot.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_decode_noinit_selector.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_decode_score.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_fragment_maxscore.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_prefill_completion.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_prefill_dispatch.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_prefill_pipeline.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/integration/test_icp_prefill_pipeline_mixed.py -> fmha_sm100-0.1.1/tests/icp/scorer/integration
+copying tests/icp/scorer/regression/test_icp_decode_score_contract.py -> fmha_sm100-0.1.1/tests/icp/scorer/regression
+copying tests/icp/scorer/regression/test_icp_device_plan.py -> fmha_sm100-0.1.1/tests/icp/scorer/regression
+copying tests/icp/scorer/regression/test_icp_direct_table_bound.py -> fmha_sm100-0.1.1/tests/icp/scorer/regression
+copying tests/icp/scorer/regression/test_icp_plan_no_device_readback.py -> fmha_sm100-0.1.1/tests/icp/scorer/regression
+copying tests/integration/test_mixed_split.py -> fmha_sm100-0.1.1/tests/integration
+copying tests/integration/test_onlyscore_pipeline.py -> fmha_sm100-0.1.1/tests/integration
+copying tests/integration/test_plan_correctness.py -> fmha_sm100-0.1.1/tests/integration
+copying tests/integration/test_proxy_kv_e2e.py -> fmha_sm100-0.1.1/tests/integration
+copying tests/integration/test_q_offset_override.py -> fmha_sm100-0.1.1/tests/integration
+copying tests/jit_cache/__init__.py -> fmha_sm100-0.1.1/tests/jit_cache
+copying tests/jit_cache/test_cute_aot_cache.py -> fmha_sm100-0.1.1/tests/jit_cache
+copying tests/jit_cache/test_jit_cache.py -> fmha_sm100-0.1.1/tests/jit_cache
+copying tests/q8kv4/__init__.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/cases.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/conftest.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/reference.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/runners.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/test_contract.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/test_correctness.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/test_dispatch.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/test_global_scales.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/test_layout.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/test_plan_reuse.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4/test_tail_garbage.py -> fmha_sm100-0.1.1/tests/q8kv4
+copying tests/q8kv4_prefill/__init__.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/cases.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/conftest.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/reference.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/runners.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/test_contract.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/test_correctness.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/test_dispatch.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/test_global_scales.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/test_layout.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/q8kv4_prefill/test_tail_garbage.py -> fmha_sm100-0.1.1/tests/q8kv4_prefill
+copying tests/regression/test_correctness.py -> fmha_sm100-0.1.1/tests/regression
+copying tests/regression/test_icp_consolidation.py -> fmha_sm100-0.1.1/tests/regression
+copying tests/regression/test_icp_dev_compatibility.py -> fmha_sm100-0.1.1/tests/regression
+copying tests/regression/test_nvfp4_scale_compatibility.py -> fmha_sm100-0.1.1/tests/regression
+copying tests/regression/test_sparse_attn.py -> fmha_sm100-0.1.1/tests/regression
+copying tests/smoke/test_proxy_kv_smoke.py -> fmha_sm100-0.1.1/tests/smoke
+copying tests/smoke/test_sparse_topk_forced.py -> fmha_sm100-0.1.1/tests/smoke
+copying tests/smoke/test_sparse_topk_large_boundary_bin.py -> fmha_sm100-0.1.1/tests/smoke
+copying tests/warmup/__init__.py -> fmha_sm100-0.1.1/tests/warmup
+copying tests/warmup/test_msa_warmup.py -> fmha_sm100-0.1.1/tests/warmup
+copying tools/stage_cutlass.py -> fmha_sm100-0.1.1/tools
+copying python/fmha_sm100.egg-info/SOURCES.txt -> fmha_sm100-0.1.1/python/fmha_sm100.egg-info
+Writing fmha_sm100-0.1.1/setup.cfg
+Creating tar archive
+removing 'fmha_sm100-0.1.1' (and everything under it)

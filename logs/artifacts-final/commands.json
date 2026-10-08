@@ -1,0 +1,423 @@
+[
+  {
+    "name": "sdist",
+    "command": [
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+      "-c",
+      "from setuptools.build_meta import build_sdist; build_sdist('/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts')"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/build-source",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": null,
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": null,
+      "MSA_REGISTER_TVM_FFI": null,
+      "ICP_KERNEL_ARCH": null,
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "wheel-from-sdist",
+    "command": [
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+      "-c",
+      "from setuptools.build_meta import build_wheel; build_wheel('/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts')"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/build-from-sdist/fmha_sm100-0.1.1",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": null,
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": null,
+      "MSA_REGISTER_TVM_FFI": null,
+      "ICP_KERNEL_ARCH": null,
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "install",
+    "command": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+      "--no-index",
+      "--no-deps",
+      "--target",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/fmha_sm100-0.1.1-py3-none-any.whl"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/build-source",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": null,
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": null,
+      "MSA_REGISTER_TVM_FFI": null,
+      "ICP_KERNEL_ARCH": null,
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "installed-probe",
+    "command": [
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+      "-c",
+      "INSTALL='/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel'\nSOURCE='/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/build-source'\nCOMMIT='0f658079c9ea9ab63c76b975b7ee4dd54a198334'\nCOMPONENTS=('icp', 'fmha', 'decode', 'nvfp4', 'q8kv4')\nREPORT='/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/installed-probe.json'\n\nimport importlib.metadata, json\nfrom pathlib import Path\nimport torch\nattempts = []\ndef forbid_cuda(*args, **kwargs):\n    attempts.append(\"cuda_init\")\n    raise AssertionError(\"Installed host API initialized CUDA\")\ntorch.cuda._lazy_init = forbid_cuda\nfrom vllm.models.minimax_m3.nvidia.msa_icp import require_msa_icp\npackage = require_msa_icp()\nfrom fmha_sm100.icp import CandidateExchange, exchange_plan, local_indexer, _cache\nassert package.ICP_INTEGRATION_ABI == 1\nassert package.PUBLIC_VLLM_ABI == 1\nassert _cache.COMPONENTS == COMPONENTS\ninstalled = Path(package.__file__).resolve().parent\nassert installed == Path(INSTALL) / \"fmha_sm100/icp\"\nassert (installed / \"COMMIT\").read_text().strip() == COMMIT\nassert CandidateExchange.__module__ == \"fmha_sm100.icp.candidate_exchange\"\nassert exchange_plan.select_token_capacity([4, 8, 16], 5) == 8\ncache_files = {name: _cache.file_hashes(name) for name in COMPONENTS}\ncache_digests = {name: _cache.component_digest(name) for name in COMPONENTS}\nassert all(cache_files.values())\nassert any(name.startswith(\"decode_q8kv4/\") and name.endswith(\".cpp\")\n           for name in cache_files[\"q8kv4\"])\nsaved_package, saved_root = _cache.PACKAGE, _cache.SOURCE_ROOT\ntry:\n    _cache.PACKAGE = Path(SOURCE) / \"python/fmha_sm100/icp\"\n    _cache.SOURCE_ROOT = _cache.PACKAGE.parent\n    assert all(cache_files[name] == _cache.file_hashes(name) for name in COMPONENTS)\n    assert all(cache_digests[name] == _cache.component_digest(name) for name in COMPONENTS)\nfinally:\n    _cache.PACKAGE, _cache.SOURCE_ROOT = saved_package, saved_root\nassert not attempts and not torch.cuda.is_initialized()\nresult = {\"installed_package\":str(installed),\n \"version\":importlib.metadata.version(\"fmha-sm100\"),\n \"msa_integration_abi\":package.ICP_INTEGRATION_ABI,\n \"public_vllm_abi\":package.PUBLIC_VLLM_ABI,\n \"vllm_msa_admission\":\"passed\", \"jit_source_payload_identity\":\"passed\",\n \"components\":list(COMPONENTS),\n \"component_counts\":{name:len(files) for name,files in cache_files.items()},\n \"component_digests\":cache_digests,\n \"cuda_initialization_attempts\":attempts}\nPath(REPORT).write_text(json.dumps(result, indent=2) + \"\\n\")\nprint(json.dumps(result, indent=2))\n"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "msa-full-base",
+    "command": [
+      "git",
+      "read-tree",
+      "ed4e40efcb5895aba1a3554d62cd1dcaf77920cb"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/msa-full-index"
+    }
+  },
+  {
+    "name": "msa-full-apply-1",
+    "command": [
+      "git",
+      "apply",
+      "--cached",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/msa-full.patch"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/msa-full-index"
+    }
+  },
+  {
+    "name": "msa-bundle",
+    "command": [
+      "git",
+      "bundle",
+      "create",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/msa.bundle",
+      "work/icp-dev-public-compat",
+      "^ed4e40efcb5895aba1a3554d62cd1dcaf77920cb"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "msa-bundle-verify",
+    "command": [
+      "git",
+      "bundle",
+      "verify",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/msa.bundle"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "vllm-full-base",
+    "command": [
+      "git",
+      "read-tree",
+      "242e4213fc9845ff6fe607af1aee626fd8acc990"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/vllm-full-index"
+    }
+  },
+  {
+    "name": "vllm-full-apply-1",
+    "command": [
+      "git",
+      "apply",
+      "--cached",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/vllm-full.patch"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/vllm-full-index"
+    }
+  },
+  {
+    "name": "vllm-bundle",
+    "command": [
+      "git",
+      "bundle",
+      "create",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/vllm.bundle",
+      "work/icp-public-vllm",
+      "^242e4213fc9845ff6fe607af1aee626fd8acc990"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "vllm-bundle-verify",
+    "command": [
+      "git",
+      "bundle",
+      "verify",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/vllm.bundle"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": null
+    }
+  },
+  {
+    "name": "msa-public-compat-base",
+    "command": [
+      "git",
+      "read-tree",
+      "f82fb1759fb0b0f1fd9798c4730484feeb1e3df6"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/msa-public-compat-index"
+    }
+  },
+  {
+    "name": "msa-public-compat-apply-1",
+    "command": [
+      "git",
+      "apply",
+      "--cached",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/msa-public-compat.patch"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/msa-public-compat-index"
+    }
+  },
+  {
+    "name": "vllm-review-parts-base",
+    "command": [
+      "git",
+      "read-tree",
+      "242e4213fc9845ff6fe607af1aee626fd8acc990"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/vllm-review-parts-index"
+    }
+  },
+  {
+    "name": "vllm-review-parts-apply-1",
+    "command": [
+      "git",
+      "apply",
+      "--cached",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/vllm-01-offload.patch"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/vllm-review-parts-index"
+    }
+  },
+  {
+    "name": "vllm-review-parts-apply-2",
+    "command": [
+      "git",
+      "apply",
+      "--cached",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/vllm-02-runtime.patch"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/vllm-review-parts-index"
+    }
+  },
+  {
+    "name": "vllm-review-parts-apply-3",
+    "command": [
+      "git",
+      "apply",
+      "--cached",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/vllm-03-writer.patch"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/vllm-review-parts-index"
+    }
+  },
+  {
+    "name": "vllm-review-parts-apply-4",
+    "command": [
+      "git",
+      "apply",
+      "--cached",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/vllm-04-model-integration.patch"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "exit_code": 0,
+    "environment": {
+      "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+      "CUDA_VISIBLE_DEVICES": "",
+      "SOURCE_DATE_EPOCH": "1791483458",
+      "VLLM_TARGET_DEVICE": "cpu",
+      "MSA_REGISTER_TVM_FFI": "0",
+      "ICP_KERNEL_ARCH": "107a",
+      "UV_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts/uv",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/artifacts",
+      "GIT_INDEX_FILE": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/artifacts-final/vllm-review-parts-index"
+    }
+  }
+]

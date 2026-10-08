@@ -1,0 +1,10 @@
+[
+  "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+  "-m",
+  "pytest",
+  "--collect-only",
+  "-q",
+  "-p",
+  "no:cacheprovider",
+  "tests/models/minimax_m3"
+]

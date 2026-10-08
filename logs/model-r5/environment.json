@@ -1,0 +1,17 @@
+{
+  "PATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.codex/tmp/arg0/codex-arg0H8pOxn:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/home/fans/.codex/tmp/arg0/codex-arg0QUze2q:/home/fans/.npm-global/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.linuxbrew/bin:/home/fans/.linuxbrew/sbin:/home/fans/.bun/bin:/home/fans/.cargo/bin:/home/fans/.npm-global/bin:/home/fans/git-trt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/p4v/bin/:/opt/pycharm-community-2020.3.3/bin/",
+  "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+  "VLLM_TARGET_DEVICE": "cpu",
+  "CUDA_VISIBLE_DEVICES": "",
+  "MSA_REGISTER_TVM_FFI": "0",
+  "ICP_KERNEL_ARCH": "107a",
+  "MYPY_CACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/model-r5/mypy",
+  "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/model-r5",
+  "VLLM_CACHE_ROOT": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/model-r5/vllm",
+  "VLLM_CONFIG_ROOT": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/model-r5/vllm-config",
+  "HF_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/model-r5/huggingface",
+  "TORCH_EXTENSIONS_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/model-r5/torch-extensions",
+  "ICP_CACHE_ROOT": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/model-r5/icp"
+}

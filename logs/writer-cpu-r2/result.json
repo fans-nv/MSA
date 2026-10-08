@@ -1,0 +1,41 @@
+{
+  "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "results": {
+    "pytest": {
+      "exit_code": 0,
+      "seconds": 3.625341825885698
+    },
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.011241269065067172
+    },
+    "format": {
+      "exit_code": 0,
+      "seconds": 0.011048047104850411
+    }
+  },
+  "sources_before": {
+    "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu": "0b6f8c38f6cb942f4b2f978cf61172cf735d6987448d5aac01ea2d1cdf42aade",
+    "csrc/libtorch_stable/fused_minimax_m3_icp.cuh": "7c03604248fdc0f1de5a2f712f3071903c5e18aa05fef71cdc81ef96677fcbe9",
+    "csrc/libtorch_stable/ops.h": "9d2801b06ee7d4322b3275e1bad0e65d783633b8f18402a2c04dbdf1c29c91d0",
+    "csrc/libtorch_stable/torch_bindings.cpp": "f16e27caa7081dc0fe0a31ca266271f85884e134bea3c0694918947590249856",
+    "vllm/_custom_ops.py": "be67fbbfb50487ffb4278daeefa3b0ddc5f744e5e485aba34e43f9bc1d36c5b9",
+    "tests/kernels/test_fused_minimax_m3_icp_writer_api.py": "0b35672809590fa4504b46979001210ca27a7ec9d41cea9c04da1a344508a34b",
+    "tests/kernels/test_minimax_m3_icp_device_plan.py": "72bee00779df04c08ed505737f13897c7f1ee443cd4735dca810ff966bd3f602",
+    "tests/kernels/test_fused_minimax_m3_icp_writer.py": "e688848432fdf4492a07d8902d47fe92d94ab64a5b517cc870cc842dbde1a06c",
+    "tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py": "345ebf293606c8ac3344528430b52e4a36a47015889ae2aa29ba0d7c306d3969"
+  },
+  "sources_after": {
+    "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu": "0b6f8c38f6cb942f4b2f978cf61172cf735d6987448d5aac01ea2d1cdf42aade",
+    "csrc/libtorch_stable/fused_minimax_m3_icp.cuh": "7c03604248fdc0f1de5a2f712f3071903c5e18aa05fef71cdc81ef96677fcbe9",
+    "csrc/libtorch_stable/ops.h": "9d2801b06ee7d4322b3275e1bad0e65d783633b8f18402a2c04dbdf1c29c91d0",
+    "csrc/libtorch_stable/torch_bindings.cpp": "f16e27caa7081dc0fe0a31ca266271f85884e134bea3c0694918947590249856",
+    "vllm/_custom_ops.py": "be67fbbfb50487ffb4278daeefa3b0ddc5f744e5e485aba34e43f9bc1d36c5b9",
+    "tests/kernels/test_fused_minimax_m3_icp_writer_api.py": "0b35672809590fa4504b46979001210ca27a7ec9d41cea9c04da1a344508a34b",
+    "tests/kernels/test_minimax_m3_icp_device_plan.py": "72bee00779df04c08ed505737f13897c7f1ee443cd4735dca810ff966bd3f602",
+    "tests/kernels/test_fused_minimax_m3_icp_writer.py": "e688848432fdf4492a07d8902d47fe92d94ab64a5b517cc870cc842dbde1a06c",
+    "tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py": "345ebf293606c8ac3344528430b52e4a36a47015889ae2aa29ba0d7c306d3969"
+  },
+  "sources_unchanged": true,
+  "objects": {}
+}

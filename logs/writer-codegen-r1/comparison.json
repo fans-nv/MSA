@@ -1,0 +1,18 @@
+{
+  "107a": {
+    "baseline_ordinary_kernels": 76,
+    "candidate_ordinary_kernels": 76,
+    "shared_symbols": 76,
+    "identical_instruction_text": 76,
+    "different_symbols": [],
+    "source_only_metadata": "SASS comparison drops encoded hex and instruction addresses; register allocation/order still significant."
+  },
+  "107f": {
+    "baseline_ordinary_kernels": 76,
+    "candidate_ordinary_kernels": 76,
+    "shared_symbols": 76,
+    "identical_instruction_text": 76,
+    "different_symbols": [],
+    "source_only_metadata": "SASS comparison drops encoded hex and instruction addresses; register allocation/order still significant."
+  }
+}

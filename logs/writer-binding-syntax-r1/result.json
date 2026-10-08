@@ -1,0 +1,8 @@
+{
+  "exit_code": 0,
+  "sources": {
+    "csrc/libtorch_stable/ops.h": "9d2801b06ee7d4322b3275e1bad0e65d783633b8f18402a2c04dbdf1c29c91d0",
+    "csrc/libtorch_stable/torch_bindings.cpp": "f16e27caa7081dc0fe0a31ca266271f85884e134bea3c0694918947590249856"
+  },
+  "scope": "Actual full binding translation-unit syntax check against installed stable torch headers; no link or CUDA execution."
+}

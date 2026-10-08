@@ -1,0 +1,78 @@
+{
+  "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "candidate_head": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "candidate_dirty": true,
+  "checks": [
+    {
+      "path": "vllm/v1/kv_cache_interface.py",
+      "symbol": "KVCacheSpec.has_layer_views",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/kv_cache_interface.py",
+      "symbol": "KVCacheSpec.uses_slot_mapping",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/kv_cache_interface.py",
+      "symbol": "group_kernel_blocks",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/kv_cache_interface.py",
+      "symbol": "create_kv_cache_views",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/utils.py",
+      "symbol": "allocate_kv_cache",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/utils.py",
+      "symbol": "copy_kv_cache_blocks_inplace",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/utils.py",
+      "symbol": "prepare_kernel_block_sizes",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/attention/backend.py",
+      "symbol": "AttentionMetadataBuilder.get_varlen_cudagraph_max_query_len",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/gpu/attn_utils.py",
+      "symbol": "get_varlen_cudagraph_unsupported_backend",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/gpu/attn_utils.py",
+      "symbol": "get_query_lens_mismatch_unsupported_backend",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/gpu/attn_utils.py",
+      "symbol": "build_attn_metadata",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "symbol": "GPUModelRunner.gather_batch_req_state",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "symbol": "GPUModelRunner.prepare_inputs",
+      "ast_identical": true
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_states/default.py",
+      "byte_identical": true,
+      "sha256": "f1d34d5c8c03be6e5afec8c2a24480ec259ca7c87392462f4e52d6c4eb775733"
+    }
+  ],
+  "scope": "Public API and implementation preservation checks; no GPU/performance claims."
+}

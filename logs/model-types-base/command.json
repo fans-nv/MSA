@@ -1,0 +1,6 @@
+[
+  "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+  "tools/pre_commit/mypy.py",
+  "3.11",
+  "vllm/models/minimax_m3/nvidia/model.py"
+]

@@ -1,0 +1,10 @@
+{
+  "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu": "ffeeda2aed755f127bc2a04ce1e24c6c103faae12a9bd95ea4fa3efc01a2ed91",
+  "csrc/libtorch_stable/fused_minimax_m3_icp.cuh": "7c03604248fdc0f1de5a2f712f3071903c5e18aa05fef71cdc81ef96677fcbe9",
+  "csrc/libtorch_stable/ops.h": "601d0fd7dbce6931cbc46039de640dc2f2b3047b8e7abfb2b1b27373103cc1ad",
+  "csrc/libtorch_stable/torch_bindings.cpp": "f16e27caa7081dc0fe0a31ca266271f85884e134bea3c0694918947590249856",
+  "vllm/_custom_ops.py": "be67fbbfb50487ffb4278daeefa3b0ddc5f744e5e485aba34e43f9bc1d36c5b9",
+  "tests/kernels/test_fused_minimax_m3_icp_writer_api.py": "0b35672809590fa4504b46979001210ca27a7ec9d41cea9c04da1a344508a34b",
+  "tests/kernels/test_fused_minimax_m3_icp_writer.py": "0034bcb97dddbb3458ca4b142e5e3f98fc808d90bae97b7e70128dabf45b9353",
+  "tests/kernels/test_minimax_m3_icp_device_plan.py": "72bee00779df04c08ed505737f13897c7f1ee443cd4735dca810ff966bd3f602"
+}

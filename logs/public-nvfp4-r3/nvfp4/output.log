@@ -1,0 +1,13 @@
+...............                                                          [100%]
+=============================== warnings summary ===============================
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    from cutlass.utils import LayoutEnum, block_copy
+
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    layout_c: cutlass.utils.LayoutEnum,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+15 passed, 26 deselected, 3 warnings in 1.90s

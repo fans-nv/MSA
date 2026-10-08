@@ -1,0 +1,5 @@
+Using CPython 3.12.13 interpreter at: /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python
+Resolved 1 package in 1ms
+Prepared 1 package in 43ms
+Installed 1 package in 13ms
+ + fmha-sm100==0.1.1 (from file:///home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/artifacts/fmha_sm100-0.1.1-py3-none-any.whl)

@@ -1,0 +1,39 @@
+/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+No module named 'vllm._version'
+  from .version import __version__, __version_tuple__  # isort:skip
+W1008 11:18:59.447000 78 torch/_opaque_base.py:6] torch._opaque_base is deprecated, use torch._custom_class_base instead
+W1008 11:18:59.447000 78 torch/_library/opaque_object.py:288] register_opaque_type is deprecated, use register_custom_class instead
+W1008 11:18:59.448000 78 torch/_library/opaque_object.py:211] typ='value' is deprecated, use typ='constant' instead
+Failed to import from vllm._C: ModuleNotFoundError("No module named 'vllm._C'")
+The vLLM package was not found, so its version could not be inspected. This may cause platform detection to fail.
+Triton is installed, but `triton.backends` could not be imported. Disabling Triton.
+{
+  "installed_package": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel/fmha_sm100/icp",
+  "version": "0.1.1",
+  "msa_integration_abi": 1,
+  "public_vllm_abi": 1,
+  "vllm_msa_admission": "passed",
+  "jit_source_payload_identity": "passed",
+  "components": [
+    "icp",
+    "fmha",
+    "decode",
+    "nvfp4",
+    "q8kv4"
+  ],
+  "component_counts": {
+    "icp": 14,
+    "fmha": 956,
+    "decode": 4,
+    "nvfp4": 58,
+    "q8kv4": 950
+  },
+  "component_digests": {
+    "icp": "fb023fad838c739e3291d78f77749947ba49e4c14f9fcbe8a194cac470121a17",
+    "fmha": "894affc9c493caed8671c2830114a97e382988bd237c7e1b239b81754d273d3b",
+    "decode": "06e5d9f4448c0c46a1fc6e061769e2413d8d07efbfc6be3bdb4d10305a4e9933",
+    "nvfp4": "a3c81c0991e4d55b9f850acc1c2c1b3f05ebc17c06acd9c90a3b2ad7eb18bc3c",
+    "q8kv4": "dfcc879c31c157f90b37d54ded88e264e9c91dd01f174c34e508e54144d3a33e"
+  },
+  "cuda_initialization_attempts": []
+}

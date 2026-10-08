@@ -1,0 +1,8 @@
+{
+  "schema_argument_count": 55,
+  "legacy_defaults": "passed",
+  "appended_scalars_and_optional_tensors": "passed",
+  "mutable_tensor_aliases": "passed",
+  "device": "CPU",
+  "scope": "actual schema + actual C++ declaration with CPU probe body, not CUDA writer execution"
+}

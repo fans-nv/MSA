@@ -1,0 +1,51 @@
+........................................................................ [ 12%]
+........................................................................ [ 25%]
+........................................................................ [ 37%]
+........................................................................ [ 50%]
+.......s................................................................ [ 63%]
+...............................................ssssss.s.ss.............. [ 75%]
+...sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 88%]
+sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss        [100%]
+=============================== warnings summary ===============================
+vllm/__init__.py:7
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+  No module named 'vllm._version'
+    from .version import __version__, __version_tuple__  # isort:skip
+
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    from cutlass.utils import LayoutEnum, block_copy
+
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    layout_c: cutlass.utils.LayoutEnum,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py:436: requires CUDA
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:582: DBO needs a GPU
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:610: DBO needs a GPU
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:639: DBO needs a GPU
+SKIPPED [2] tests/v1/worker/test_gpu_ubatch_slicing.py:748: triton kernel needs CUDA
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:792: triton kernel needs CUDA
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:824: DBO needs a GPU
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:927: needs a graph pool
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:952: needs a graph pool
+SKIPPED [6] tests/kernels/test_minimax_m3_icp_device_plan.py:501: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:536: native device-plan checks require a built SM10x writer
+SKIPPED [2] tests/kernels/test_minimax_m3_icp_device_plan.py:551: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:587: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:604: native device-plan checks require a built SM10x writer
+SKIPPED [2] tests/kernels/test_minimax_m3_icp_device_plan.py:623: native device-plan checks require a built SM10x writer
+SKIPPED [24] tests/kernels/test_fused_minimax_m3_icp_writer.py:96: ICP writer needs the compiled SM10x extension
+SKIPPED [2] tests/kernels/test_fused_minimax_m3_icp_writer.py:146: ICP writer needs the compiled SM10x extension
+SKIPPED [1] tests/kernels/test_fused_minimax_m3_icp_writer.py:165: ICP writer needs the compiled SM10x extension
+SKIPPED [5] tests/kernels/test_fused_minimax_m3_icp_writer.py:176: ICP writer needs the compiled SM10x extension
+SKIPPED [9] tests/kernels/test_fused_minimax_m3_icp_writer.py:195: ICP writer needs the compiled SM10x extension
+SKIPPED [12] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:106: CUDA not available or fused MiniMax-M3 op not built in
+SKIPPED [16] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:162: CUDA not available or fused MiniMax-M3 op not built in
+SKIPPED [12] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:356: CUDA not available or fused MiniMax-M3 op not built in
+SKIPPED [8] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:480: e4m3 conversion requires CUDA SM89+.
+SKIPPED [32] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:651: NVFP4 KV caches need SM100
+425 passed, 144 skipped, 4 warnings in 13.89s

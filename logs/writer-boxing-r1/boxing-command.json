@@ -1,0 +1,16 @@
+[
+  "/usr/bin/g++",
+  "-std=c++17",
+  "-shared",
+  "-fPIC",
+  "-O0",
+  "-DTORCH_TARGET_VERSION=0x020B000000000000ULL",
+  "-I/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/torch/include",
+  "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-boxing-r1/boxing-probe.cpp",
+  "-o",
+  "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-boxing-r1/boxing-probe.so",
+  "-L/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/torch/lib",
+  "-ltorch_cpu",
+  "-lc10",
+  "-Wl,-rpath,/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/torch/lib"
+]

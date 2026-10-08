@@ -1,0 +1,16 @@
+.................sssssssssssss                                           [100%]
+=============================== warnings summary ===============================
+vllm/__init__.py:7
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+  No module named 'vllm._version'
+    from .version import __version__, __version_tuple__  # isort:skip
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [6] tests/kernels/test_minimax_m3_icp_device_plan.py:501: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:536: native device-plan checks require a built SM10x writer
+SKIPPED [2] tests/kernels/test_minimax_m3_icp_device_plan.py:551: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:587: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:604: native device-plan checks require a built SM10x writer
+SKIPPED [2] tests/kernels/test_minimax_m3_icp_device_plan.py:623: native device-plan checks require a built SM10x writer
+17 passed, 13 skipped, 1 warning in 2.72s

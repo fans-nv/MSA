@@ -1,0 +1,46 @@
+{
+  "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "results": {
+    "107a": {
+      "exit_code": 0,
+      "seconds": 9.404098902828991
+    },
+    "107f": {
+      "exit_code": 0,
+      "seconds": 9.486958486028016
+    }
+  },
+  "sources_before": {
+    "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu": "be2f6cc593f487a993e4fd8c4a935386ec12bb3fdc078e0af16dc52276f9f5d9",
+    "csrc/libtorch_stable/fused_minimax_m3_icp.cuh": "7c03604248fdc0f1de5a2f712f3071903c5e18aa05fef71cdc81ef96677fcbe9",
+    "csrc/libtorch_stable/ops.h": "9d2801b06ee7d4322b3275e1bad0e65d783633b8f18402a2c04dbdf1c29c91d0",
+    "csrc/libtorch_stable/torch_bindings.cpp": "f16e27caa7081dc0fe0a31ca266271f85884e134bea3c0694918947590249856",
+    "vllm/_custom_ops.py": "be67fbbfb50487ffb4278daeefa3b0ddc5f744e5e485aba34e43f9bc1d36c5b9",
+    "tests/kernels/test_fused_minimax_m3_icp_writer_api.py": "0b35672809590fa4504b46979001210ca27a7ec9d41cea9c04da1a344508a34b",
+    "tests/kernels/test_minimax_m3_icp_device_plan.py": "72bee00779df04c08ed505737f13897c7f1ee443cd4735dca810ff966bd3f602",
+    "tests/kernels/test_fused_minimax_m3_icp_writer.py": "0034bcb97dddbb3458ca4b142e5e3f98fc808d90bae97b7e70128dabf45b9353",
+    "tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py": "345ebf293606c8ac3344528430b52e4a36a47015889ae2aa29ba0d7c306d3969"
+  },
+  "sources_after": {
+    "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu": "be2f6cc593f487a993e4fd8c4a935386ec12bb3fdc078e0af16dc52276f9f5d9",
+    "csrc/libtorch_stable/fused_minimax_m3_icp.cuh": "7c03604248fdc0f1de5a2f712f3071903c5e18aa05fef71cdc81ef96677fcbe9",
+    "csrc/libtorch_stable/ops.h": "9d2801b06ee7d4322b3275e1bad0e65d783633b8f18402a2c04dbdf1c29c91d0",
+    "csrc/libtorch_stable/torch_bindings.cpp": "f16e27caa7081dc0fe0a31ca266271f85884e134bea3c0694918947590249856",
+    "vllm/_custom_ops.py": "be67fbbfb50487ffb4278daeefa3b0ddc5f744e5e485aba34e43f9bc1d36c5b9",
+    "tests/kernels/test_fused_minimax_m3_icp_writer_api.py": "0b35672809590fa4504b46979001210ca27a7ec9d41cea9c04da1a344508a34b",
+    "tests/kernels/test_minimax_m3_icp_device_plan.py": "72bee00779df04c08ed505737f13897c7f1ee443cd4735dca810ff966bd3f602",
+    "tests/kernels/test_fused_minimax_m3_icp_writer.py": "0034bcb97dddbb3458ca4b142e5e3f98fc808d90bae97b7e70128dabf45b9353",
+    "tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py": "345ebf293606c8ac3344528430b52e4a36a47015889ae2aa29ba0d7c306d3969"
+  },
+  "sources_unchanged": true,
+  "objects": {
+    "writer-107f.o": {
+      "sha256": "9f85a6dd7fffee43d444e50bf5ee0f8d448b56834c53c1a0703d76147e3f6846",
+      "bytes": 2391224
+    },
+    "writer-107a.o": {
+      "sha256": "fc46078863d5bac068d24c90b09ac3e8a30975c27537103c3bbceab319771c47",
+      "bytes": 2391224
+    }
+  }
+}

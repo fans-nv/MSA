@@ -1,0 +1,1094 @@
+diff --git a/tests/v1/cudagraph/test_cudagraph_manager.py b/tests/v1/cudagraph/test_cudagraph_manager.py
+index 1e4071bc..3947effb 100644
+--- a/tests/v1/cudagraph/test_cudagraph_manager.py
++++ b/tests/v1/cudagraph/test_cudagraph_manager.py
+@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
+ import pytest
+ import torch
+ 
++from tests.v1.worker.test_gpu_batch_ordering import _make_runner as _make_batch_runner
+ from vllm.config import (
+     CompilationConfig,
+     CUDAGraphMode,
+@@ -19,6 +20,7 @@ from vllm.config import (
+ from vllm.distributed.device_communicators import pynccl_allocator
+ from vllm.v1.kv_cache_interface import KVCacheConfig
+ from vllm.v1.worker.gpu import cudagraph_utils as gpu_cudagraph_utils
++from vllm.v1.worker.gpu import dp_utils
+ from vllm.v1.worker.gpu.cudagraph_utils import BatchExecutionDescriptor
+ from vllm.v1.worker.gpu.dp_utils import dispatch_cg_and_sync_dp
+ from vllm.v1.worker.gpu.input_batch import InputBuffers
+@@ -305,6 +307,7 @@ def _make_spec_decode_manager(
+     max_num_seqs: int = 8,
+     use_kda_recoverssm: bool = False,
+     varlen_decode: bool = False,
++    decode_phase_only_full_graphs: bool = False,
+ ) -> gpu_cudagraph_utils.CudaGraphManager:
+     monkeypatch.setattr(
+         gpu_cudagraph_utils,
+@@ -328,11 +331,140 @@ def _make_spec_decode_manager(
+         cudagraph_mode=CUDAGraphMode.FULL_AND_PIECEWISE,
+         decode_query_len=decode_query_len,
+         varlen_decode=varlen_decode,
++        decode_phase_only_full_graphs=decode_phase_only_full_graphs,
+     )
+     manager._graphs_captured = True
+     return manager
+ 
+ 
++@pytest.mark.parametrize("query_len", [1, 4])
++@pytest.mark.parametrize("varlen", [False, True])
++def test_short_prefill_cannot_replay_decode_phase_graph(monkeypatch, query_len, varlen):
++    manager = _make_spec_decode_manager(
++        monkeypatch,
++        decode_query_len=query_len,
++        capture_sizes=[4, 8],
++        decode_phase_only_full_graphs=True,
++        varlen_decode=varlen,
++    )
++    batch = dict(
++        num_reqs=2,
++        num_tokens=2 * query_len,
++        uniform_token_count=None if varlen else query_len,
++        num_active_loras=0,
++        max_query_len=query_len,
++    )
++    decode = manager.dispatch(**batch, has_prefill=False)
++    assert decode.cg_mode == CUDAGraphMode.FULL
++    assert decode.decode_phase_only
++    prefill = manager.dispatch(**batch, has_prefill=True)
++    assert prefill.cg_mode == CUDAGraphMode.PIECEWISE
++    assert not prefill.decode_phase_only
++    manager.check_phase_admission(decode, False)
++    with pytest.raises(RuntimeError, match="cannot replay"):
++        manager.check_phase_admission(decode, True)
++    with pytest.raises(RuntimeError, match="requires has_prefill"):
++        manager.dispatch(**batch)
++
++
++@pytest.mark.parametrize("restricted", [False, True])
++@pytest.mark.parametrize("query_len", [1, 4])
++def test_promoted_prompt_tail_keeps_actual_phase(monkeypatch, restricted, query_len):
++    runner = _make_batch_runner(
++        {"decode": (16, 16), "tail": (128, 129)}, decode_query_len=query_len
++    )
++    scheduled = SimpleNamespace(
++        num_scheduled_tokens={"decode": query_len, "tail": query_len},
++        total_num_scheduled_tokens=2 * query_len,
++        scheduled_spec_decode_tokens={
++            "decode": [-1] * (query_len - 1),
++            "tail": [-1] * (query_len - 1),
++        },
++    )
++    state, uniform_count = runner.gather_batch_req_state(scheduled, False)
++    assert state.has_prefill and state.decode_graph_eligible
++    assert uniform_count == query_len
++    assert state.is_prefilling_np.tolist() == [False, True]
++    manager = _make_spec_decode_manager(
++        monkeypatch,
++        decode_query_len=query_len,
++        capture_sizes=[4, 8],
++        decode_phase_only_full_graphs=restricted,
++    )
++    desc, _ = dispatch_cg_and_sync_dp(
++        manager,
++        num_reqs=2,
++        num_tokens=state.num_tokens,
++        uniform_token_count=uniform_count,
++        dp_size=1,
++        dp_rank=0,
++        max_query_len=None,
++        has_prefill=state.has_prefill,
++    )
++    assert desc.cg_mode == (
++        CUDAGraphMode.PIECEWISE if restricted else CUDAGraphMode.FULL
++    )
++
++
++@pytest.mark.parametrize("prefill_rank", [None, 0, 1])
++@pytest.mark.parametrize("dp_rank", [0, 1])
++def test_dp_redispatch_and_reuse_agree_on_actual_phase(
++    monkeypatch, prefill_rank, dp_rank
++):
++    manager = _make_spec_decode_manager(
++        monkeypatch,
++        decode_query_len=1,
++        capture_sizes=[4, 8],
++        decode_phase_only_full_graphs=True,
++    )
++    # A promoted one-token prefill has the same shape as a pure decode.
++    phases = [rank == prefill_rank for rank in range(2)]
++    reduced = torch.tensor(
++        [
++            [4, 4],
++            [
++                (CUDAGraphMode.PIECEWISE if phase else CUDAGraphMode.FULL).value
++                for phase in phases
++            ],
++            [1, 1],
++            [-1 if phase else 1 for phase in phases],
++            [0, 0],
++            [4, 4],
++            [int(phase) for phase in phases],
++        ],
++        dtype=torch.int32,
++    )
++    collectives = []
++
++    def all_reduce(tensor, group):
++        collectives.append(tensor.clone())
++        tensor.copy_(reduced)
++
++    monkeypatch.setattr(dp_utils.dist, "all_reduce", all_reduce)
++    monkeypatch.setattr(
++        dp_utils, "get_dp_group", lambda: SimpleNamespace(cpu_group=None)
++    )
++    monkeypatch.setattr(dp_utils, "should_skip_dp_coordination", lambda: False)
++    batch = dict(
++        num_reqs=4,
++        num_tokens=4,
++        uniform_token_count=1,
++        dp_size=2,
++        dp_rank=dp_rank,
++        max_query_len=None if phases[dp_rank] else 1,
++        has_prefill=phases[dp_rank],
++    )
++    desc, sync = dispatch_cg_and_sync_dp(manager, **batch)
++    assert sync is not None
++    assert sync.has_prefill == any(phases)
++    assert desc.cg_mode == (
++        CUDAGraphMode.PIECEWISE if any(phases) else CUDAGraphMode.FULL
++    )
++    reused, _ = dispatch_cg_and_sync_dp(manager, **batch, dp_sync=sync)
++    assert reused == desc
++    assert len(collectives) == 1
++
++
+ def test_uniform_decode_pads_up_to_full_graph(monkeypatch):
+     manager = _make_spec_decode_manager(monkeypatch)
+     assert [
+diff --git a/tests/v1/worker/test_attn_utils.py b/tests/v1/worker/test_attn_utils.py
+index 9c9c26c3..aa79f80b 100644
+--- a/tests/v1/worker/test_attn_utils.py
++++ b/tests/v1/worker/test_attn_utils.py
+@@ -104,9 +104,15 @@ def test_get_kv_cache_spec_resolves_hisparse_block_size(
+ 
+ 
+ class _FakeMetadataBuilder:
+-    def __init__(self, support: AttentionCGSupport, varlen_bound: int | None = None):
++    def __init__(
++        self,
++        support: AttentionCGSupport,
++        varlen_bound: int | None = None,
++        decode_phase_only: bool = False,
++    ):
+         self.support = support
+         self.varlen_bound = varlen_bound
++        self.cudagraph_decode_phase_only = decode_phase_only
+ 
+     def get_cudagraph_support(self, *_args):
+         return self.support
+@@ -141,7 +147,7 @@ def test_attention_checks_preserve_global_and_target_scoped_support():
+         0,
+     )
+     target_group.metadata_builders = [
+-        _FakeMetadataBuilder(AttentionCGSupport.ALWAYS)  # type: ignore[list-item]
++        _FakeMetadataBuilder(AttentionCGSupport.ALWAYS, decode_phase_only=True)  # type: ignore[list-item]
+     ]
+     draft_group = AttentionGroup(
+         _DraftBackend,
+@@ -158,6 +164,8 @@ def test_attention_checks_preserve_global_and_target_scoped_support():
+     unfiltered = get_attn_cg_support(groups, None)
+     assert unfiltered.min_cg_support == AttentionCGSupport.UNIFORM_BATCH
+     assert unfiltered.min_cg_attn_backend == "_DraftBackend"
++    assert unfiltered.decode_phase_only
++    assert unfiltered.decode_phase_only_backend == "_TargetBackend"
+ 
+     # Adaptive verification validates only the target's varlen graphs.
+     target_only = get_attn_cg_support(
+@@ -167,6 +175,12 @@ def test_attention_checks_preserve_global_and_target_scoped_support():
+     )
+     assert target_only.min_cg_support == AttentionCGSupport.ALWAYS
+     assert target_only.min_cg_attn_backend is None
++    narrowed = target_only.narrow(AttentionCGSupport.NEVER, "encoder")
++    assert narrowed.decode_phase_only
++    assert narrowed.decode_phase_only_backend == "_TargetBackend"
++    assert not get_attn_cg_support(
++        groups, None, checked_layer_names={"draft"}
++    ).decode_phase_only
+     assert (
+         get_query_lens_mismatch_unsupported_backend(
+             groups,
+@@ -492,6 +506,57 @@ def test_reshape_padded_kv_cache_strides_by_padded_page():
+     assert kv_cache[0].is_contiguous()
+ 
+ 
++class _RawPageSpec(FullAttentionSpec):
++    @property
++    def uses_raw_page_view(self) -> bool:
++        return True
++
++
++def _raw_page_spec() -> _RawPageSpec:
++    return _RawPageSpec(
++        block_size=4,
++        num_kv_heads=1,
++        head_size=2,
++        dtype=torch.int8,
++        page_size_padded=64,
++    )
++
++
++def test_raw_page_views_copy_every_byte_with_shared_storage():
++    spec = _raw_page_spec()
++    num_blocks, num_layers = 3, 2
++    raw = torch.arange(
++        num_blocks * num_layers * spec.page_size_bytes, dtype=torch.int8
++    )
++    caches = dense_kv_cache_views(raw, spec, num_blocks, num_layers, KVCacheLayout.LBHNC)
++    assert spec.has_layer_views and spec.uses_slot_mapping
++    assert caches[0].shape == (num_blocks, 1, 1, spec.page_size_bytes)
++    assert caches[1].storage_offset() == num_blocks * spec.page_size_bytes
++    expected = raw.view(num_layers, num_blocks, -1).clone()
++
++    copy_kv_cache_blocks_inplace(
++        caches, num_blocks, [KVCacheBlockCopy(src_block_id=0, dst_block_id=2)]
++    )
++
++    for layer_idx, cache in enumerate(caches):
++        torch.testing.assert_close(cache[2].flatten(), expected[layer_idx, 0])
++        torch.testing.assert_close(cache[1].flatten(), expected[layer_idx, 1])
++
++
++@pytest.mark.parametrize("layout", [x for x in KVCacheLayout if x != KVCacheLayout.LBHNC])
++def test_raw_page_views_reject_incompatible_layout(layout):
++    with pytest.raises(ValueError, match="require the LBHNC cache layout"):
++        compute_layout_strides(_raw_page_spec(), 3, 2, layout)
++
++
++def test_raw_page_views_reject_kernel_splitting_and_main_only_merge():
++    spec = _raw_page_spec()
++    with pytest.raises(ValueError, match="kernel block splitting"):
++        compute_layout_strides(spec, 3, 2, KVCacheLayout.LBHNC, kernel_block_size=2)
++    with pytest.raises(AssertionError, match="main-only attention spec"):
++        FullAttentionSpec.merge([spec])
++
++
+ @pytest.mark.parametrize(
+     (
+         "kernel_block_sizes",
+diff --git a/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py b/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py
+index 74191206..eb7c683a 100644
+--- a/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py
++++ b/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py
+@@ -12,6 +12,7 @@ See https://github.com/vllm-project/vllm/issues/49224.
+ 
+ import contextlib
+ import gc
++import weakref
+ from types import SimpleNamespace
+ from typing import Any
+ 
+@@ -127,6 +128,95 @@ def test_profile_cudagraph_memory_disabled_returns_zero(monkeypatch):
+     assert runner.events == []
+ 
+ 
++def test_profiling_teardown_releases_cache_aliases_but_keeps_model_resources(
++    monkeypatch,
++):
++    events: list[str] = []
++
++    class Layer(torch.nn.Module):
++        def __init__(self):
++            super().__init__()
++            self.kv_cache = torch.zeros(16)
++            self.reader_view: torch.Tensor | None = self.kv_cache.view(2, 8)
++
++        def release_kv_cache(self):
++            assert events[0] == "drain"
++            assert runner.cudagraph_manager is None
++            self.reader_view = None
++            events.append("release_alias")
++
++        def shutdown_model_resources(self):
++            pytest.fail("profiling must preserve model-scoped peer resources")
++
++    layer = Layer()
++    old_cache = weakref.ref(layer.kv_cache)
++    runner: Any = SimpleNamespace(
++        model=torch.nn.Sequential(layer),
++        model_state=SimpleNamespace(supports_mm_inputs=False),
++        compilation_config=SimpleNamespace(static_forward_context={"attn": layer}),
++        cudagraph_manager=object(),
++        kv_caches={"attn": layer.kv_cache},
++        cache_config=SimpleNamespace(num_gpu_blocks=1),
++        lora_config=None,
++        maybe_remove_all_loras=lambda _: None,
++    )
++    monkeypatch.setattr(
++        torch.accelerator, "synchronize", lambda: events.append("drain")
++    )
++    monkeypatch.setattr(torch.accelerator, "empty_cache", lambda: None)
++
++    cgu._teardown_profiling_state(runner)
++
++    assert "release_alias" in events
++    assert layer.kv_cache.numel() == 0
++    assert layer.reader_view is None
++    assert old_cache() is None
++    assert runner.model[0] is layer
++
++
++def test_shutdown_closes_shared_model_resources_after_drain_before_cache_release(
++    monkeypatch,
++):
++    from vllm.v1.worker.utils import clear_layer_kv_caches
++
++    events = []
++    runner = mrv2.GPUModelRunner.__new__(mrv2.GPUModelRunner)
++    runner.cudagraph_manager = object()
++    runner.vllm_config = SimpleNamespace()
++    runner.aux_output_connector = None
++
++    class Resource(torch.nn.Module):
++        def __init__(self):
++            super().__init__()
++            self.kv_cache = torch.zeros(1)
++
++        def release_kv_cache(self):
++            events.append("release_cache")
++
++        def shutdown_model_resources(self):
++            assert runner.cudagraph_manager is None
++            events.append("close_peer")
++
++    resource = Resource()
++    runner.model = torch.nn.Sequential(resource)
++    runner.speculator = SimpleNamespace(model=torch.nn.Sequential(resource))
++
++    # The profiling cache reset must not close a model-scoped peer window.
++    clear_layer_kv_caches(runner.model.modules())
++    assert events == ["release_cache"]
++    events.clear()
++
++    monkeypatch.setattr(
++        torch.accelerator, "synchronize", lambda: events.append("drain")
++    )
++    monkeypatch.setattr(torch.accelerator, "empty_cache", lambda: None)
++    monkeypatch.setattr(mrv2, "free_before_shutdown", lambda _: None)
++    runner.shutdown()
++    assert events[:2] == ["drain", "close_peer"]
++    assert events.count("close_peer") == 1
++    assert all(event == "release_cache" for event in events[2:])
++
++
+ def test_profile_cudagraph_memory_no_graphs_tears_down(monkeypatch):
+     _patch_module(monkeypatch)
+     runner = _make_profiling_runner(CUDAGraphMode.FULL, needs_capture=False)
+diff --git a/tests/v1/worker/test_gpu_ubatch_slicing.py b/tests/v1/worker/test_gpu_ubatch_slicing.py
+index ebf334e4..78834aed 100644
+--- a/tests/v1/worker/test_gpu_ubatch_slicing.py
++++ b/tests/v1/worker/test_gpu_ubatch_slicing.py
+@@ -294,13 +294,14 @@ def _sync_dp(
+     """
+     dp_size = len(num_tokens_per_rank)
+     uniform_token_counts = uniform_token_count_per_rank or [0] * dp_size
+-    reduced = torch.zeros(6, dp_size, dtype=torch.int32)
++    reduced = torch.zeros(7, dp_size, dtype=torch.int32)
+     reduced[0] = torch.tensor(num_tokens_per_rank, dtype=torch.int32)
+     reduced[1] = CUDAGraphMode.NONE.value
+     reduced[2] = torch.tensor(uniform_token_counts, dtype=torch.int32)
+     reduced[3] = -1  # max_query_len, -1 means None
+     reduced[4] = int(allow_ubatching)
+     reduced[5] = 8  # num_reqs
++    reduced[6] = -1  # actual prefill phase unknown to these ordinary backends
+ 
+     with (
+         patch.object(dp_utils.dist, "all_reduce", lambda t, group: t.copy_(reduced)),
+diff --git a/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py b/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py
+index 0bd8ebe3..4838bf7e 100644
+--- a/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py
++++ b/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py
+@@ -248,6 +248,10 @@ class SimpleCPUOffloadConnector(KVConnectorBase_V1, SupportsHMA):
+             return self.worker_handler.build_connector_worker_meta()
+         return None
+ 
++    def shutdown(self) -> None:
++        if self.worker_handler is not None:
++            self.worker_handler.shutdown()
++
+     # --- Scheduler-side methods ---
+ 
+     def bind_gpu_block_pool(self, gpu_block_pool: "BlockPool") -> None:
+diff --git a/vllm/v1/attention/backend.py b/vllm/v1/attention/backend.py
+index 3387a317..5ee960ba 100644
+--- a/vllm/v1/attention/backend.py
++++ b/vllm/v1/attention/backend.py
+@@ -603,6 +603,9 @@ class AttentionMetadataBuilder(ABC, Generic[M]):
+     supports_update_block_table: bool = False
+     # Whether the builder constructor requires the block-table width.
+     requires_block_table_width: ClassVar[bool] = False
++    # Shape-compatible short prefills must not replay a phase-specific decode
++    # route. PIECEWISE graphs still dispatch attention outside the graph.
++    cudagraph_decode_phase_only: ClassVar[bool] = False
+     # Whether update_draft_decode_metadata() can regenerate all decode metadata
+     # from persistent device buffers with capture-safe ops only. Lets a
+     # speculator record the refresh inside its draft decode CUDA graph, so no
+diff --git a/vllm/v1/kv_cache_interface.py b/vllm/v1/kv_cache_interface.py
+index cf707611..5ddc5225 100644
+--- a/vllm/v1/kv_cache_interface.py
++++ b/vllm/v1/kv_cache_interface.py
+@@ -277,6 +277,11 @@ class KVCacheSpec:
+         """
+         return True
+ 
++    @property
++    def uses_raw_page_view(self) -> bool:
++        """Whether the layer view must expose every page byte for KV lifecycle."""
++        return False
++
+     @property
+     def uses_slot_mapping(self) -> bool:
+         """Whether the worker computes a per-token slot mapping for this spec.
+@@ -306,6 +311,12 @@ def compute_layer_kv_cache_shape_bytes(
+ ) -> tuple[int, ...]:
+     """Return the 4D logical shape ``(B, H, N, C)`` where C is in bytes."""
+     bs = kernel_block_size if kernel_block_size is not None else spec.block_size
++    if spec.uses_raw_page_view:
++        if bs != spec.block_size:
++            raise ValueError(
++                "Raw compound KV pages do not support kernel block splitting"
++            )
++        return (num_blocks, 1, 1, spec.page_size_bytes)
+     assert spec.block_size % bs == 0, (
+         f"Kernel block size {bs} must divide KV cache block size {spec.block_size}."
+     )
+@@ -327,6 +338,8 @@ def compute_layout_strides(
+     fixed_strides: tuple[int | None, ...] = (None,) * 5,
+ ) -> tuple[int, ...]:
+     """Byte strides in logical ``[L, B, H, N, C]`` axis order."""
++    if spec.uses_raw_page_view and layout != KVCacheLayout.LBHNC:
++        raise ValueError("Raw compound KV pages require the LBHNC cache layout")
+     assert len(fixed_strides) == 5
+     assert all(stride is None or stride > 0 for stride in fixed_strides)
+     shape = (
+@@ -609,6 +622,9 @@ class FullAttentionSpec(AttentionSpec):
+         assert all(isinstance(spec, FullAttentionSpec) for spec in specs), (
+             "All attention layers in the same KV cache group must be FullAttentionSpec."
+         )
++        assert not any(spec.uses_raw_page_view for spec in specs), (
++            "Raw compound pages cannot be merged into a main-only attention spec."
++        )
+ 
+         sliding_window = set(
+             spec.sliding_window for spec in specs if spec.sliding_window is not None
+diff --git a/vllm/v1/simple_kv_offload/copy_backend.py b/vllm/v1/simple_kv_offload/copy_backend.py
+index 58de7a7e..a5954523 100644
+--- a/vllm/v1/simple_kv_offload/copy_backend.py
++++ b/vllm/v1/simple_kv_offload/copy_backend.py
+@@ -33,6 +33,7 @@ class DmaCopyBackend:
+         self._queue: queue.SimpleQueue | None = None
+         self._thread: threading.Thread | None = None
+         self._shutdown: bool = False
++        self._submission_lock = threading.Lock()
+ 
+     def init(
+         self,
+@@ -77,28 +78,38 @@ class DmaCopyBackend:
+         events_list: list[tuple[int, torch.Event]],
+         wait_event: torch.Event | None = None,
+     ) -> None:
+-        params = self._store_params if is_store else self._load_params
+-        assert params is not None and self._queue is not None
+-        self._queue.put(
+-            (
+-                src_blocks,
+-                dst_blocks,
+-                params,
+-                is_store,
+-                event_idx,
+-                events_list,
+-                wait_event,
++        with self._submission_lock:
++            if self._shutdown:
++                raise RuntimeError("Cannot submit a copy after DMA shutdown")
++            params = self._store_params if is_store else self._load_params
++            assert params is not None and self._queue is not None
++            self._queue.put(
++                (
++                    src_blocks,
++                    dst_blocks,
++                    params,
++                    is_store,
++                    event_idx,
++                    events_list,
++                    wait_event,
++                )
+             )
+-        )
+ 
+     def shutdown(self) -> None:
+-        if self._shutdown:
+-            return
+-        self._shutdown = True
+-        if self._queue is not None:
+-            self._queue.put(None)
++        """Drain queued submissions and device work before their owners can exit."""
++        with self._submission_lock:
++            if not self._shutdown:
++                self._shutdown = True
++                if self._queue is not None:
++                    self._queue.put(None)
++        # The FIFO sentinel follows every accepted job, including jobs whose
++        # completion events have not yet been published. A timed join cannot
++        # establish that it is safe to release GPU aliases or registered memory.
+         if self._thread is not None:
+-            self._thread.join(timeout=5.0)
++            self._thread.join()
++        for stream in (self._load_stream, self._store_stream):
++            if stream is not None:
++                stream.synchronize()
+ 
+     @staticmethod
+     def _copy_loop(
+diff --git a/vllm/v1/simple_kv_offload/cuda_mem_ops.py b/vllm/v1/simple_kv_offload/cuda_mem_ops.py
+index 1f304415..74ff2ff6 100644
+--- a/vllm/v1/simple_kv_offload/cuda_mem_ops.py
++++ b/vllm/v1/simple_kv_offload/cuda_mem_ops.py
+@@ -33,6 +33,13 @@ def pin_tensor(tensor: torch.Tensor) -> None:
+         raise RuntimeError(f"cudaHostRegister failed: {err}")
+ 
+ 
++def unpin_tensor(tensor: torch.Tensor) -> None:
++    """Undo pin_tensor after all DMA referencing the tensor has completed."""
++    err = torch.cuda.cudart().cudaHostUnregister(tensor.data_ptr())
++    if err.value != 0:
++        raise RuntimeError(f"cudaHostUnregister failed: {err}")
++
++
+ class _CUmemLocation(ctypes.Structure):
+     _fields_ = [("type", ctypes.c_uint), ("id", ctypes.c_int)]
+ 
+diff --git a/vllm/v1/simple_kv_offload/worker.py b/vllm/v1/simple_kv_offload/worker.py
+index c120951e..73649532 100644
+--- a/vllm/v1/simple_kv_offload/worker.py
++++ b/vllm/v1/simple_kv_offload/worker.py
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ """Worker-side handler for SimpleCPUOffloadConnector."""
+ 
++import threading
+ from typing import TYPE_CHECKING
+ 
+ import torch
+@@ -10,7 +11,7 @@ from vllm.config import VllmConfig
+ from vllm.logger import init_logger
+ from vllm.utils.torch_utils import PIN_MEMORY
+ from vllm.v1.simple_kv_offload.copy_backend import DmaCopyBackend
+-from vllm.v1.simple_kv_offload.cuda_mem_ops import pin_tensor
++from vllm.v1.simple_kv_offload.cuda_mem_ops import pin_tensor, unpin_tensor
+ from vllm.v1.simple_kv_offload.disk_backend import DiskBackend
+ from vllm.v1.simple_kv_offload.metadata import (
+     SimpleCPUOffloadMetadata,
+@@ -56,6 +57,9 @@ class SimpleCPUOffloadWorker:
+         self.store_stream: torch.cuda.Stream | None = None
+ 
+         self._backend: DmaCopyBackend | DiskBackend | None = None
++        self._registered_cpu_tensors: list[torch.Tensor] = []
++        self._shutdown_lock = threading.Lock()
++        self._shutdown_complete = False
+ 
+         # Ordered (event_idx, Event). Events pre-allocated on main thread.
+         self._load_events: list[tuple[int, torch.Event]] = []
+@@ -92,6 +96,8 @@ class SimpleCPUOffloadWorker:
+                 by resolving to their underlying raw storage.
+ 
+         """
++        if self._shutdown_complete:
++            raise RuntimeError("Cannot register KV caches after CPU offload shutdown")
+         if not kv_caches:
+             logger.warning("No KV caches to offload.")
+             return
+@@ -232,6 +238,7 @@ class SimpleCPUOffloadWorker:
+             tensor = torch.zeros(cpu_shape, dtype=gpu_tensor.dtype, device="cpu")
+             if pin_memory:
+                 pin_tensor(tensor)
++                self._registered_cpu_tensors.append(tensor)
+             self.cpu_kv_caches[name] = tensor
+ 
+         self._backend = DmaCopyBackend()
+@@ -244,6 +251,8 @@ class SimpleCPUOffloadWorker:
+         )
+ 
+     def bind_connector_metadata(self, metadata: SimpleCPUOffloadMetadata) -> None:
++        if self._shutdown_complete:
++            raise RuntimeError("Cannot bind metadata after CPU offload shutdown")
+         self._connector_metadata = metadata
+         if metadata.load_event >= 0:
+             self._pending_load_event_indices.add(metadata.load_event)
+@@ -373,3 +382,31 @@ class SimpleCPUOffloadWorker:
+         else:
+             self._load_hwm = hwm
+         return hwm
++
++    def shutdown(self) -> None:
++        """Release CPU-offload owners only after queued and submitted DMA drains."""
++        if self.disk_mode:
++            # DiskBackend owns a separate I/O and staging-buffer lifecycle.
++            # Preserve its existing connector behavior in this CPU-only fix.
++            return
++        with self._shutdown_lock:
++            if self._shutdown_complete:
++                return
++            if self._backend is not None:
++                self._backend.shutdown()
++            self._flush_and_sync_all()
++            while self._registered_cpu_tensors:
++                tensor = self._registered_cpu_tensors[-1]
++                unpin_tensor(tensor)
++                self._registered_cpu_tensors.pop()
++            self._connector_metadata = None
++            self._pending_load_event_indices.clear()
++            self._pending_store_event_indices.clear()
++            self._completed_store_events.clear()
++            self._store_compute_done = None
++            self.cpu_kv_caches = None
++            self.gpu_kv_caches = None
++            self._backend = None
++            self.load_stream = None
++            self.store_stream = None
++            self._shutdown_complete = True
+diff --git a/vllm/v1/worker/gpu/attn_utils.py b/vllm/v1/worker/gpu/attn_utils.py
+index 8aa9ba3c..279944af 100644
+--- a/vllm/v1/worker/gpu/attn_utils.py
++++ b/vllm/v1/worker/gpu/attn_utils.py
+@@ -55,6 +55,8 @@ if TYPE_CHECKING:
+ class AttentionCGSupportInfo:
+     min_cg_support: AttentionCGSupport = AttentionCGSupport.ALWAYS
+     min_cg_attn_backend: str | None = None
++    decode_phase_only: bool = False
++    decode_phase_only_backend: str | None = None
+ 
+     def narrow(
+         self, support: AttentionCGSupport, backend: str | None
+@@ -65,7 +67,9 @@ class AttentionCGSupportInfo:
+         encoder-only layers) contribute to the runner's cudagraph decision.
+         """
+         if support.value < self.min_cg_support.value:
+-            return AttentionCGSupportInfo(support, backend)
++            return AttentionCGSupportInfo(
++                support, backend, self.decode_phase_only, self.decode_phase_only_backend
++            )
+         return self
+ 
+ 
+@@ -120,6 +124,7 @@ class FastPrefillHelper:
+             num_tokens=num_logits,
+             uniform_token_count=None,
+             num_active_loras=num_active_loras,
++            has_prefill=has_prefill,
+         )
+         num_logits_padded = min(desc.num_tokens, self.max_num_tokens)
+         return FastPrefillBatchMetadata(
+@@ -298,6 +303,8 @@ def get_attn_cg_support(
+     """Return the weakest CUDA graph support among the checked layers."""
+     min_cg_support = AttentionCGSupport.ALWAYS
+     min_cg_attn_backend = None
++    decode_phase_only = False
++    decode_phase_only_backend = None
+     for groups in attn_groups:
+         for group in groups:
+             if checked_layer_names is not None and checked_layer_names.isdisjoint(
+@@ -312,9 +319,14 @@ def get_attn_cg_support(
+             if cg_support.value < min_cg_support.value:
+                 min_cg_support = cg_support
+                 min_cg_attn_backend = group.backend.__name__
++            if getattr(builder, "cudagraph_decode_phase_only", False):
++                decode_phase_only = True
++                decode_phase_only_backend = group.backend.__name__
+     return AttentionCGSupportInfo(
+         min_cg_support=min_cg_support,
+         min_cg_attn_backend=min_cg_attn_backend,
++        decode_phase_only=decode_phase_only,
++        decode_phase_only_backend=decode_phase_only_backend,
+     )
+ 
+ 
+diff --git a/vllm/v1/worker/gpu/cudagraph_utils.py b/vllm/v1/worker/gpu/cudagraph_utils.py
+index 73be6231..2cd7f17d 100644
+--- a/vllm/v1/worker/gpu/cudagraph_utils.py
++++ b/vllm/v1/worker/gpu/cudagraph_utils.py
+@@ -78,6 +78,7 @@ class BatchExecutionDescriptor:
+     num_active_loras: int = 0
+     # Number of microbatches the batch is split into (DBO). 1 means no splitting.
+     num_ubatches: int = 1
++    decode_phase_only: bool = False
+ 
+ 
+ def make_cudagraph_stats(
+@@ -111,6 +112,7 @@ def _is_compatible(
+     num_active_loras: int,
+     max_query_len: int | None,
+     num_ubatches: int,
++    has_prefill: bool | None = None,
+ ) -> bool:
+     # desc.uniform_token_count=None (PIECEWISE) can handle any uniform_token_count
+     # desc.num_reqs=None means no request padding needed (PIECEWISE)
+@@ -130,6 +132,7 @@ def _is_compatible(
+         and desc.num_tokens >= num_tokens
+         and desc.num_active_loras == num_active_loras
+         and desc.num_ubatches == num_ubatches
++        and (not desc.decode_phase_only or has_prefill is False)
+     )
+ 
+ 
+@@ -152,6 +155,7 @@ class CudaGraphManager:
+         lora_capture_cases: list[int] | None = None,
+         varlen_decode: bool = False,
+         ubatch_runner: "UBatchRunner | None" = None,
++        decode_phase_only_full_graphs: bool = False,
+     ):
+         self.vllm_config = vllm_config
+         self.device = device
+@@ -161,6 +165,7 @@ class CudaGraphManager:
+         self.cudagraph_mode = cudagraph_mode
+         self.decode_query_len = decode_query_len
+         self.varlen_decode = varlen_decode
++        self.decode_phase_only_full_graphs = decode_phase_only_full_graphs
+         # DBO supports FULL CUDA graphs only.
+         self.ubatch_runner = ubatch_runner
+ 
+@@ -221,6 +226,9 @@ class CudaGraphManager:
+         # Counts above the largest captured case clamp to it.
+         return self._lora_dispatch_map.get(num_active_loras, self._max_lora_case)
+ 
++    def _is_decode_phase_only(self, cg_mode: CUDAGraphMode) -> bool:
++        return self.decode_phase_only_full_graphs and cg_mode == CUDAGraphMode.FULL
++
+     def _maybe_ubatch_twin(
+         self, desc: BatchExecutionDescriptor
+     ) -> BatchExecutionDescriptor | None:
+@@ -309,6 +317,7 @@ class CudaGraphManager:
+                     num_reqs=min(num_tokens, self.max_num_reqs),
+                     max_query_len=self.decode_query_len,
+                     num_active_loras=num_active_loras,
++                    decode_phase_only=self._is_decode_phase_only(decode_mode),
+                 )
+                 descs_by_mode[decode_mode].append(desc)
+             # Capture uniform decode specfifc graphs if required
+@@ -331,6 +340,7 @@ class CudaGraphManager:
+                         num_reqs=rounded_num_reqs,
+                         uniform_token_count=decode_query_len,
+                         num_active_loras=num_active_loras,
++                        decode_phase_only=self._is_decode_phase_only(decode_mode),
+                     )
+ 
+                     # avoid duplicate graphs
+@@ -361,6 +371,7 @@ class CudaGraphManager:
+                     num_tokens=num_tokens,
+                     num_reqs=num_reqs,
+                     num_active_loras=num_active_loras,
++                    decode_phase_only=self._is_decode_phase_only(mixed_mode),
+                 )
+                 descs_by_mode[mixed_mode].append(desc)
+ 
+@@ -523,8 +534,11 @@ class CudaGraphManager:
+         num_active_loras: int,
+         max_query_len: int | None = None,
+         num_ubatches: int = 1,
++        has_prefill: bool | None = None,
+     ) -> BatchExecutionDescriptor:
+         """Find matching cudagraph descriptor from priority-ordered candidates."""
++        if self.decode_phase_only_full_graphs and has_prefill is None:
++            raise RuntimeError("Decode-phase-only graph dispatch requires has_prefill")
+         effective_loras = self._resolve_effective_loras(num_active_loras)
+         key = (num_tokens, effective_loras)
+         if self._graphs_captured and num_tokens > 0 and key in self._candidates:
+@@ -537,6 +551,7 @@ class CudaGraphManager:
+                     effective_loras,
+                     max_query_len,
+                     num_ubatches,
++                    has_prefill,
+                 ):
+                     return desc
+         return BatchExecutionDescriptor(
+@@ -547,6 +562,14 @@ class CudaGraphManager:
+             num_ubatches=num_ubatches,
+         )
+ 
++    def check_phase_admission(
++        self, desc: BatchExecutionDescriptor, has_prefill: bool | None
++    ) -> None:
++        if desc.decode_phase_only and has_prefill is not False:
++            raise RuntimeError(
++                f"Decode-phase-only graph cannot replay with has_prefill={has_prefill}"
++            )
++
+     def run_fullgraph(self, desc: BatchExecutionDescriptor):
+         """Replay a captured FULL cudagraph."""
+         assert desc.cg_mode == CUDAGraphMode.FULL, (
+@@ -588,6 +611,7 @@ class ModelCudaGraphManager(CudaGraphManager):
+         lora_capture_cases: list[int] | None = None,
+         varlen_decode: bool = False,
+         ubatch_runner: "UBatchRunner | None" = None,
++        decode_phase_only_full_graphs: bool = False,
+     ):
+         super().__init__(
+             vllm_config,
+@@ -597,6 +621,7 @@ class ModelCudaGraphManager(CudaGraphManager):
+             lora_capture_cases=lora_capture_cases,
+             varlen_decode=varlen_decode,
+             ubatch_runner=ubatch_runner,
++            decode_phase_only_full_graphs=decode_phase_only_full_graphs,
+         )
+         self.hidden_states: torch.Tensor | None = None
+         self.aux_hidden_states: list[torch.Tensor] = []
+diff --git a/vllm/v1/worker/gpu/dp_utils.py b/vllm/v1/worker/gpu/dp_utils.py
+index 15db7c19..680e1653 100644
+--- a/vllm/v1/worker/gpu/dp_utils.py
++++ b/vllm/v1/worker/gpu/dp_utils.py
+@@ -39,6 +39,8 @@ class DPSyncState:
+     # Agreed upper bound on any rank's request count. Holds the padded count when
+     # a FULL descriptor imposed one, else the most any rank scheduled.
+     num_reqs: int
++    # Actual phase agreed across ranks, independent of decode-shape promotion.
++    has_prefill: bool | None = None
+ 
+ 
+ def sync_cudagraph_and_dp_padding(
+@@ -54,6 +56,7 @@ def sync_cudagraph_and_dp_padding(
+     parallel_config: ParallelConfig | None = None,
+     allow_ubatching: bool = False,
+     uniform_decode: bool = False,
++    has_prefill: bool | None = None,
+ ) -> tuple[BatchExecutionDescriptor, DPSyncState | None]:
+     """Coordinates the batch descriptor and DP padding across all ranks.
+ 
+@@ -64,13 +67,14 @@ def sync_cudagraph_and_dp_padding(
+     """
+     assert dp_size > 1, "DP size must be greater than 1"
+     group = get_dp_group().cpu_group
+-    tensor = torch.zeros(6, dp_size, dtype=torch.int32, device="cpu")
++    tensor = torch.zeros(7, dp_size, dtype=torch.int32, device="cpu")
+     tensor[0][dp_rank] = num_tokens
+     tensor[1][dp_rank] = desired_batch_desc.cg_mode.value
+     tensor[2][dp_rank] = uniform_token_count or 0  # (0 means None)
+     tensor[3][dp_rank] = max_query_len or -1  # (-1 means None)
+     tensor[4][dp_rank] = int(allow_ubatching)
+     tensor[5][dp_rank] = num_reqs
++    tensor[6][dp_rank] = -1 if has_prefill is None else int(has_prefill)
+     if should_skip_dp_coordination():
+         tensor[:] = tensor[:, dp_rank, None].clone()
+     else:
+@@ -82,6 +86,14 @@ def sync_cudagraph_and_dp_padding(
+     max_query_lens_across_dp = tensor[3]
+     allow_ubatching_across_dp = tensor[4]
+     num_reqs_across_dp = tensor[5]
++    phases_across_dp = tensor[6]
++    synced_has_prefill = (
++        True
++        if bool(torch.any(phases_across_dp == 1).item())
++        else False
++        if bool(torch.all(phases_across_dp == 0).item())
++        else None
++    )
+ 
+     # If ranks disagree on the uniform token count, or its 0 (means None) set to None
+     synced_uniform_token_count: int | None = int(uniform_token_counts_across_dp[0])
+@@ -125,6 +137,7 @@ def sync_cudagraph_and_dp_padding(
+                     synced_uniform_token_count,
+                     num_active_loras=num_active_loras,
+                     num_ubatches=num_ubatches,
++                    has_prefill=synced_has_prefill,
+                 )
+                 if 2 * int(num_tokens_across_dp.min()) < ubatch_desc.num_tokens:
+                     # If one rank has an empty second microbatch, run without
+@@ -150,6 +163,7 @@ def sync_cudagraph_and_dp_padding(
+                 uniform_token_count=synced_uniform_token_count,
+                 eager=ubatch_desc.cg_mode == CUDAGraphMode.NONE,
+                 num_reqs=num_reqs,
++                has_prefill=synced_has_prefill,
+             )
+ 
+     synced_cg_mode = CUDAGraphMode(int(cg_mode_across_dp.min().item()))
+@@ -168,6 +182,7 @@ def sync_cudagraph_and_dp_padding(
+                 uniform_token_count=synced_uniform_token_count,
+                 eager=True,
+                 num_reqs=int(num_reqs_across_dp.max()),
++                has_prefill=synced_has_prefill,
+             ),
+         )
+ 
+@@ -192,6 +207,7 @@ def sync_cudagraph_and_dp_padding(
+         synced_uniform_token_count,
+         num_active_loras=num_active_loras,
+         max_query_len=synced_max_query_len,
++        has_prefill=synced_has_prefill,
+     )
+ 
+     # Update num_tokens_across_dp to reflect padded size.
+@@ -207,6 +223,7 @@ def sync_cudagraph_and_dp_padding(
+             and synced_desc.num_reqs is not None
+             else int(num_reqs_across_dp.max())
+         ),
++        has_prefill=synced_has_prefill,
+     )
+ 
+ 
+@@ -224,6 +241,7 @@ def dispatch_cg_and_sync_dp(
+     allow_ubatching: bool = False,
+     uniform_decode: bool = False,
+     dp_sync: DPSyncState | None = None,
++    has_prefill: bool | None = None,
+ ) -> tuple[BatchExecutionDescriptor, DPSyncState | None]:
+     """Pick a cudagraph descriptor for this batch, agreeing it across DP ranks.
+ 
+@@ -245,6 +263,8 @@ def dispatch_cg_and_sync_dp(
+         max_query_len: Upper bound on per-request query length, for selecting
+             varlen decode graphs. None, as for a batch with a prefill, keeps
+             the batch out of graphs that constrain it.
++        has_prefill: Whether this rank contains an actual prefilling request.
++            Required by backends with decode-phase-only FULL graphs.
+         need_eager: Force `CUDAGraphMode.NONE` instead of dispatching.
+         num_active_loras: Active LoRA count for this rank. Does not need
+             cross-rank agreement; it never changes a bucket's token count.
+@@ -285,6 +305,7 @@ def dispatch_cg_and_sync_dp(
+             dp_sync.uniform_token_count if dp_sync is not None else uniform_token_count,
+             num_active_loras=num_active_loras,
+             max_query_len=max_query_len,
++            has_prefill=dp_sync.has_prefill if dp_sync is not None else has_prefill,
+         )
+ 
+     if dp_size == 1:
+@@ -322,4 +343,5 @@ def dispatch_cg_and_sync_dp(
+         parallel_config=parallel_config,
+         allow_ubatching=allow_ubatching,
+         uniform_decode=uniform_decode,
++        has_prefill=has_prefill,
+     )
+diff --git a/vllm/v1/worker/gpu/model_runner.py b/vllm/v1/worker/gpu/model_runner.py
+index 61d6197c..5486bce2 100644
+--- a/vllm/v1/worker/gpu/model_runner.py
++++ b/vllm/v1/worker/gpu/model_runner.py
+@@ -146,7 +146,7 @@ from vllm.v1.worker.gpu.sample.logits_processor import build_custom_logits_proce
+ from vllm.v1.worker.gpu.sample.output import SamplerOutput
+ from vllm.v1.worker.gpu.sample.prompt_logprob import PromptLogprobsWorker
+ from vllm.v1.worker.gpu.sample.sampler import Sampler
+-from vllm.v1.worker.gpu.shutdown import free_before_shutdown
++from vllm.v1.worker.gpu.shutdown import free_before_shutdown, shutdown_model_resources
+ from vllm.v1.worker.gpu.spec_decode import init_speculator
+ from vllm.v1.worker.gpu.spec_decode.adaptive_verification import (
+     AdaptiveVerificationManager,
+@@ -743,7 +743,14 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+             lora_capture_cases=self.lora_capture_cases,
+             varlen_decode=self.adaptive_verification is not None,
+             ubatch_runner=self.ubatch_runner,
++            decode_phase_only_full_graphs=attn_cg_support.decode_phase_only,
+         )
++        if attn_cg_support.decode_phase_only:
++            logger.info(
++                "Backend %s restricts FULL cudagraph replay to batches with "
++                "no prefilling requests.",
++                attn_cg_support.decode_phase_only_backend,
++            )
+         if self.cache_config.kv_sharing_fast_prefill and self.pcp_manager is None:
+             self.fast_prefill = FastPrefillHelper(
+                 self.cudagraph_manager, self.max_num_tokens
+@@ -1739,6 +1746,9 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+         batch_req_state, uniform_tok_count = self.gather_batch_req_state(
+             scheduler_output, dummy_run
+         )
++        has_prefill = (
++            batch_req_state.has_prefill if batch_req_state is not None else False
++        )
+         if batch_req_state is not None:
+             num_toks = batch_req_state.num_tokens
+             if batch_req_state.has_prefill:
+@@ -1780,6 +1790,7 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+                 self.ubatch_runner is not None and not skip_attn_for_dummy_run
+             ),
+             uniform_decode=uniform_tok_count == self.decode_query_len,
++            has_prefill=has_prefill,
+         )
+ 
+         if batch_desc.num_tokens == 0:
+@@ -1993,6 +2004,7 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+             self.kv_connector.pre_forward(
+                 **connector_kwargs, attn_metadata=attn_metadata
+             )
++            self.cudagraph_manager.check_phase_admission(batch_desc, has_prefill)
+             model_output = self.cudagraph_manager.run_fullgraph(batch_desc)
+         else:
+             # For piecewise and eager mode, just call model().
+@@ -2360,11 +2372,17 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+         if hasattr(self, "model_state") and self.model_state.supports_mm_inputs:
+             self.model_state.encoder_runner.clear()
+         free_before_shutdown(self.vllm_config)
++        speculator = getattr(self, "speculator", None)
++        shutdown_model_resources(
++            (
++                getattr(self, "model", None),
++                getattr(speculator, "model", None),
++            )
++        )
+         if hasattr(self, "model_state"):
+             del self.model_state
+         # Detach the layer-level KV/state cache tensors before dropping the
+         # models; the model objects can outlive this runner.
+-        speculator = getattr(self, "speculator", None)
+         if speculator is not None:
+             if draft_model := getattr(speculator, "model", None):
+                 clear_layer_kv_caches(draft_model.modules())
+diff --git a/vllm/v1/worker/gpu/shutdown.py b/vllm/v1/worker/gpu/shutdown.py
+index 83008396..0245e679 100644
+--- a/vllm/v1/worker/gpu/shutdown.py
++++ b/vllm/v1/worker/gpu/shutdown.py
+@@ -1,11 +1,34 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++from collections.abc import Iterable
++
++from torch import nn
++
+ from vllm.config import VllmConfig
+ from vllm.logger import init_logger
+ 
+ logger = init_logger(__name__)
+ 
+ 
++def shutdown_model_resources(models: Iterable[nn.Module | None]) -> None:
++    """Close model-owned resources after draining graphs, before TP teardown.
++
++    This is deliberately separate from temporary KV profiling-cache release.
++    Shared modules run the optional hook once even if both model roots own them.
++    """
++    seen: set[int] = set()
++    for model in models:
++        if model is None:
++            continue
++        for module in model.modules():
++            if id(module) in seen:
++                continue
++            seen.add(id(module))
++            close = getattr(module, "shutdown_model_resources", None)
++            if callable(close):
++                close()
++
++
+ def free_before_shutdown(vllm_config: VllmConfig) -> None:
+     from vllm.model_executor.layers.rotary_embedding import _ROPE_DICT
+     from vllm.v1.worker.workspace import reset_workspace_manager
+diff --git a/vllm/v1/worker/utils.py b/vllm/v1/worker/utils.py
+index db0f81b8..7fef1434 100644
+--- a/vllm/v1/worker/utils.py
++++ b/vllm/v1/worker/utils.py
+@@ -731,6 +731,9 @@ def clear_layer_kv_caches(layers: Iterable[Any]) -> None:
+     alone does not release the KV cache memory on teardown paths.
+     """
+     for layer in layers:
++        release_kv_cache = getattr(layer, "release_kv_cache", None)
++        if release_kv_cache is not None:
++            release_kv_cache()
+         if not hasattr(layer, "kv_cache"):
+             continue
+         kv_cache = layer.kv_cache

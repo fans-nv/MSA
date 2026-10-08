@@ -1,0 +1,140 @@
+{
+  "manifest_sha256": "0c2a96870fed4b22fe550fc4402b5cd9cd2867922b20f6fd5c4f1387d484d1b1",
+  "sources": {
+    "msa": {
+      "head": "0f658079c9ea9ab63c76b975b7ee4dd54a198334",
+      "tree": "3c19a18efae28719bffd05fcf6f3a9614b853d5c",
+      "branch": "work/icp-dev-public-compat",
+      "base": "ed4e40efcb5895aba1a3554d62cd1dcaf77920cb"
+    },
+    "vllm": {
+      "head": "516bd9a9d9962aff25582f774a49640e022bf348",
+      "tree": "2452f18ca43c02b0e5199eda9672c8b1dfd4cb55",
+      "branch": "work/icp-public-vllm",
+      "base": "242e4213fc9845ff6fe607af1aee626fd8acc990"
+    }
+  },
+  "host_gates": {
+    "msa": {
+      "path": "logs/public-final-r1/msa",
+      "counts": {
+        "tests": 619,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 149,
+        "passed": 470
+      },
+      "summary": "470 passed, 149 skipped, 413 deselected, 4 warnings in 31.09s",
+      "final_tree_matches_tested_sources": true,
+      "files": {
+        "command.txt": "306f81fd062b6ea6fdd8121fcfa7046de73e4c0b5066e5ebd671e36c826a4bbb",
+        "cwd.txt": "fe9e7c229285544fa82c6cdc201f7b5ea3ad72a8dd1df73ed69b9e9f8090f8f7",
+        "exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "msa-after-head.txt": "35568c6d581d541ce594522fb239e60987e760010173731a0f958319dacfe8f4",
+        "msa-after-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-after-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-after-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-before-head.txt": "35568c6d581d541ce594522fb239e60987e760010173731a0f958319dacfe8f4",
+        "msa-before-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-before-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-before-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "output.log": "ef7cc4d9f3f7f161d14c0564b6dadb0978c3046cc27c21e00aad66968ac698f2",
+        "pytest.xml": "4bfe1acb72dd8625a874ac2bbefc43d15596061156ebe4d8ea90c97788374d68",
+        "pythonpath.txt": "ae0eff97efb5d1a75e77ca9f2126e8e2e109a127ab9f4bf6aa157c476643c84c",
+        "sources-unchanged.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "vllm-after-head.txt": "82951b829f2f406b58c14d44ef83a03bd79df92aef83c9bcd730b4ece1f92233",
+        "vllm-after-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-after-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-after-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-before-head.txt": "82951b829f2f406b58c14d44ef83a03bd79df92aef83c9bcd730b4ece1f92233",
+        "vllm-before-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-before-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-before-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "integration": {
+      "path": "logs/public-final-r1/integration",
+      "counts": {
+        "tests": 569,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 144,
+        "passed": 425
+      },
+      "summary": "425 passed, 144 skipped, 4 warnings in 13.89s",
+      "final_tree_matches_tested_sources": true,
+      "files": {
+        "command.txt": "d713eaacd4e7166b1c3513dbb9fdb139e359720f85febc722f1cdaa66ec2577a",
+        "cwd.txt": "91821e455d1d980ab7a37128c96027dc286610ab478e03d1ee1b61a9c7e9f4cd",
+        "exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "msa-after-head.txt": "35568c6d581d541ce594522fb239e60987e760010173731a0f958319dacfe8f4",
+        "msa-after-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-after-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-after-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-before-head.txt": "35568c6d581d541ce594522fb239e60987e760010173731a0f958319dacfe8f4",
+        "msa-before-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-before-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "msa-before-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "output.log": "325fd01588482b0e0fbc854ac9b7ce434e6a1f105c64af0247b51a8d868dd988",
+        "pytest.xml": "63328ddc9ceec97838236008e59fdc913f98a54a9538b54ad625d4313a3d81a9",
+        "pythonpath.txt": "ae0eff97efb5d1a75e77ca9f2126e8e2e109a127ab9f4bf6aa157c476643c84c",
+        "sources-unchanged.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "vllm-after-head.txt": "82951b829f2f406b58c14d44ef83a03bd79df92aef83c9bcd730b4ece1f92233",
+        "vllm-after-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-after-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-after-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-before-head.txt": "82951b829f2f406b58c14d44ef83a03bd79df92aef83c9bcd730b4ece1f92233",
+        "vllm-before-status.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-before-working-files.sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vllm-before-working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "writer_native_compile": {
+    "path": "logs/writer-native-r2/result.json",
+    "sha256": "e373009c09dddd6cbf7651472e0a9118b8a20cb43ba44386b04af5cf634ccb4c",
+    "architectures": [
+      "107a",
+      "107f"
+    ],
+    "format_only_bridge": {
+      "path": "logs/writer-format21-r1/result.json",
+      "sha256": "df49754e80d69c289a427f3f5c2bf7f5aad510854e12ee9c05e5d8a7036d848b"
+    },
+    "ordinary_instruction_comparison": {
+      "path": "logs/writer-codegen-r2/comparison.json",
+      "sha256": "e84e9130587c9aa940983b2a28fa3c9bd0e6a3cab303f2c0e2cc0ad5697b3773"
+    }
+  },
+  "q8kv4_host_extension": {
+    "build": {
+      "path": "logs/q8kv4-cpp-r4/build-result.json",
+      "sha256": "5c9eb5a47ffa1e42c73a651c1a3e0ebcfe146c2b6342adec27f596fb911fa516"
+    },
+    "reversed-cache-load": {
+      "path": "logs/q8kv4-cpp-r4/reload-result.json",
+      "sha256": "7df45bf9c0b28bc2ea14a67e27482abd6475435080b7709db21ea5e5710002ad"
+    }
+  },
+  "supporting_receipts": {
+    "logs/vllm-commit-r2.json": "11dc10f74c3ae573f7ace7a190868154b32b7abb4e8e22422567bb086e4273c2",
+    "logs/model-no-companion-r1/result.json": "4da281a30fdf80f8a552550fe22199d8fbd47427e45fc5b6af8bfeb3efeea663",
+    "writer-source-parity.json": "4f5591032ba7e82435c1f8d8ea828ea26c648e380b2902ed6534101e29289441",
+    "model-parity.json": "4d8848a3722a3f1826e6e251b4fbe0a411e01f6f86fcf55be1127dcf5604c990",
+    "runtime-source-preservation.json": "137d741285731819481f3150fdac9b08c531af859e4243bff1135f04ef2eadb9",
+    "runtime-type-comparison.json": "a53712ffd0f44fc077c798f5b2ba50ad3011f0fe759bb94c99a7cce2a8ec33a0",
+    "model-mypy-comparison-r3.json": "91d490d504e2138684afc93bad69f00f9ed8f7e39324b485cf56609ed53de61c",
+    "config-type-comparison.json": "2a405228745f78149bdcf27d0843c2bf44124904a1068703a42f717ee202fb43",
+    "logs/writer-binding-syntax-r1/result.json": "8948790e4e3536d192f0be15d500562e3defe3228cfff66b82faae27e72edbbd",
+    "logs/writer-boxing-r1/boxing-result.json": "c920cd066de724c1221748f2fef331c12ceb4d969cb6da34aa790c4bb0b90d20"
+  },
+  "gpu_execution": false,
+  "performance_qualified": false,
+  "published": false,
+  "limitations": [
+    "Local vLLM host suites disable repository conftest and third-party plugin autoload.",
+    "CUDA/device-dependent skips are not passes.",
+    "Native compilation and ordinary instruction equality are not numerical or serving measurements.",
+    "Public writer-to-reader, graph, distributed, model-evaluation and performance qualification remain pending."
+  ]
+}

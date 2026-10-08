@@ -1,0 +1,64 @@
+{
+  "public_base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "reference": "53e229bc28df277f0906b94a082293c60a2bc2e7",
+  "scope": "AST/source preservation only; no GPU numerical/performance claim.",
+  "ordinary_files_identical_to_public": [
+    {
+      "path": "vllm/models/minimax_m3/common/indexer.py",
+      "sha256": "2b6e5137e1ed694c42ae80995d191901ad157513f9901850fe26b066d0bddebe"
+    },
+    {
+      "path": "vllm/models/minimax_m3/common/sparse_attention.py",
+      "sha256": "86a57a29f0c292122ba126c8e57e6fee1f89e64b128d90742fca2e36f1a39142"
+    },
+    {
+      "path": "vllm/models/minimax_m3/nvidia/indexer_msa.py",
+      "sha256": "9f23ec9daccd28201fe3e467b475a3637531d91154b97d98f94f2dadf4117b08"
+    },
+    {
+      "path": "vllm/models/minimax_m3/nvidia/sparse_attention_msa.py",
+      "sha256": "d87950d06e689fb8d7f1d37e3692569046ae28a46906a2c87656d28fa5674c51"
+    },
+    {
+      "path": "vllm/models/minimax_m3/nvidia/msa_cutlass_sparse_decode.py",
+      "sha256": "de1bdc02815e64d187e9c0a41e756ce1461ec4fe2c94c3d8826ad9ab601078b0"
+    }
+  ],
+  "indexer_and_exchange_ast_preserved": [
+    {
+      "path": "vllm/models/minimax_m3/common/indexer_icp.py",
+      "reference_sha256": "ac1fd7ec7be44af67c86929ed687c0a5207cdd9bba02cb5e7bfe49b95dcfe6d3",
+      "candidate_sha256": "5c64ce14252760e6ea4ebf64187208c794159fdb10c51f5242d2c94b90abf392",
+      "normalized_ast_sha256": "bd4901e6b3668da53f06c54d8f04431c39670162d02b6f354195afc7f54c9bb2"
+    },
+    {
+      "path": "vllm/models/minimax_m3/nvidia/indexer_icp.py",
+      "reference_sha256": "bb2237be6ac18b72b8bef1040810f0da961aa933ce8c29562fb525170f86ac1a",
+      "candidate_sha256": "fb4548dfff625d1aaa9c371abf5ff91d0484de685edd1a181bacb7e0d041b53c",
+      "normalized_ast_sha256": "0a6a1863296a36abf078137d60b2e7008201eb10ea408db43c0bdd9d155c34df"
+    },
+    {
+      "path": "vllm/models/minimax_m3/nvidia/ops/icp_dispatch.py",
+      "reference_sha256": "fefc431e711c7831f670973c0be0563e6c4d9fa3ee8ff8932e832009d63f3cd6",
+      "candidate_sha256": "fefc431e711c7831f670973c0be0563e6c4d9fa3ee8ff8932e832009d63f3cd6",
+      "normalized_ast_sha256": "47f0cf7954cd1445622a396be2134ef9f1cf74554a7ee88b2daa48241593fc44"
+    }
+  ],
+  "model_unchanged_definitions": [
+    "_sparse_attention_layer_ids",
+    "_is_moe_layer",
+    "MiniMAXGemmaRMSNorm",
+    "MiniMaxM3MLP",
+    "MiniMaxM3MoE",
+    "MiniMaxM3Attention",
+    "MiniMaxM3SparseAttention",
+    "MiniMaxM3SparseForCausalLM",
+    "MiniMaxM3SparseForConditionalGeneration"
+  ],
+  "model_intended_changes": [
+    "MiniMaxM3DecoderLayer.__init__: opt-in sparse layer selection",
+    "MiniMaxM3Model.__init__: opt-in exchange binding",
+    "MiniMaxM3Model.shutdown_model_resources: exchange lifetime"
+  ],
+  "candidate_head": "242e4213fc9845ff6fe607af1aee626fd8acc990"
+}

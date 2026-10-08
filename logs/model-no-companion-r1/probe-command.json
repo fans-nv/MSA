@@ -1,0 +1,5 @@
+[
+  "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+  "-c",
+  "\nimport importlib.metadata as m, importlib.util as u, json, sys\nassert u.find_spec('fmha_sm100') is None, 'Unexpected companion MSA is installed'\nprint(json.dumps({'executable': sys.executable, 'sys_path': sys.path,\n    'fmha_sm100': None, 'tblib_available': u.find_spec('tblib') is not None,\n    'legacy_icp_kernels_available': u.find_spec('icp_kernels') is not None,\n    'versions': {p: m.version(p) for p in ('torch', 'pytest', 'transformers', 'apache-tvm-ffi')}}, indent=2))\n"
+]

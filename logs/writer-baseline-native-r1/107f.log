@@ -1,0 +1,5 @@
+In file included from /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-baseline-native-r1/baseline.cu:60:
+csrc/dispatch_utils.h:7:10: fatal error: torch/all.h: No such file or directory
+    7 | #include <torch/all.h>
+      |          ^~~~~~~~~~~~~
+compilation terminated.

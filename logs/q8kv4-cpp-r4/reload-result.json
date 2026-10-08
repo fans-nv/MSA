@@ -1,0 +1,125 @@
+{
+  "status": "passed",
+  "mode": "reversed-cache-load",
+  "torch": "2.13.0+cu129",
+  "torch_cuda": "12.9",
+  "torch_path": "/tmp/laneX-venv/lib/python3.12/site-packages/torch/__init__.py",
+  "tvm_ffi_path": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/tvm_ffi/__init__.py",
+  "cuda_initialized": false,
+  "device_kernels_built_or_run": false,
+  "source_hashes": {
+    "python/fmha_sm100/decode_q8kv4/README.md": "f7994b28d80d4fae0c767f8f745e17bfd454f0d865646a93da1a92823d674eb6",
+    "python/fmha_sm100/decode_q8kv4/__init__.py": "48ccb72aaaeddc8165b90dd72b531e2d918813e457b5524fc393a9ae66041760",
+    "python/fmha_sm100/decode_q8kv4/_build_utils.py": "0ebc85c33eee98d4f411210c682fc37253367a24728abf52c2c7ec8907d97263",
+    "python/fmha_sm100/decode_q8kv4/build.py": "a33e1dc2490a2ddfc035565a808cbeced02a1ce63d394dfc5d038fe34f247d98",
+    "python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp": "681d6c64e36118565bd714ee871d5b89caa4ae48abed193d03b51614b10e41b3",
+    "python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.hpp": "0fad2e2607e86342c6a001132a270d647c4bd8366c622a209496488d48e74efa",
+    "python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp": "6f443a7eb8312f8365e06b138d6d1bea989f570e850420bcf51a5e3d7d13cac2",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_correction_tma_warpspecialized.hpp": "552b5eadc328f08dd9c7d80bf4c6a0cfec6a36ff4afcb7e794a089f679431f96",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_fp4_transform.cuh": "3a174218d224338d6ee0f5cb687804203c8e76e2782035d45ae8ff62cfe31e45",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_fwd_epilogue_tma_warpspecialized.hpp": "ef6429fcafbc11d96a7389ecb1e3858e0d925b51771934bff2d9685f179ed13c",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_fwd_mainloop_tma_warpspecialized.hpp": "22fff128007abf7214ac44da1217316dfacb4a4009e127d0a34e79c870dc0518",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_kv_transform_tma_warpspecialized.hpp": "ef5f87e443232651240a2143c2a6b05eabcefc22013529ec161a07019fb4f8e4",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_load_tma_warpspecialized.hpp": "704ce0a74d7e313fb21a65ed2dff5ed6bb8746a0a0946ad500d4e7846d73dfef",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_mma_tma_warpspecialized.hpp": "1611d5650649eb7f08a9c2000aaa0716d9898aab997af23e40363c0eb762269b",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_page_offsets_tma_warpspecialized.hpp": "a9837b3936e0c26dbf69d34a7e70ca881f3170bd469e8b74b71f099dc5fa54cb",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_pipeline.hpp": "bde122d175a9dd8a49c1138472623ecfded28d05381de4e68ffbfc385739f33f",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_selection_ring.hpp": "ac942a8fdf47230cb60e82466a41ea82dedac21dd23e3660fdab7b216e5ff5ea",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_softmax_tma_warpspecialized.hpp": "522399bed4da5f909cfa67ec03a6b46226e24bc704ef193145dbfeb219df75b9",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/collective/sm100_fmha_storage.hpp": "ebdee3029672e34c4fa7fad8590733e768c13d326265f5b71e158b3b98e7ddf5",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/decode_attention_params.hpp": "4b84913b9c22e8023f66b0c26b8e0d408f19663fda0fd9c93f5f48e5509e1257",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/exception.hpp": "cf6d591ee9b151983a1ae714dee9205e9921afe647e691801c4663b1cf0eada9",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_common.hpp": "78c9579327bbfa3650619ef765a7afcd72a241afe2d986e117452a4be464069f",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_fusion.hpp": "a783bd29867559e3a6fafdd10ee6512a3ab899b022ab21fa67cf8a4af74fd2bf",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_options.hpp": "9d5692ffae0f1b4dbebbef5d332dd77ebda78840c87366c48faa6fa015ce1fb7",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/fmha_tile_scheduler.hpp": "acf1a50927d689fd9137e9d0ff2ad8384119b16b6a84930fe05b738aef52523f",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/nvfp4_to_e4m3.cuh": "c0c2b8c80c0aa1b5b5ae88db53a56109a08adc795d55036cd993986e38a72ef7",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/sm100_fmha_q8kv4_traits.hpp": "ea38d9c54b0eae7d354153473b196821230a08db582d3e291ed38071be6072af",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/sm100_mma_n8.hpp": "39b3004f735f0c9d126af9d05c34e06a641972d139fb7ad619adda6e81237afa",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/tvm_ffi_utils.hpp": "a463b8fb21ff0e875246bb5419a3d1d1f274f5e76170119d19a8adb2e2406eb1",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/common/utils.cuh": "c5406875ba55d716825efe3cc04c12f853d59bb1a659bec08d05ada594ec007f",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/decode_attention_plan.hpp": "7a9f7dd0a4679db0b23b21714c8c1adc5631127a844a7f6948b187e79eca3fa7",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/decode_attention_reduction.hpp": "5e342027a31e0eb7603fd4e8acfe0ede734118d7f92c16af86513aaa64a75177",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/fmha.hpp": "36fbd0793dda8adc1a1a32826e89968183067c97f7d1417b4555bfc1bfec7425",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/fmha_cutlass_sm100.cuh": "d9366352f77cb1cc0e5b31df321c9b3904d202b760f5dacf74a544906b595873",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/plan.cuh": "130fc84134ea0cecfa655703b4d8204319a7e7da1d90323dd10f7009b2ad9be0",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/device/sm100_fmha_reduction.hpp": "7786ef54c126b6c8a7bdf0b08674b8b1a32bcb3aa5869fefee5e4794fb3d1b7e",
+    "python/fmha_sm100/decode_q8kv4/csrc/include/sm100/kernel/sm100_fmha_fwd_kernel_tma_warpspecialized.hpp": "4af08fed7dfcb61a7bbf2e3f37919d83e9b249987f39e4e514da612dcad9898b",
+    "python/fmha_sm100/decode_q8kv4/csrc/src/decode_attention_plan.cu": "595429d15f82922f8caed050fee9b88602fcfb0bf3e9815b473160374155e42d",
+    "python/fmha_sm100/decode_q8kv4/csrc/src/decode_attention_reduction.cu": "38492b6f622a4625e7590ce9dffcf9ebdd00ad409ec0f3a84e63788843a45e56",
+    "python/fmha_sm100/decode_q8kv4/csrc/templates/decode_attention_inst.cu.jinja": "8226d3e3faf678f37cae83687688a3ec587cce823dabd13f4853222e1ebd314f",
+    "python/fmha_sm100/decode_q8kv4/csrc/templates/decode_attention_run.cu.jinja": "475c08c0a325e1e20443dcce299b22682bfd2d63bd70f4bd9a1323bc26415c42",
+    "python/fmha_sm100/decode_q8kv4/interface.py": "1e0bccb1d104a11db6fb4b466d664d5bd21d588697ae93241b21e4af897ff607",
+    "python/fmha_sm100/decode_q8kv4/jit.py": "28fab899a355bc4b34c5326524dae62699cbfc17302fe378fca82ea08e39f8a8"
+  },
+  "libraries": [
+    {
+      "package": "validation_vendor_msa",
+      "extension_name": "_fmha_sm100_decode_q8kv4_cpp_1beca59c9d136582",
+      "path": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/q8kv4-cpp-r4/torch-extensions/_fmha_sm100_decode_q8kv4_cpp_1beca59c9d136582/_fmha_sm100_decode_q8kv4_cpp_1beca59c9d136582.so",
+      "sha256": "3926b2b3333b2000bc247dcd515b7c5f7cf65a8a2ab389f0fe05b8c750b7e08b",
+      "compile_flags": [
+        "-std=c++20",
+        "-O2",
+        "-DMSA_Q8KV4_CALLBACK_PREFIX=\\\"validation_vendor_msa.decode_q8kv4.native_v2\\\"",
+        "-DMSA_Q8KV4_PYTHON_PACKAGE=\\\"validation_vendor_msa.decode_q8kv4\\\""
+      ],
+      "toolchain_identity": [
+        [
+          "c++"
+        ],
+        [
+          [
+            "/usr/bin/x86_64-linux-gnu-g++-11",
+            "2360901d864cf10bfd6296e261cb2c14053552a80377761ab07146ec9ec9a2c0"
+          ],
+          [
+            "/tmp/cu134/nvidia/cu13/bin/nvcc",
+            "b6c72825585cb3d64d8cead9b43c165afed0f0f672319416261a0df76e6d600c"
+          ]
+        ],
+        "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+        "",
+        "/tmp/cu134/nvidia/cu13",
+        [
+          13,
+          4
+        ]
+      ]
+    },
+    {
+      "package": "fmha_sm100",
+      "extension_name": "_fmha_sm100_decode_q8kv4_cpp_711c1cc4fd8ce2d5",
+      "path": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/q8kv4-cpp-r4/torch-extensions/_fmha_sm100_decode_q8kv4_cpp_711c1cc4fd8ce2d5/_fmha_sm100_decode_q8kv4_cpp_711c1cc4fd8ce2d5.so",
+      "sha256": "b69c8583eb44bfd65759972784c3ce21bfece1c15148d76088fceb7b98e062b1",
+      "compile_flags": [
+        "-std=c++20",
+        "-O2",
+        "-DMSA_Q8KV4_CALLBACK_PREFIX=\\\"fmha_sm100.decode_q8kv4.native_v2\\\"",
+        "-DMSA_Q8KV4_PYTHON_PACKAGE=\\\"fmha_sm100.decode_q8kv4\\\""
+      ],
+      "toolchain_identity": [
+        [
+          "c++"
+        ],
+        [
+          [
+            "/usr/bin/x86_64-linux-gnu-g++-11",
+            "2360901d864cf10bfd6296e261cb2c14053552a80377761ab07146ec9ec9a2c0"
+          ],
+          [
+            "/tmp/cu134/nvidia/cu13/bin/nvcc",
+            "b6c72825585cb3d64d8cead9b43c165afed0f0f672319416261a0df76e6d600c"
+          ]
+        ],
+        "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+        "",
+        "/tmp/cu134/nvidia/cu13",
+        [
+          13,
+          4
+        ]
+      ]
+    }
+  ]
+}

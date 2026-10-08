@@ -1,0 +1,27 @@
+[
+  {
+    "mode": "build",
+    "command": [
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/q8kv4_host_extension_check.py",
+      "--source",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public",
+      "--output",
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/q8kv4-cpp-r3/build-result.json",
+      "--build"
+    ],
+    "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf",
+    "environment_overrides": {
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "CUDA_VISIBLE_DEVICES": "",
+      "CUDA_HOME": "/tmp/cu134/nvidia/cu13",
+      "CCACHE_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/q8kv4-cpp-r3/ccache",
+      "CCACHE_TEMPDIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/q8kv4-cpp-r3/ccache-tmp",
+      "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/q8kv4-cpp-r3",
+      "TORCH_EXTENSIONS_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/q8kv4-cpp-r3/torch-extensions",
+      "ICP_CACHE_ROOT": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/.cache/q8kv4-cpp-r3/icp",
+      "VLLM_TARGET_DEVICE": "cpu"
+    },
+    "exit_code": 1
+  }
+]

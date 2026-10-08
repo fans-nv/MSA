@@ -1,0 +1,56 @@
+ssssssss..sssssssssssssss...ssssssssssssssssssssssssssssssssssssssssssss [ 11%]
+ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 23%]
+sss..................................................................... [ 34%]
+..........................................ssss.......................... [ 46%]
+........................................................................ [ 58%]
+........................................................................ [ 69%]
+........................................................................ [ 81%]
+........................................................................ [ 93%]
+........................................sss                              [100%]
+=============================== warnings summary ===============================
+tests/icp/scorer/regression/test_icp_decode_score_contract.py::test_factory_compiles_and_caches_only_the_native_scan
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python/fmha_sm100/icp/scorer/decode/icp_decode_score.py:512: DeprecationWarning: __package__ != __spec__.parent
+    from ._icp_decode_score_kernel import IndexDecodeScoreKernel
+
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    from cutlass.utils import LayoutEnum, block_copy
+
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    layout_c: cutlass.utils.LayoutEnum,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [8] tests/icp/scorer/integration/test_icp_decode_aot.py:67: Requires an SM10x CUDA GPU
+SKIPPED [8] tests/icp/scorer/integration/test_icp_decode_noinit_selector.py:193: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_noinit_selector.py:223: Requires a CUDA GPU
+SKIPPED [1] tests/icp/scorer/integration/test_icp_decode_noinit_selector.py:248: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_noinit_selector.py:271: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_noinit_selector.py:304: Requires a CUDA GPU
+SKIPPED [16] tests/icp/scorer/integration/test_icp_decode_score.py:149: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:173: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:187: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:234: Requires a CUDA GPU
+SKIPPED [8] tests/icp/scorer/integration/test_icp_decode_score.py:278: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:303: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:325: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:357: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:429: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:454: Requires a CUDA GPU
+SKIPPED [4] tests/icp/scorer/integration/test_icp_decode_score.py:505: Set MSA_ICP_LONG_CORRECTNESS=1 for explicit BS8/16 Q4 150K correctness
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:523: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_decode_score.py:547: Requires a CUDA GPU
+SKIPPED [1] tests/icp/scorer/integration/test_icp_fragment_maxscore.py:403: Requires the SM100/SM103 FMHA target
+SKIPPED [48] tests/icp/scorer/integration/test_icp_prefill_completion.py:44: Requires a CUDA GPU
+SKIPPED [8] tests/icp/scorer/integration/test_icp_prefill_completion.py:139: Requires a CUDA GPU
+SKIPPED [4] tests/icp/scorer/integration/test_icp_prefill_dispatch.py:24: Requires a CUDA GPU
+SKIPPED [8] tests/icp/scorer/integration/test_icp_prefill_pipeline.py:29: Requires a CUDA GPU
+SKIPPED [2] tests/icp/scorer/integration/test_icp_prefill_pipeline_mixed.py:115: Requires a CUDA GPU
+SKIPPED [1] tests/icp/scorer/regression/test_icp_plan_no_device_readback.py:122: ICP planning allocates CUDA plan buffers
+SKIPPED [1] tests/icp/scorer/regression/test_icp_plan_no_device_readback.py:135: ICP planning allocates CUDA plan buffers
+SKIPPED [1] tests/icp/scorer/regression/test_icp_plan_no_device_readback.py:156: ICP planning allocates CUDA plan buffers
+SKIPPED [1] tests/icp/scorer/regression/test_icp_plan_no_device_readback.py:164: ICP planning allocates CUDA plan buffers
+SKIPPED [3] tests/warmup/test_msa_warmup.py:148: CUDA device required
+470 passed, 149 skipped, 413 deselected, 4 warnings in 31.09s

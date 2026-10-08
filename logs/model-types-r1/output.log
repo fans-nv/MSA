@@ -1,0 +1,46 @@
+vllm/models/minimax_m3/nvidia/model.py:229: error: "Parameter" has no attribute "weight_loader"  [attr-defined]
+vllm/models/minimax_m3/nvidia/model.py:233: error: Incompatible types in assignment (expression has type "None", variable has type "Parameter")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:652: error: Argument "q_fp8_scale" to "fused_minimax_m3_qknorm_rope_kv_insert" has incompatible type "Tensor | Module"; expected "float"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:653: error: Argument "kv_k_scale" to "fused_minimax_m3_qknorm_rope_kv_insert" has incompatible type "Tensor | Module | None"; expected "Tensor | None"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:654: error: Argument "kv_v_scale" to "fused_minimax_m3_qknorm_rope_kv_insert" has incompatible type "Tensor | Module | None"; expected "Tensor | None"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:675: error: Argument 1 to "forward" of "MiniMaxM3SparseImpl" has incompatible type "MiniMaxM3SparseAttention"; expected "AttentionLayer"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:675: note: Following member(s) of "MiniMaxM3SparseAttention" have conflicts:
+vllm/models/minimax_m3/nvidia/model.py:675: note:     _k_scale: expected "Tensor", got "Tensor | Module"
+vllm/models/minimax_m3/nvidia/model.py:675: note:     _k_scale_cpu: expected "Tensor", got "Tensor | Module"
+vllm/models/minimax_m3/nvidia/model.py:675: note:     <8 more conflict(s) not shown>
+vllm/models/minimax_m3/nvidia/model.py:787: error: Argument 3 to "fused_allreduce_gemma_rms_norm" has incompatible type "MiniMAXGemmaRMSNorm"; expected "GemmaRMSNorm"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:801: error: Argument 3 to "fused_allreduce_gemma_rms_norm" has incompatible type "MiniMAXGemmaRMSNorm"; expected "GemmaRMSNorm"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:839: error: Incompatible types in assignment (expression has type "PPMissingLayer", variable has type "VocabParallelEmbedding")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:861: error: Incompatible types in assignment (expression has type "None", variable has type "Tensor")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:876: error: Incompatible types in assignment (expression has type "PPMissingLayer", variable has type "MiniMAXGemmaRMSNorm")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:886: error: Incompatible types in assignment (expression has type "bool", variable has type "Tensor | Module")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:887: error: Incompatible types in assignment (expression has type "Tensor | Module", variable has type "bool")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:916: error: Argument 1 to "embed_input_ids" of "MiniMaxM3Model" has incompatible type "Tensor | None"; expected "Tensor"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:944: error: Dict entry 1 has incompatible type "str": "Any | None"; expected "str": "Tensor"  [dict-item]
+vllm/models/minimax_m3/nvidia/model.py:951: error: Argument 2 to "fused_allreduce_gemma_rms_norm" has incompatible type "Any | None"; expected "Tensor"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:951: error: Argument 3 to "fused_allreduce_gemma_rms_norm" has incompatible type "MiniMAXGemmaRMSNorm"; expected "GemmaRMSNorm"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:1020: error: "Parameter" has no attribute "weight_loader"  [attr-defined]
+vllm/models/minimax_m3/nvidia/model.py:1038: error: "Parameter" has no attribute "weight_loader"  [attr-defined]
+vllm/models/minimax_m3/nvidia/model.py:1094: error: Incompatible types in assignment (expression has type "PPMissingLayer", variable has type "ParallelLMHead")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:1205: error: Incompatible types in assignment (expression has type "Tensor | Module", base class "SupportsPP" defined the type as "_MakeEmptyIntermediateTensors")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:1211: error: Incompatible return value type (got "Tensor | Module", expected Module)  [return-value]
+vllm/models/minimax_m3/nvidia/model.py:1215: error: Incompatible return value type (got "Tensor | Module", expected Module)  [return-value]
+vllm/models/minimax_m3/nvidia/model.py:1334: error: "Tensor" not callable  [operator]
+vllm/models/minimax_m3/nvidia/model.py:1337: error: "Tensor" not callable  [operator]
+vllm/models/minimax_m3/nvidia/model.py:1340: error: "Tensor" not callable  [operator]
+vllm/models/minimax_m3/nvidia/sparse_attention_icp.py:512: error: Incompatible types in assignment (expression has type "MiniMaxM3SparseICPImpl", variable has type "AttentionImpl[Any]")  [assignment]
+vllm/models/minimax_m3/nvidia/sparse_attention_icp.py:642: error: "AttentionImpl[Any]" has no attribute "release_kv_cache"  [attr-defined]
+vllm/models/minimax_m3/nvidia/sparse_attention_icp.py:663: error: "AttentionImpl[Any]" has no attribute "bind_kv_cache"  [attr-defined]
+vllm/models/minimax_m3/nvidia/sparse_attention_icp.py:745: error: "AttentionImpl[Any]" has no attribute "should_use_msa_decode"  [attr-defined]
+vllm/models/minimax_m3/nvidia/sparse_attention_icp.py:871: error: Unexpected keyword argument "query_fp8" for "forward" of "AttentionImpl"  [call-arg]
+vllm/models/minimax_m3/nvidia/sparse_attention_icp.py:871: note: "forward" defined in "vllm.v1.attention.backend"
+Found 31 errors in 2 files (checked 10 source files)
+tests/models/minimax_m3/test_icp_main_attention.py:142: error: Item "None" of "Any | None" has no attribute "plan"  [union-attr]
+tests/models/minimax_m3/test_icp_main_attention.py:144: error: Item "None" of "Any | None" has no attribute "seq_lens"  [union-attr]
+tests/models/minimax_m3/test_icp_main_attention.py:145: error: Item "None" of "Any | None" has no attribute "kv_indices"  [union-attr]
+tests/models/minimax_m3/test_icp_main_attention.py:146: error: Item "None" of "Any | None" has no attribute "kv_indptr"  [union-attr]
+tests/models/minimax_m3/test_icp_main_attention.py:153: error: Item "None" of "Any | None" has no attribute "block_table"  [union-attr]
+tests/models/minimax_m3/test_icp_main_attention.py:154: error: Item "None" of "Any | None" has no attribute "seq_lens"  [union-attr]
+Found 6 errors in 1 file (checked 13 source files)
+$ mypy --python-version 3.11 
+$ mypy --python-version 3.11 --follow-imports skip tests/models

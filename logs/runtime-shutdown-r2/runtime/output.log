@@ -1,0 +1,9 @@
+......                                                                   [100%]
+=============================== warnings summary ===============================
+vllm/__init__.py:7
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+  No module named 'vllm._version'
+    from .version import __version__, __version_tuple__  # isort:skip
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+6 passed, 216 deselected, 1 warning in 9.15s

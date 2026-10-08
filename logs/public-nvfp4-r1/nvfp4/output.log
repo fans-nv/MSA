@@ -1,0 +1,37 @@
+......F......                                                            [100%]
+=================================== FAILURES ===================================
+_____ test_public_production_profile_uses_head_slots_and_calibrated_scales _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7726c1d03d10>
+
+    def test_public_production_profile_uses_head_slots_and_calibrated_scales(monkeypatch):
+        from fmha_sm100.icp.attention.nvfp4_prefill._prewarm import required_aot_keys
+    
+        calls, inputs = _captured_production_call(monkeypatch, layout="public")
+        assert len(calls) == 2
+        assert {key for key, _ in calls} == set(required_aot_keys("107a", layouts=("public",)))
+        pointer = inputs["k"].untyped_storage().data_ptr()
+        for name, offset, width in (("k", 0, 64), ("k_sf", 8192, 8),
+                                    ("v", 9216, 64), ("v_sf", 17408, 8)):
+            tensor = inputs[name]
+            assert tensor.shape == (6, 2, 128, width)
+            assert tensor.stride() == (45056, 18432, width, 1)
+            assert tensor.storage_offset() == offset
+            assert tensor.untyped_storage().data_ptr() == pointer
+        # Actual launch arguments: K calibration in forward; V only in combine.
+>       assert calls[0][1][4] is inputs["k_global_scale"]
+E       assert tensor([0.7500]) is tensor([0.7500])
+
+tests/icp/test_prewarm_cache.py:556: AssertionError
+=============================== warnings summary ===============================
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    from cutlass.utils import LayoutEnum, block_copy
+
+tests/icp/test_prewarm_cache.py::test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    layout_c: cutlass.utils.LayoutEnum,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 failed, 12 passed, 26 deselected, 3 warnings in 2.04s

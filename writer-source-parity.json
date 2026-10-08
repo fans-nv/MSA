@@ -1,0 +1,113 @@
+{
+  "scope": "Exact normalized function/header/store blocks, schema prefix and untouched independent public oracles. Not a whole-source equivalence or GPU numerical/performance proof.",
+  "normalization": "Remove whitespace and comments; no numerical token substitutions.",
+  "sources": {
+    "public": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+    "qualified_icp": "53e229bc28df277f0906b94a082293c60a2bc2e7",
+    "candidate_sha256": "be2f6cc593f487a993e4fd8c4a935386ec12bb3fdc078e0af16dc52276f9f5d9"
+  },
+  "checks": {
+    "public:warpReduceSum": {
+      "equal": true,
+      "before": "48bc0dafb4506c7f4668390a94876ba37980476f3e7b720544f4228af7082cc3",
+      "after": "48bc0dafb4506c7f4668390a94876ba37980476f3e7b720544f4228af7082cc3"
+    },
+    "public:loadElems": {
+      "equal": true,
+      "before": "13b78316cd6553955295af76156396634da4b468847b23a57a49d339e4b4b8ea",
+      "after": "13b78316cd6553955295af76156396634da4b468847b23a57a49d339e4b4b8ea"
+    },
+    "public:storeElems": {
+      "equal": true,
+      "before": "bcc70734f40c941bc69d171ed48df340dae25ede79c3528c04b17efbd74748e5",
+      "after": "bcc70734f40c941bc69d171ed48df340dae25ede79c3528c04b17efbd74748e5"
+    },
+    "public:storeCacheElems": {
+      "equal": true,
+      "before": "8a976f85d6cae808578e1ea3bae0b05f80d04d732a15376928500889e6749fdf",
+      "after": "8a976f85d6cae808578e1ea3bae0b05f80d04d732a15376928500889e6749fdf"
+    },
+    "public:storeIndexQElemsFp8": {
+      "equal": true,
+      "before": "13c72a1dfad1e6600dfc6b2624e5a847d1a83b4dd42b77be34911279cd2c8be1",
+      "after": "13c72a1dfad1e6600dfc6b2624e5a847d1a83b4dd42b77be34911279cd2c8be1"
+    },
+    "public:e2m1Code": {
+      "equal": true,
+      "before": "6b94f3bb9dbfda042defe590f6648e72187587d20694e37a5ac0a6a3f097dce7",
+      "after": "6b94f3bb9dbfda042defe590f6648e72187587d20694e37a5ac0a6a3f097dce7"
+    },
+    "public:rcpApproxFtz": {
+      "equal": true,
+      "before": "a22b24e2dedc6f3949855fb55575aab827d67d9e15bb70e677094b9bb56f5c08",
+      "after": "a22b24e2dedc6f3949855fb55575aab827d67d9e15bb70e677094b9bb56f5c08"
+    },
+    "public:divRnByRcp": {
+      "equal": true,
+      "before": "7dd7ed74c397ca9eb6c4c2ca1c87499164506b291fa6777c4d67ec031aaa22eb",
+      "after": "7dd7ed74c397ca9eb6c4c2ca1c87499164506b291fa6777c4d67ec031aaa22eb"
+    },
+    "public:nvfp4GroupScale": {
+      "equal": true,
+      "before": "faefd378ae42712b8a212f0f967477ed0e9c782b0e6f15b82dfd9dd7e85fd742",
+      "after": "faefd378ae42712b8a212f0f967477ed0e9c782b0e6f15b82dfd9dd7e85fd742"
+    },
+    "public:nvfp4UnitGroupScale": {
+      "equal": true,
+      "before": "1caf32a0e7a4e410051d8a6d01a65f371a610c123aa36e7aee395f648b6b02fc",
+      "after": "1caf32a0e7a4e410051d8a6d01a65f371a610c123aa36e7aee395f648b6b02fc"
+    },
+    "public:nvfp4Quotient": {
+      "equal": true,
+      "before": "cfc88f91eedb20df2104ccd44631c3263d78179e95f6e7d9d612de355cd0f019",
+      "after": "cfc88f91eedb20df2104ccd44631c3263d78179e95f6e7d9d612de355cd0f019"
+    },
+    "public:clearNegZeroNibbles": {
+      "equal": true,
+      "before": "93540503312445afc49531cce42845a7b2cdb1300cd02dc236b6e01a0c350929",
+      "after": "93540503312445afc49531cce42845a7b2cdb1300cd02dc236b6e01a0c350929"
+    },
+    "qualified_icp:normAndRope": {
+      "equal": true,
+      "before": "40afefd188db22b0816b624c4b97667eda13518c8e1b01ecac7ff4a14bc19034",
+      "after": "40afefd188db22b0816b624c4b97667eda13518c8e1b01ecac7ff4a14bc19034"
+    },
+    "qualified_icp:storeElemsFp8": {
+      "equal": true,
+      "before": "22cd7d98d9a584ae1bcde2f873f6bfb570a2ffb9ee5e2d8882a4026aea40b47a",
+      "after": "22cd7d98d9a584ae1bcde2f873f6bfb570a2ffb9ee5e2d8882a4026aea40b47a"
+    },
+    "qualified_icp:storeScaledQElemsFp8": {
+      "equal": true,
+      "before": "1bd687cbd310b4778f3bb965e6b71ee49061467002376102b6c3f159161aab36",
+      "after": "1bd687cbd310b4778f3bb965e6b71ee49061467002376102b6c3f159161aab36"
+    },
+    "qualified_icp:nvfp4Reciprocal": {
+      "equal": true,
+      "before": "a7442500543f924321921387146f3b20e139256cec2232af0fc6579e87321035",
+      "after": "a7442500543f924321921387146f3b20e139256cec2232af0fc6579e87321035"
+    },
+    "qualified_icp:quantizeNvfp4Quad": {
+      "equal": true,
+      "before": "23b59b28cad8292ad84b4d7cfd793f55ae497b2662571bdf000be11cab1c238a",
+      "after": "23b59b28cad8292ad84b4d7cfd793f55ae497b2662571bdf000be11cab1c238a"
+    },
+    "public:per_head_slot_stores": {
+      "equal": true,
+      "before": "6f2e3d1fec13fd49545413f9886f2cd659ee73da9a30ca3d7bf1df83a5da94fe",
+      "after": "6f2e3d1fec13fd49545413f9886f2cd659ee73da9a30ca3d7bf1df83a5da94fe"
+    },
+    "qualified_icp:complete_metadata_header": {
+      "equal": true,
+      "before": "bba14425063e8a547102918d817147a903059a371bb56b11c77092e98d185901",
+      "after": "bba14425063e8a547102918d817147a903059a371bb56b11c77092e98d185901"
+    },
+    "public:independent_cuda_oracles": {
+      "equal": true
+    },
+    "public:verbatim_schema_prefix": {
+      "equal": true
+    }
+  },
+  "all_equal": true
+}

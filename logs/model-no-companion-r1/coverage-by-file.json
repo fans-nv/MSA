@@ -1,0 +1,46 @@
+{
+  "": {
+    "skipped": 1
+  },
+  "tests.models.minimax_m3.test_compound_page": {
+    "passed": 24
+  },
+  "tests.models.minimax_m3.test_compound_runtime": {
+    "passed": 1
+  },
+  "tests.models.minimax_m3.test_compound_spec": {
+    "passed": 22
+  },
+  "tests.models.minimax_m3.test_icp_dependency": {
+    "passed": 25
+  },
+  "tests.models.minimax_m3.test_icp_exchange_route": {
+    "passed": 2,
+    "skipped": 13
+  },
+  "tests.models.minimax_m3.test_icp_live_metadata": {
+    "skipped": 1,
+    "passed": 1
+  },
+  "tests.models.minimax_m3.test_icp_main_attention": {
+    "skipped": 6,
+    "passed": 1
+  },
+  "tests.models.minimax_m3.test_icp_metadata_binding": {
+    "passed": 10
+  },
+  "tests.models.minimax_m3.test_icp_offload_admission": {
+    "passed": 21
+  },
+  "tests.models.minimax_m3.test_icp_prefill_r13": {
+    "skipped": 5,
+    "passed": 21
+  },
+  "tests.models.minimax_m3.test_icp_prefill_selector_mode": {
+    "passed": 5,
+    "skipped": 4
+  },
+  "tests.models.minimax_m3.test_indexer_qkv_replication": {
+    "passed": 11
+  }
+}

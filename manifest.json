@@ -1,0 +1,231 @@
+{
+  "sources": {
+    "msa": {
+      "head": "0f658079c9ea9ab63c76b975b7ee4dd54a198334",
+      "tree": "3c19a18efae28719bffd05fcf6f3a9614b853d5c",
+      "branch": "work/icp-dev-public-compat",
+      "base": "ed4e40efcb5895aba1a3554d62cd1dcaf77920cb"
+    },
+    "vllm": {
+      "head": "516bd9a9d9962aff25582f774a49640e022bf348",
+      "tree": "2452f18ca43c02b0e5199eda9672c8b1dfd4cb55",
+      "branch": "work/icp-public-vllm",
+      "base": "242e4213fc9845ff6fe607af1aee626fd8acc990"
+    }
+  },
+  "published": false,
+  "gpu_qualified": false,
+  "public_distribution_pending_rights_clearance": true,
+  "msa_upstream": "https://github.com/vllm-project/MSA/tree/dev",
+  "vllm_upstream": "https://github.com/vllm-project/vllm/tree/main",
+  "cutlass_commit": "098de2a652cf8f00fd70b2df54051c7eccbb855a",
+  "msa_integration_abi": 1,
+  "public_vllm_abi": 1,
+  "device_plan_abi": 3,
+  "cache_components": [
+    "icp",
+    "fmha",
+    "decode",
+    "nvfp4",
+    "q8kv4"
+  ],
+  "verified_source_payload_files": 1138,
+  "wheel_file_count": 1153,
+  "sdist_file_count": 1238,
+  "cutlass_inventory_sha256": "7c9e049dfe58900e3cc6e78a92dbdd5ad85aed00b3da4c1de6d609461c353f86",
+  "cutlass_inventory_files": 908,
+  "licenses": [
+    "fmha_sm100-0.1.1.dist-info/licenses/LICENSE",
+    "fmha_sm100-0.1.1.dist-info/licenses/NOTICE",
+    "fmha_sm100-0.1.1.dist-info/licenses/THIRD_PARTY_NOTICES.md",
+    "fmha_sm100-0.1.1.dist-info/licenses/licenses/Apache-2.0.txt",
+    "fmha_sm100-0.1.1.dist-info/licenses/licenses/BSD-3-Clause-CUTLASS.txt",
+    "fmha_sm100-0.1.1.dist-info/licenses/licenses/BSD-3-Clause-NVIDIA.txt"
+  ],
+  "artifacts": {
+    "cutlass-SOURCE.json": {
+      "bytes": 118734,
+      "sha256": "7c9e049dfe58900e3cc6e78a92dbdd5ad85aed00b3da4c1de6d609461c353f86"
+    },
+    "fmha_sm100-0.1.1-py3-none-any.whl": {
+      "bytes": 5229568,
+      "sha256": "9f8f5edb51e531a226b77cc2861b89e636a0effe4e56b1ebdaf58b3da765c598"
+    },
+    "fmha_sm100-0.1.1.tar.gz": {
+      "bytes": 3881494,
+      "sha256": "88871f817c36331fa011e76f917464d59d18dccacded4357fd98ca8f390cec5d"
+    },
+    "msa-full.patch": {
+      "bytes": 1849327,
+      "sha256": "e31952ba18740a5fd305ff15ce78ed4060945ce6549460d6b81e7405e2ac10a2"
+    },
+    "msa-public-compat.patch": {
+      "bytes": 53653,
+      "sha256": "e2a711f9819850d859d86768a25a103ac5bd46900a0484e152fa3a1a1097a405"
+    },
+    "msa.bundle": {
+      "bytes": 607821,
+      "sha256": "24fcd271f83ab4accd262dc7611609d30e0116259f7efad240609e34b696c940"
+    },
+    "source-payload-sha256.json": {
+      "bytes": 161951,
+      "sha256": "864388866b9fe9564268ab997b6399839422c87800969ccad2afcdafd13c48e0"
+    },
+    "vllm-01-offload.patch": {
+      "bytes": 15526,
+      "sha256": "2cde1eb154020195ce745322217be4ef46076161b8a04013621a834501e752a7"
+    },
+    "vllm-02-runtime.patch": {
+      "bytes": 37764,
+      "sha256": "98bfa3603f252303998f79326f976660406242cc4cf76d4e92a1de0461f0a0d0"
+    },
+    "vllm-03-writer.patch": {
+      "bytes": 122987,
+      "sha256": "5eb7218664e7a02a15710346460ce793409909ea962aa958f77eb5a37d358177"
+    },
+    "vllm-04-model-integration.patch": {
+      "bytes": 350104,
+      "sha256": "81228e04434c79f7ec8c5fff2d056f65cb387e1abc73267562635dc5f09fdee8"
+    },
+    "vllm-full.patch": {
+      "bytes": 526381,
+      "sha256": "c6595a8c4491e7534330943f62ed3452c841e4a2ba49fe9932936f86c7b1253a"
+    },
+    "vllm.bundle": {
+      "bytes": 141431,
+      "sha256": "ff2f60cbba0b0dbb021ce740775dee2b420033b26882fcd8c26a319cba72940d"
+    }
+  },
+  "installed_probe": {
+    "installed_package": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/installed-wheel/fmha_sm100/icp",
+    "version": "0.1.1",
+    "msa_integration_abi": 1,
+    "public_vllm_abi": 1,
+    "vllm_msa_admission": "passed",
+    "jit_source_payload_identity": "passed",
+    "components": [
+      "icp",
+      "fmha",
+      "decode",
+      "nvfp4",
+      "q8kv4"
+    ],
+    "component_counts": {
+      "icp": 14,
+      "fmha": 956,
+      "decode": 4,
+      "nvfp4": 58,
+      "q8kv4": 950
+    },
+    "component_digests": {
+      "icp": "fb023fad838c739e3291d78f77749947ba49e4c14f9fcbe8a194cac470121a17",
+      "fmha": "894affc9c493caed8671c2830114a97e382988bd237c7e1b239b81754d273d3b",
+      "decode": "06e5d9f4448c0c46a1fc6e061769e2413d8d07efbfc6be3bdb4d10305a4e9933",
+      "nvfp4": "a3c81c0991e4d55b9f850acc1c2c1b3f05ebc17c06acd9c90a3b2ad7eb18bc3c",
+      "q8kv4": "dfcc879c31c157f90b37d54ded88e264e9c91dd01f174c34e508e54144d3a33e"
+    },
+    "cuda_initialization_attempts": []
+  },
+  "full_patch_reconstructions": {
+    "msa": {
+      "base": "ed4e40efcb5895aba1a3554d62cd1dcaf77920cb",
+      "reconstructed_tree": "3c19a18efae28719bffd05fcf6f3a9614b853d5c",
+      "expected_tree": "3c19a18efae28719bffd05fcf6f3a9614b853d5c",
+      "patches": [
+        "msa-full.patch"
+      ]
+    },
+    "vllm": {
+      "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+      "reconstructed_tree": "2452f18ca43c02b0e5199eda9672c8b1dfd4cb55",
+      "expected_tree": "2452f18ca43c02b0e5199eda9672c8b1dfd4cb55",
+      "patches": [
+        "vllm-full.patch"
+      ]
+    }
+  },
+  "msa_public_compatibility": {
+    "base": "f82fb1759fb0b0f1fd9798c4730484feeb1e3df6",
+    "reconstructed_tree": "3c19a18efae28719bffd05fcf6f3a9614b853d5c",
+    "expected_tree": "3c19a18efae28719bffd05fcf6f3a9614b853d5c",
+    "patches": [
+      "msa-public-compat.patch"
+    ],
+    "head": "0f658079c9ea9ab63c76b975b7ee4dd54a198334"
+  },
+  "vllm_review_parts": {
+    "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+    "reconstructed_tree": "2452f18ca43c02b0e5199eda9672c8b1dfd4cb55",
+    "expected_tree": "2452f18ca43c02b0e5199eda9672c8b1dfd4cb55",
+    "patches": [
+      "vllm-01-offload.patch",
+      "vllm-02-runtime.patch",
+      "vllm-03-writer.patch",
+      "vllm-04-model-integration.patch"
+    ],
+    "parts": {
+      "01-offload": [
+        "tests/v1/simple_kv_offload/test_shutdown.py",
+        "vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py",
+        "vllm/v1/simple_kv_offload/copy_backend.py",
+        "vllm/v1/simple_kv_offload/cuda_mem_ops.py",
+        "vllm/v1/simple_kv_offload/worker.py"
+      ],
+      "02-runtime": [
+        "tests/v1/cudagraph/test_cudagraph_manager.py",
+        "tests/v1/worker/test_attn_utils.py",
+        "tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py",
+        "tests/v1/worker/test_gpu_ubatch_slicing.py",
+        "vllm/v1/attention/backend.py",
+        "vllm/v1/kv_cache_interface.py",
+        "vllm/v1/worker/gpu/attn_utils.py",
+        "vllm/v1/worker/gpu/cudagraph_utils.py",
+        "vllm/v1/worker/gpu/dp_utils.py",
+        "vllm/v1/worker/gpu/model_runner.py",
+        "vllm/v1/worker/gpu/shutdown.py",
+        "vllm/v1/worker/utils.py"
+      ],
+      "03-writer": [
+        "csrc/libtorch_stable/fused_minimax_m3_icp.cuh",
+        "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu",
+        "csrc/libtorch_stable/ops.h",
+        "csrc/libtorch_stable/torch_bindings.cpp",
+        "tests/kernels/test_fused_minimax_m3_icp_writer.py",
+        "tests/kernels/test_fused_minimax_m3_icp_writer_api.py",
+        "tests/kernels/test_minimax_m3_icp_device_plan.py",
+        "vllm/_custom_ops.py"
+      ],
+      "04-model-integration": [
+        ".buildkite/test_areas/models_basic.yaml",
+        "requirements/minimax_m3_icp.txt",
+        "tests/models/minimax_m3/test_compound_page.py",
+        "tests/models/minimax_m3/test_compound_runtime.py",
+        "tests/models/minimax_m3/test_compound_spec.py",
+        "tests/models/minimax_m3/test_icp_dependency.py",
+        "tests/models/minimax_m3/test_icp_exchange_route.py",
+        "tests/models/minimax_m3/test_icp_indexer_windows.py",
+        "tests/models/minimax_m3/test_icp_live_metadata.py",
+        "tests/models/minimax_m3/test_icp_main_attention.py",
+        "tests/models/minimax_m3/test_icp_metadata_binding.py",
+        "tests/models/minimax_m3/test_icp_offload_admission.py",
+        "tests/models/minimax_m3/test_icp_prefill_r13.py",
+        "tests/models/minimax_m3/test_icp_prefill_selector_mode.py",
+        "tests/models/minimax_m3/test_indexer_qkv_replication.py",
+        "vllm/config/attention.py",
+        "vllm/model_executor/layers/linear.py",
+        "vllm/models/minimax_m3/common/compound_page.py",
+        "vllm/models/minimax_m3/common/compound_spec.py",
+        "vllm/models/minimax_m3/common/indexer_icp.py",
+        "vllm/models/minimax_m3/nvidia/indexer_icp.py",
+        "vllm/models/minimax_m3/nvidia/model.py",
+        "vllm/models/minimax_m3/nvidia/msa_icp.py",
+        "vllm/models/minimax_m3/nvidia/msa_icp_main.py",
+        "vllm/models/minimax_m3/nvidia/ops/icp_dispatch.py",
+        "vllm/models/minimax_m3/nvidia/ops/icp_metadata.py",
+        "vllm/models/minimax_m3/nvidia/sparse_attention_icp.py"
+      ]
+    },
+    "scope": "Exact cumulative source equivalence; intermediate GPU builds not qualified."
+  },
+  "builder_sha256": "e4fbf533a07e9bf89d98ac0b2f0e1e7e92973a83cc984fdb7f3976120bffd4f2"
+}

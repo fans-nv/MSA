@@ -1,0 +1,9 @@
+{
+  "source_packet": "review/msa-dev-consolidation-20261008/target-validation",
+  "source_files": {
+    "check_sm107.py": "e8aa7e13756faca42f1168eca4f139119b3b4b582886831ee13b8e9b46cfa5c6",
+    "host_checks.py": "e6820a7f1c3c39c5975df5af1843dfb6df25d8883ed62f2c03e8b94e2e0a6ab2",
+    "README.md": "bf4b6347aa6bd44e4da2249420a251b43f6bb4483f53213c373ff419e72c4170"
+  },
+  "status": "unsealed public-port preparation; no target execution"
+}

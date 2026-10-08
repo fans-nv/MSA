@@ -1,0 +1,46 @@
+{
+  "cwd": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+  "commands": {
+    "pytest": [
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+      "-m",
+      "pytest",
+      "--noconftest",
+      "-p",
+      "no:cacheprovider",
+      "-q",
+      "-rs",
+      "tests/kernels/test_fused_minimax_m3_icp_writer_api.py",
+      "tests/kernels/test_minimax_m3_icp_device_plan.py",
+      "--junitxml=/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-cpu-r1/pytest.xml"
+    ],
+    "ruff": [
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/ruff",
+      "check",
+      "vllm/_custom_ops.py",
+      "tests/kernels/test_fused_minimax_m3_icp_writer_api.py",
+      "tests/kernels/test_minimax_m3_icp_device_plan.py"
+    ],
+    "format": [
+      "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/ruff",
+      "format",
+      "--check",
+      "vllm/_custom_ops.py",
+      "tests/kernels/test_fused_minimax_m3_icp_writer_api.py",
+      "tests/kernels/test_minimax_m3_icp_device_plan.py"
+    ]
+  },
+  "environment_overrides": {
+    "PYTHONPATH": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "CUDA_VISIBLE_DEVICES": "",
+    "VLLM_TARGET_DEVICE": "cpu",
+    "XDG_CACHE_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-cpu-r1/cache",
+    "VLLM_CACHE_ROOT": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-cpu-r1/cache/vllm",
+    "VLLM_CONFIG_ROOT": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-cpu-r1/cache/config",
+    "HF_HOME": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-cpu-r1/cache/huggingface",
+    "TORCH_EXTENSIONS_DIR": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-cpu-r1/cache/torch"
+  },
+  "scope": "CPU contracts or release-like per-TU compile. No CUDA runtime, full build, numerical or performance qualification."
+}

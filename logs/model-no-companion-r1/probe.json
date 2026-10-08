@@ -1,0 +1,22 @@
+{
+  "executable": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+  "sys_path": [
+    "",
+    "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/nvidia_cutlass_dsl/dsl_packages",
+    "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/nvidia_cutlass_dsl/dsl_packages",
+    "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public",
+    "/home/fans/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python312.zip",
+    "/home/fans/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12",
+    "/home/fans/.local/share/uv/python/cpython-3.12-linux-x86_64-gnu/lib/python3.12/lib-dynload",
+    "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages"
+  ],
+  "fmha_sm100": null,
+  "tblib_available": false,
+  "legacy_icp_kernels_available": true,
+  "versions": {
+    "torch": "2.14.0+cpu",
+    "pytest": "9.1.1",
+    "transformers": "5.12.1",
+    "apache-tvm-ffi": "0.1.14.post1"
+  }
+}

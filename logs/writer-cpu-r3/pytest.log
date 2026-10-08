@@ -1,0 +1,28 @@
+.................sssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 47%]
+ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 95%]
+sssssss                                                                  [100%]
+=============================== warnings summary ===============================
+vllm/__init__.py:7
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+  No module named 'vllm._version'
+    from .version import __version__, __version_tuple__  # isort:skip
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [6] tests/kernels/test_minimax_m3_icp_device_plan.py:501: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:536: native device-plan checks require a built SM10x writer
+SKIPPED [2] tests/kernels/test_minimax_m3_icp_device_plan.py:551: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:587: native device-plan checks require a built SM10x writer
+SKIPPED [1] tests/kernels/test_minimax_m3_icp_device_plan.py:604: native device-plan checks require a built SM10x writer
+SKIPPED [2] tests/kernels/test_minimax_m3_icp_device_plan.py:623: native device-plan checks require a built SM10x writer
+SKIPPED [24] tests/kernels/test_fused_minimax_m3_icp_writer.py:96: ICP writer needs the compiled SM10x extension
+SKIPPED [2] tests/kernels/test_fused_minimax_m3_icp_writer.py:146: ICP writer needs the compiled SM10x extension
+SKIPPED [1] tests/kernels/test_fused_minimax_m3_icp_writer.py:165: ICP writer needs the compiled SM10x extension
+SKIPPED [5] tests/kernels/test_fused_minimax_m3_icp_writer.py:176: ICP writer needs the compiled SM10x extension
+SKIPPED [9] tests/kernels/test_fused_minimax_m3_icp_writer.py:195: ICP writer needs the compiled SM10x extension
+SKIPPED [12] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:106: CUDA not available or fused MiniMax-M3 op not built in
+SKIPPED [16] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:162: CUDA not available or fused MiniMax-M3 op not built in
+SKIPPED [12] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:356: CUDA not available or fused MiniMax-M3 op not built in
+SKIPPED [8] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:480: e4m3 conversion requires CUDA SM89+.
+SKIPPED [32] tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py:651: NVFP4 KV caches need SM100
+17 passed, 134 skipped, 1 warning in 2.77s

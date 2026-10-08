@@ -1,0 +1,31 @@
+vllm/v1/worker/gpu/cudagraph_utils.py:505: error: Argument 2 to "graph" has incompatible type "tuple[int, int] | None"; expected "_POOL_HANDLE | MemPool | None"  [arg-type]
+vllm/v1/worker/gpu/cudagraph_utils.py:631: error: Signature of "capture" incompatible with supertype "CudaGraphManager"  [override]
+vllm/v1/worker/gpu/cudagraph_utils.py:631: note:      Superclass:
+vllm/v1/worker/gpu/cudagraph_utils.py:631: note:          def capture(self, create_forward_fn: CreateForwardFn, progress_bar_desc: str = ...) -> None
+vllm/v1/worker/gpu/cudagraph_utils.py:631: note:      Subclass:
+vllm/v1/worker/gpu/cudagraph_utils.py:631: note:          def capture(self, model: Module, model_state: ModelState, input_buffers: InputBuffers, intermediate_tensors: IntermediateTensors | None, block_tables: BlockTables, attn_groups: list[list[AttentionGroup]], kv_cache_config: KVCacheConfig, pcp_manager: PCPManager | None = ..., has_lora: bool = ..., use_aux_hidden_state_outputs: bool = ..., lora_capture_hook: Callable[[int, int, int], None] | None = ..., progress_bar_desc: str = ...) -> None
+vllm/v1/worker/gpu/dp_utils.py:100: error: No overload variant of "all" matches argument type "bool"  [call-overload]
+vllm/v1/worker/gpu/dp_utils.py:100: note: Possible overload variants:
+vllm/v1/worker/gpu/dp_utils.py:100: note:     def all(input: Tensor, *, out: Tensor | None = ...) -> Tensor
+vllm/v1/worker/gpu/dp_utils.py:100: note:     def all(input: Tensor, dim: Size | list[int] | tuple[int, ...] | None = ..., keepdim: bool = ..., *, out: Tensor | None = ...) -> Tensor
+vllm/v1/worker/gpu/dp_utils.py:100: note:     def all(input: Tensor, dim: int, keepdim: bool = ..., *, out: Tensor | None = ...) -> Tensor
+vllm/v1/worker/gpu/dp_utils.py:124: error: Argument "uniform_decode" to "check_ubatch_thresholds" has incompatible type "Literal[False] | Tensor"; expected "bool"  [arg-type]
+vllm/v1/worker/gpu/model_runner.py:882: error: Argument "num_sampled_tokens" to "maybe_dummy_run_with_lora" of "LoRAModelRunnerMixin" has incompatible type "None"; expected "ndarray[tuple[Any, ...], dtype[Any]]"  [arg-type]
+vllm/v1/worker/gpu/model_runner.py:925: error: Argument 1 to "_get_drafter_hidden_states" of "GPUModelRunner" has incompatible type "Tensor | None"; expected "Tensor"  [arg-type]
+vllm/v1/worker/gpu/model_runner.py:1411: error: Argument 1 to "compact_batch" of "AdaptiveVerificationManager" has incompatible type "ndarray[tuple[Any, ...], dtype[Any]] | None"; expected "ndarray[tuple[Any, ...], dtype[Any]]"  [arg-type]
+vllm/v1/worker/gpu/model_runner.py:1951: error: Incompatible types in assignment (expression has type "None", variable has type "Tensor")  [assignment]
+vllm/v1/worker/gpu/model_runner.py:2005: error: Argument 1 to "pre_forward" of "KVConnector" has incompatible type "**dict[str, object]"; expected "SchedulerOutput"  [arg-type]
+vllm/v1/worker/gpu/model_runner.py:2031: error: Argument 1 to "pre_forward" of "KVConnector" has incompatible type "**dict[str, object]"; expected "SchedulerOutput"  [arg-type]
+vllm/v1/worker/gpu/model_runner.py:2142: error: Argument 2 to "postprocess_state" of "ModelState" has incompatible type "int"; expected "Tensor"  [arg-type]
+vllm/v1/worker/gpu/model_runner.py:2327: error: Argument 1 to "pool" of "PoolingRunner" has incompatible type "Tensor | None"; expected "Tensor"  [arg-type]
+vllm/v1/simple_kv_offload/worker.py:171: error: Missing positional argument "self" in call to "priority_range" of "_CudaStreamBase"  [call-arg]
+vllm/v1/simple_kv_offload/worker.py:204: error: Argument 3 to "init" of "DiskBackend" has incompatible type "Stream | None"; expected "Stream"  [arg-type]
+vllm/v1/simple_kv_offload/worker.py:205: error: Argument 4 to "init" of "DiskBackend" has incompatible type "Stream | None"; expected "Stream"  [arg-type]
+vllm/v1/simple_kv_offload/worker.py:249: error: Argument 4 to "init" of "DmaCopyBackend" has incompatible type "Stream | None"; expected "Stream"  [arg-type]
+vllm/v1/simple_kv_offload/worker.py:250: error: Argument 5 to "init" of "DmaCopyBackend" has incompatible type "Stream | None"; expected "Stream"  [arg-type]
+Found 17 errors in 4 files (checked 14 source files)
+tests/v1/worker/test_gpu_ubatch_slicing.py:96: error: Need type annotation for "query_start_loc_np"  [var-annotated]
+tests/v1/worker/test_gpu_ubatch_slicing.py:107: error: Need type annotation for "seq_lens_upper_bound"  [var-annotated]
+Found 2 errors in 1 file (checked 3 source files)
+$ mypy --python-version 3.11 
+$ mypy --python-version 3.11 --follow-imports skip tests/v1/worker

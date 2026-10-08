@@ -1,0 +1,13 @@
+[
+  "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+  "-m",
+  "pytest",
+  "-q",
+  "-rs",
+  "--tb=short",
+  "--noconftest",
+  "-p",
+  "no:cacheprovider",
+  "tests/models/minimax_m3",
+  "--junitxml=/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/model-r5/pytest.xml"
+]

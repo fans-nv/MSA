@@ -1,0 +1,20 @@
+........................................................................ [ 36%]
+........................................................................ [ 73%]
+...................................................                      [100%]
+=============================== warnings summary ===============================
+vllm/__init__.py:7
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+  No module named 'vllm._version'
+    from .version import __version__, __version_tuple__  # isort:skip
+
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    from cutlass.utils import LayoutEnum, block_copy
+
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    layout_c: cutlass.utils.LayoutEnum,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+195 passed, 4 warnings in 8.78s

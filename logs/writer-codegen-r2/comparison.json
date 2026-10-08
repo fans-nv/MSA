@@ -1,0 +1,27 @@
+{
+  "scope": "SASS opcode/operand/ordering equality for ordinary instantiations with identical release-like flags. Instruction addresses/encoded hex omitted; register names remain significant. No GPU execution.",
+  "results": {
+    "107a": {
+      "baseline_ordinary_kernels": 76,
+      "candidate_ordinary_kernels": 76,
+      "common": 76,
+      "identical_instruction_text": 76,
+      "different_symbols": [],
+      "ordinary_instruction_count_range": [
+        312,
+        728
+      ]
+    },
+    "107f": {
+      "baseline_ordinary_kernels": 76,
+      "candidate_ordinary_kernels": 76,
+      "common": 76,
+      "identical_instruction_text": 76,
+      "different_symbols": [],
+      "ordinary_instruction_count_range": [
+        312,
+        728
+      ]
+    }
+  }
+}

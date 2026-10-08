@@ -1,0 +1,2879 @@
+diff --git a/csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu b/csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu
+index 0a45af8a..a2f96346 100644
+--- a/csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu
++++ b/csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu
+@@ -93,6 +93,12 @@ __device__ __forceinline__ uint8_t rocm_cvt_float_to_fp8_e4m3(float val) {
+ }
+ #endif
+ 
++#if !defined(USE_ROCM) && defined(CUDART_VERSION) && CUDART_VERSION >= 12080
++  #define VLLM_MINIMAX_M3_NVFP4
++#endif
++
++#include "fused_minimax_m3_icp.cuh"
++
+ namespace vllm {
+ namespace minimax_m3_fused_ops {
+ 
+@@ -125,7 +131,7 @@ __device__ __forceinline__ float warpReduceSum(float val) {
+ // back to scalar_t like the materialized unfused norm output, followed by
+ // partial NeoX RoPE on the leading ``rotary_dim`` dims. Each lane owns
+ // ``kElemsPerLane`` contiguous dims [laneId*4, laneId*4+4).
+-template <typename scalar_t>
++template <typename scalar_t, bool kVectorWeight = false>
+ __device__ __forceinline__ void normAndRope(
+     float (&elems)[kElemsPerLane], int const laneId, float const eps,
+     scalar_t const* __restrict__ weight,  // [kHeadDim] or nullptr (no norm)
+@@ -139,11 +145,26 @@ __device__ __forceinline__ void normAndRope(
+     for (int i = 0; i < kElemsPerLane; i++) sumsq += elems[i] * elems[i];
+     sumsq = warpReduceSum(sumsq);
+     float const rms_rcp = rsqrtf(sumsq / static_cast<float>(kHeadDim) + eps);
++    if constexpr (kVectorWeight) {
++      using Converter = vllm::_typeConvert<scalar_t>;
++      uint2 const weights =
++          *reinterpret_cast<uint2 const*>(weight + laneId * kElemsPerLane);
++      auto const* packed =
++          reinterpret_cast<typename Converter::packed_hip_type const*>(
++              &weights);
+ #pragma unroll
+-    for (int i = 0; i < kElemsPerLane; i++) {
+-      int const dim = laneId * kElemsPerLane + i;
+-      float const w = 1.0f + static_cast<float>(weight[dim]);
+-      elems[i] = elems[i] * rms_rcp * w;
++      for (int i = 0; i < kElemsPerLane / 2; ++i) {
++        float2 const w = Converter::convert(packed[i]);
++        elems[2 * i] = elems[2 * i] * rms_rcp * (1.0f + w.x);
++        elems[2 * i + 1] = elems[2 * i + 1] * rms_rcp * (1.0f + w.y);
++      }
++    } else {
++#pragma unroll
++      for (int i = 0; i < kElemsPerLane; i++) {
++        int const dim = laneId * kElemsPerLane + i;
++        float const w = 1.0f + static_cast<float>(weight[dim]);
++        elems[i] = elems[i] * rms_rcp * w;
++      }
+     }
+   }
+ 
+@@ -247,6 +268,7 @@ __device__ __forceinline__ void storeCacheElems(
+ // saturating to ±448). Used for the fp8 indexer-Q / index-K outputs; no scale
+ // (RMSNorm outputs are O(1) and the score path only needs relative block
+ // ordering).
++template <bool kPreserveNaN = false>
+ __device__ __forceinline__ void storeElemsFp8(
+     uint8_t* __restrict__ dst, float const (&elems)[kElemsPerLane]) {
+   constexpr float kFp8Max = 448.0f;
+@@ -255,8 +277,10 @@ __device__ __forceinline__ void storeElemsFp8(
+   #pragma unroll
+   for (int i = 0; i < kElemsPerLane / 2; i++) {
+     float2 vv = make_float2(elems[2 * i], elems[2 * i + 1]);
+-    vv.x = fminf(fmaxf(vv.x, -kFp8Max), kFp8Max);
+-    vv.y = fminf(fmaxf(vv.y, -kFp8Max), kFp8Max);
++    if constexpr (!kPreserveNaN) {
++      vv.x = fminf(fmaxf(vv.x, -kFp8Max), kFp8Max);
++      vv.y = fminf(fmaxf(vv.y, -kFp8Max), kFp8Max);
++    }
+     out2[i] = __nv_cvt_float2_to_fp8x2(vv, __NV_SATFINITE, __NV_E4M3);
+   }
+   *reinterpret_cast<uint32_t*>(dst) = *reinterpret_cast<uint32_t const*>(out2);
+@@ -271,7 +295,7 @@ __device__ __forceinline__ void storeElemsFp8(
+ 
+ // Match scaled_fp8_quant(q_out): materialize q in scalar_t before applying the
+ // inverse dequantization scale and converting it to E4M3.
+-template <typename scalar_t>
++template <typename scalar_t, bool kIcp = false>
+ __device__ __forceinline__ void storeScaledQElemsFp8(
+     uint8_t* __restrict__ dst, float const (&elems)[kElemsPerLane],
+     float const inv_scale) {
+@@ -280,9 +304,13 @@ __device__ __forceinline__ void storeScaledQElemsFp8(
+ #pragma unroll
+   for (int i = 0; i < kElemsPerLane; i++) {
+     auto const rounded = Converter::convert(elems[i]);
+-    scaled[i] = static_cast<float>(rounded) * inv_scale;
++    if constexpr (kIcp) {
++      scaled[i] = static_cast<float>(rounded);  // ICP requires unit Q scale.
++    } else {
++      scaled[i] = static_cast<float>(rounded) * inv_scale;
++    }
+   }
+-  storeElemsFp8(dst, scaled);
++  storeElemsFp8<kIcp>(dst, scaled);
+ }
+ 
+ // index_q: E4M3(scalar_t(v)) with unit scale, i.e. q is rounded to the model
+@@ -424,99 +452,166 @@ __device__ __forceinline__ uint16_t clearNegZeroNibbles(uint16_t packed) {
+   return packed & (((packed & 0x7777u) + 0x7777u) | 0x7777u);
+ }
+ 
+-// Quantize one K or V head row of one token into its NVFP4 page, where
+-// ``scale`` is the dequantization (global) scale. Every lane of the warp must
+-// call this (the scale-group reductions shuffle).
++  // Quantize one K or V head row of one token into its NVFP4 page, where
++  // ``scale`` is the dequantization (global) scale. Every lane of the warp must
++  // call this (the scale-group reductions shuffle).
++  #ifdef VLLM_MINIMAX_M3_NVFP4
++__device__ __forceinline__ float nvfp4Reciprocal(float value) {
++  float result;
++  asm volatile("rcp.approx.ftz.f32 %0, %1;" : "=f"(result) : "f"(value));
++  return result;
++}
++
+ template <typename scalar_t>
++__device__ __forceinline__ uint16_t
++quantizeNvfp4Quad(float const (&elems)[kElemsPerLane], float const sf_scale,
++                  uint8_t& sf_value) {
++  using Converter = vllm::_typeConvert<scalar_t>;
++  using packed_t = typename Converter::packed_hip_type;
++  packed_t rounded[kElemsPerLane / 2];
++    #pragma unroll
++  for (int i = 0; i < kElemsPerLane / 2; i++) {
++    rounded[i] =
++        Converter::convert(make_float2(elems[2 * i], elems[2 * i + 1]));
++  }
++  packed_t local_max = __hmax2(__habs2(rounded[0]), __habs2(rounded[1]));
++  local_max = __hmax2(__shfl_xor_sync(FINAL_MASK, local_max, 1), local_max);
++  local_max = __hmax2(__shfl_xor_sync(FINAL_MASK, local_max, 2), local_max);
++  float const amax = Converter::convert(__hmax(local_max.x, local_max.y));
++  float scale = sf_scale * (amax * nvfp4Reciprocal(6.0f));
++  sf_value = __nv_cvt_float_to_fp8(scale, __NV_SATFINITE, __NV_E4M3);
++  __half_raw const sf_half = __nv_cvt_fp8_to_halfraw(sf_value, __NV_E4M3);
++  scale = __half2float(__ushort_as_half(sf_half.x));
++  float const output_scale =
++      scale != 0.0f ? nvfp4Reciprocal(scale * nvfp4Reciprocal(sf_scale)) : 0.0f;
++  float2 values[kElemsPerLane / 2];
++    #pragma unroll
++  for (int i = 0; i < kElemsPerLane / 2; i++) {
++    values[i] = Converter::convert(rounded[i]);
++    values[i].x *= output_scale;
++    values[i].y *= output_scale;
++  }
++    #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 1000 && \
++        (defined(__CUDA_ARCH_SPECIFIC__) ||                \
++         defined(__CUDA_ARCH_FAMILY_SPECIFIC__))
++  uint32_t packed;
++  asm volatile(
++      "{\n"
++      ".reg .b8 byte0, byte1;\n"
++      "cvt.rn.satfinite.e2m1x2.f32 byte0, %2, %1;\n"
++      "cvt.rn.satfinite.e2m1x2.f32 byte1, %4, %3;\n"
++      "mov.b32 %0, {byte0, byte1, byte0, byte1};\n"
++      "}\n"
++      : "=r"(packed)
++      : "f"(values[0].x), "f"(values[0].y), "f"(values[1].x), "f"(values[1].y));
++  return static_cast<uint16_t>(packed);
++    #else
++  // The host rejects NVFP4 on older devices; keep their existing formats built.
++  __trap();
++  return 0;
++    #endif
++}
++  #endif
++
++template <typename scalar_t, bool kIcp = false>
+ __device__ __forceinline__ void storeNvfp4CacheElems(
+     uint8_t* __restrict__ page, int const kv, int const head, int const token,
+     int const block_size, int const laneId, float const (&elems)[kElemsPerLane],
+     float const scale) {
+-  // Quantize the model-dtype value that the unfused path reads back from qkv.
+-  using Converter = vllm::_typeConvert<scalar_t>;
+-  float x[kElemsPerLane];
+-  float group_max = 0.0f;
+-  #pragma unroll
+-  for (int i = 0; i < kElemsPerLane; i++) {
+-    x[i] = static_cast<float>(Converter::convert(elems[i]));
+-    group_max = fmaxf(group_max, fabsf(x[i]));
+-  }
+-  group_max = fmaxf(group_max, __shfl_xor_sync(FINAL_MASK, group_max, 1, 32));
+-  group_max = fmaxf(group_max, __shfl_xor_sync(FINAL_MASK, group_max, 2, 32));
+-
+   uint8_t sf_byte;
+-  float sf_rcp;
+-  float q[kElemsPerLane];  // (x / scale) / sf_value, E2M1-encoded below
+-  if (scale == 1.0f) {
+-    static_assert(sizeof(scalar_t) == 2, "the unit-scale path needs bf16/fp16");
+-    nvfp4UnitGroupScale(group_max, sf_byte, sf_rcp);
+-    // x / sf_value truncated from x * RN(1 / sf_value). RN(1 / s) >= 1 / s for
+-    // every E4M3 s, so a bf16/fp16 x on an E2M1 midpoint lands exactly on it
+-    // (and the cvt rounds it to even), while any other bf16/fp16 x is too far
+-    // from a midpoint to reach one. No clamp either: a finite product never
+-    // truncates to inf, and inf saturates in the cvt.
++  uint16_t packed;
++  if constexpr (kIcp) {
++  #ifdef VLLM_MINIMAX_M3_NVFP4
++    // Retain ICP's qualified quantization, sharing the public slot stores.
++    packed =
++        quantizeNvfp4Quad<scalar_t>(elems, nvfp4Reciprocal(scale), sf_byte);
++  #endif
++  } else {
++    // Quantize the model-dtype value that the unfused path reads back from qkv.
++    using Converter = vllm::_typeConvert<scalar_t>;
++    float x[kElemsPerLane];
++    float group_max = 0.0f;
++  #pragma unroll
++    for (int i = 0; i < kElemsPerLane; i++) {
++      x[i] = static_cast<float>(Converter::convert(elems[i]));
++      group_max = fmaxf(group_max, fabsf(x[i]));
++    }
++    group_max = fmaxf(group_max, __shfl_xor_sync(FINAL_MASK, group_max, 1, 32));
++    group_max = fmaxf(group_max, __shfl_xor_sync(FINAL_MASK, group_max, 2, 32));
++
++    float sf_rcp;
++    float q[kElemsPerLane];  // (x / scale) / sf_value, E2M1-encoded below
++    if (scale == 1.0f) {
++      static_assert(sizeof(scalar_t) == 2,
++                    "the unit-scale path needs bf16/fp16");
++      nvfp4UnitGroupScale(group_max, sf_byte, sf_rcp);
++      // x / sf_value truncated from x * RN(1 / sf_value). RN(1 / s) >= 1 / s
++      // for every E4M3 s, so a bf16/fp16 x on an E2M1 midpoint lands exactly on
++      // it (and the cvt rounds it to even), while any other bf16/fp16 x is too
++      // far from a midpoint to reach one. No clamp either: a finite product
++      // never truncates to inf, and inf saturates in the cvt.
+   #if MINIMAX_M3_NVFP4_NATIVE_CVT
+-    float2 const r2 = make_float2(sf_rcp, sf_rcp);
++      float2 const r2 = make_float2(sf_rcp, sf_rcp);
+     #pragma unroll
+-    for (int i = 0; i < kElemsPerLane; i += 2) {
+-      float2 const p = __fmul2_rz(make_float2(x[i], x[i + 1]), r2);
+-      q[i] = p.x;
+-      q[i + 1] = p.y;
+-    }
++      for (int i = 0; i < kElemsPerLane; i += 2) {
++        float2 const p = __fmul2_rz(make_float2(x[i], x[i + 1]), r2);
++        q[i] = p.x;
++        q[i + 1] = p.y;
++      }
+   #else
+     #pragma unroll
+-    for (int i = 0; i < kElemsPerLane; i++) q[i] = __fmul_rz(x[i], sf_rcp);
++      for (int i = 0; i < kElemsPerLane; i++) q[i] = __fmul_rz(x[i], sf_rcp);
+   #endif
+-  } else {
+-    float const sf_scale = __frcp_rn(scale);  // exactly 1.0f / scale
+-    float sf_value;
+-    nvfp4GroupScale(sf_scale, group_max, sf_byte, sf_value, sf_rcp);
+-    // A correctly rounded division, not a reciprocal multiply, so that exact
+-    // E2M1 midpoints round to even.
++    } else {
++      float const sf_scale = __frcp_rn(scale);  // exactly 1.0f / scale
++      float sf_value;
++      nvfp4GroupScale(sf_scale, group_max, sf_byte, sf_value, sf_rcp);
++      // A correctly rounded division, not a reciprocal multiply, so that exact
++      // E2M1 midpoints round to even.
+   #if MINIMAX_M3_NVFP4_NATIVE_CVT
+-    // nvfp4Quotient on element pairs, with SM100's packed FP32 instructions.
+-    float2 const s2 = make_float2(sf_scale, sf_scale);
+-    float2 const neg_v2 = make_float2(-sf_value, -sf_value);
+-    float2 const r2 = make_float2(sf_rcp, sf_rcp);
++      // nvfp4Quotient on element pairs, with SM100's packed FP32 instructions.
++      float2 const s2 = make_float2(sf_scale, sf_scale);
++      float2 const neg_v2 = make_float2(-sf_value, -sf_value);
++      float2 const r2 = make_float2(sf_rcp, sf_rcp);
+     #pragma unroll
+-    for (int i = 0; i < kElemsPerLane; i += 2) {
+-      float2 n = __fmul2_rn(make_float2(x[i], x[i + 1]), s2);
+-      // |n| <= 4096 as in nvfp4Quotient, NaN kept.
+-      asm("max.NaN.f32 %0, %0, 0fC5800000;\n\t"
+-          "min.NaN.f32 %0, %0, 0f45800000;\n\t"
+-          "max.NaN.f32 %1, %1, 0fC5800000;\n\t"
+-          "min.NaN.f32 %1, %1, 0f45800000;"
+-          : "+f"(n.x), "+f"(n.y));
+-      float2 const q0 = __fmul2_rn(n, r2);
+-      float2 const p = __ffma2_rn(__ffma2_rn(q0, neg_v2, n), r2, q0);
+-      q[i] = p.x;
+-      q[i + 1] = p.y;
+-    }
++      for (int i = 0; i < kElemsPerLane; i += 2) {
++        float2 n = __fmul2_rn(make_float2(x[i], x[i + 1]), s2);
++        // |n| <= 4096 as in nvfp4Quotient, NaN kept.
++        asm("max.NaN.f32 %0, %0, 0fC5800000;\n\t"
++            "min.NaN.f32 %0, %0, 0f45800000;\n\t"
++            "max.NaN.f32 %1, %1, 0fC5800000;\n\t"
++            "min.NaN.f32 %1, %1, 0f45800000;"
++            : "+f"(n.x), "+f"(n.y));
++        float2 const q0 = __fmul2_rn(n, r2);
++        float2 const p = __ffma2_rn(__ffma2_rn(q0, neg_v2, n), r2, q0);
++        q[i] = p.x;
++        q[i + 1] = p.y;
++      }
+   #else
+     #pragma unroll
+-    for (int i = 0; i < kElemsPerLane; i++) {
+-      q[i] = nvfp4Quotient(x[i], sf_scale, sf_value, sf_rcp);
+-    }
++      for (int i = 0; i < kElemsPerLane; i++) {
++        q[i] = nvfp4Quotient(x[i], sf_scale, sf_value, sf_rcp);
++      }
+   #endif
+-  }
+-  uint16_t packed;
++    }
+   #if MINIMAX_M3_NVFP4_NATIVE_CVT
+-  // Low nibble = even element; cvt packs its first source in the high nibble.
+-  asm("{\n"
+-      "  .reg .b8 lo, hi;\n"
+-      "  cvt.rn.satfinite.e2m1x2.f32 lo, %2, %1;\n"
+-      "  cvt.rn.satfinite.e2m1x2.f32 hi, %4, %3;\n"
+-      "  mov.b16 %0, {lo, hi};\n"
+-      "}"
+-      : "=h"(packed)
+-      : "f"(q[0]), "f"(q[1]), "f"(q[2]), "f"(q[3]));
++    // Low nibble = even element; cvt packs its first source in the high nibble.
++    asm("{\n"
++        "  .reg .b8 lo, hi;\n"
++        "  cvt.rn.satfinite.e2m1x2.f32 lo, %2, %1;\n"
++        "  cvt.rn.satfinite.e2m1x2.f32 hi, %4, %3;\n"
++        "  mov.b16 %0, {lo, hi};\n"
++        "}"
++        : "=h"(packed)
++        : "f"(q[0]), "f"(q[1]), "f"(q[2]), "f"(q[3]));
+   #else
+-  uint32_t codes = 0;
++    uint32_t codes = 0;
+     #pragma unroll
+-  for (int i = 0; i < kElemsPerLane; i++) codes |= e2m1Code(q[i]) << (4 * i);
+-  packed = static_cast<uint16_t>(codes);
++    for (int i = 0; i < kElemsPerLane; i++) codes |= e2m1Code(q[i]) << (4 * i);
++    packed = static_cast<uint16_t>(codes);
+   #endif
+-  packed = clearNegZeroNibbles(packed);
++    packed = clearNegZeroNibbles(packed);
++  }
+ 
+   uint8_t* const slot = page + static_cast<int64_t>(2 * head + kv) *
+                                    block_size *
+@@ -564,8 +659,9 @@ __device__ __forceinline__ void storeNvfp4CacheElems(
+ // kHasIndex=true but set kProcessIndex=false.
+ template <typename scalar_t, typename cache_t, Fp8KVCacheDataType kv_dt,
+           bool kNvfp4, typename out_idx_t, bool kHasIndex, bool kInsertKV,
+-          bool kProcessIndex, bool kFp8Idx>
+-__global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
++          bool kProcessIndex, bool kFp8Idx, bool kIcp = false,
++          bool kFlatRow = false, bool kWriteMeta = false>
++__device__ __forceinline__ void fusedMiniMaxM3Body(
+     scalar_t* __restrict__ qkv,  // [N, qkv_row] in/out (packs index if sparse)
+     scalar_t* __restrict__ q_out,         // [N, nq*128] contiguous, or nullptr
+     uint8_t* __restrict__ q_fp8_out,      // [N, nq*128] E4M3, or nullptr
+@@ -589,8 +685,8 @@ __global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
+     int64_t const kv_s_block, int64_t const kv_s_head, int64_t const kv_s_token,
+     int64_t const kv_s_dim,
+     // NVFP4 main cache only: per-layer K/V dequantization (global) scales.
+-    float const* __restrict__ kv_k_scale,
+-    float const* __restrict__ kv_v_scale) {
++    float const* __restrict__ kv_k_scale, float const* __restrict__ kv_v_scale,
++    IcpWriterParams const icp) {
+ #if (!defined(__CUDA_ARCH__) || __CUDA_ARCH__ < 800) && !defined(USE_ROCM)
+   // _typeConvert<BFloat16> is unavailable on pre-Ampere; the M3 kernel only
+   // runs with bf16/fp16 inputs in practice.  Discard the bf16 body there.
+@@ -598,9 +694,28 @@ __global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
+     return;
+   } else {
+ #endif
++    // Head CTAs publish ICP live metadata and ABI-3 work in this grid.
++    if constexpr (kIcp && kWriteMeta) {
++#ifdef VLLM_MINIMAX_M3_NVFP4
++      if (blockIdx.x < static_cast<unsigned>(icp.metadata.meta_blocks)) {
++        icpLiveMetadataBlock(icp.metadata);
++        return;
++      }
++      if (blockIdx.x < static_cast<unsigned>(icp.metadata.meta_blocks +
++                                             icp.metadata.plan.blocks)) {
++        icpDevicePlanBlock(icp.metadata, static_cast<int>(blockIdx.x) -
++                                             icp.metadata.meta_blocks);
++        return;
++      }
++#endif
++    }
+     int const warpsPerBlock = blockDim.x / 32;
+     int const laneId = threadIdx.x % 32;
+-    int const globalWarpIdx = blockIdx.x * warpsPerBlock + (threadIdx.x / 32);
++    int const metadata_blocks =
++        kWriteMeta ? icp.metadata.meta_blocks + icp.metadata.plan.blocks : 0;
++    int const globalWarpIdx =
++        (blockIdx.x - static_cast<unsigned>(metadata_blocks)) * warpsPerBlock +
++        (threadIdx.x / 32);
+ 
+     static_assert(!kProcessIndex || kHasIndex,
+                   "index processing requires sparse row layout");
+@@ -612,9 +727,15 @@ __global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
+ 
+     // Unsigned: both are non-negative, and the signed division's sign handling
+     // would cost every warp.
+-    unsigned const warp_u = globalWarpIdx, slots_u = slots_per_token;
+-    int const tokenIdx = warp_u / slots_u;
+-    int const slot = warp_u % slots_u;
++    int tokenIdx, slot;
++    if constexpr (kIcp) {
++      tokenIdx = globalWarpIdx / slots_per_token;
++      slot = globalWarpIdx % slots_per_token;
++    } else {
++      unsigned const warp_u = globalWarpIdx, slots_u = slots_per_token;
++      tokenIdx = warp_u / slots_u;
++      slot = warp_u % slots_u;
++    }
+     if (tokenIdx >= num_tokens) return;
+ 
+     // Slot boundaries.
+@@ -644,56 +765,74 @@ __global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
+     bool do_rope = true;
+     int head = 0;  // kv head index for inserts
+ 
+-    if (isQ) {
++    scalar_t* store_ptr = nullptr;
++    if constexpr (kFlatRow) {
++      static_assert(kIcp && kInsertKV && kProcessIndex && kHasIndex);
+       row_ptr =
+           qkv + static_cast<int64_t>(tokenIdx) * qkv_row + slot * kHeadDim;
+-      norm_w = q_norm_w;
+-    } else if (isK) {
+-      head = slot - k_begin;
+-      row_ptr =
+-          qkv + static_cast<int64_t>(tokenIdx) * qkv_row + slot * kHeadDim;
+-      norm_w = k_norm_w;
+-    } else if (isV) {
+-      // qkv V section starts at slot index (nq + nkv): slot * kHeadDim is the
+-      // correct in-tensor offset.
+-      head = slot - v_begin;
+-      row_ptr =
+-          qkv + static_cast<int64_t>(tokenIdx) * qkv_row + slot * kHeadDim;
+-      norm_w = nullptr;  // V: no norm, no rope
+-      do_rope = false;
+-    } else if (isIQ) {
+-      // index_q sub-block lives at physical offset (nq+2*nkv)*128 in qkv.
+-      int const ih = slot - iq_begin;
+-      row_ptr = qkv + static_cast<int64_t>(tokenIdx) * qkv_row +
+-                (nq + 2 * nkv + ih) * kHeadDim;
+-      norm_w = iq_norm_w;
+-    } else if (isIK) {
+-      // Single shared index key at (nq+2*nkv+niq)*128.
+-      row_ptr = qkv + static_cast<int64_t>(tokenIdx) * qkv_row +
+-                (nq + 2 * nkv + niq) * kHeadDim;
+-      norm_w = ik_norm_w;
++      norm_w =
++          isQ ? q_norm_w : (isK ? k_norm_w : (isIQ ? iq_norm_w : ik_norm_w));
++      do_rope = !isV;
++      head = isK ? (slot - k_begin) : (slot - v_begin);
++      store_ptr = row_ptr;
++      if (isQ && q_out != nullptr) {
++        store_ptr = q_out + static_cast<int64_t>(tokenIdx) * nq * kHeadDim +
++                    slot * kHeadDim;
++      }
+     } else {
+-      return;
+-    }
++      if (isQ) {
++        row_ptr =
++            qkv + static_cast<int64_t>(tokenIdx) * qkv_row + slot * kHeadDim;
++        norm_w = q_norm_w;
++      } else if (isK) {
++        head = slot - k_begin;
++        row_ptr =
++            qkv + static_cast<int64_t>(tokenIdx) * qkv_row + slot * kHeadDim;
++        norm_w = k_norm_w;
++      } else if (isV) {
++        // qkv V section starts at slot index (nq + nkv): slot * kHeadDim is the
++        // correct in-tensor offset.
++        head = slot - v_begin;
++        row_ptr =
++            qkv + static_cast<int64_t>(tokenIdx) * qkv_row + slot * kHeadDim;
++        norm_w = nullptr;  // V: no norm, no rope
++        do_rope = false;
++      } else if (isIQ) {
++        // index_q sub-block lives at physical offset (nq+2*nkv)*128 in qkv.
++        int const ih = slot - iq_begin;
++        row_ptr = qkv + static_cast<int64_t>(tokenIdx) * qkv_row +
++                  (nq + 2 * nkv + ih) * kHeadDim;
++        norm_w = iq_norm_w;
++      } else if (isIK) {
++        // Single shared index key at (nq+2*nkv+niq)*128.
++        row_ptr = qkv + static_cast<int64_t>(tokenIdx) * qkv_row +
++                  (nq + 2 * nkv + niq) * kHeadDim;
++        norm_w = ik_norm_w;
++      } else {
++        return;
++      }
+ 
+-    // Store destination.  Q and index_q are gathered into dedicated contiguous
+-    // output buffers (when provided) so the downstream SM100 sparse kernel's
+-    // flat TMA descriptor can address them as [tokens*heads, head_dim]; this
+-    // folds the de-interleaving into the store the kernel already does, instead
+-    // of a separate q.contiguous() copy.  Everything else stays in place.
+-    // Given q_fp8_out but no q_out, q is emitted only in fp8 (null store_ptr).
+-    scalar_t* store_ptr = row_ptr;
+-    if (isQ && q_out != nullptr) {
+-      store_ptr = q_out + static_cast<int64_t>(tokenIdx) * nq * kHeadDim +
+-                  slot * kHeadDim;
+-    } else if (isQ && q_fp8_out != nullptr) {
+-      store_ptr = nullptr;
+-    } else if (isIQ && index_q_out != nullptr) {
+-      // bf16 index_q_out: gather here. fp8: written by the explicit fp8 store.
+-      if constexpr (!kFp8Idx) {
+-        store_ptr = index_q_out +
+-                    static_cast<int64_t>(tokenIdx) * niq * kHeadDim +
+-                    (slot - iq_begin) * kHeadDim;
++      // Store destination.  Q and index_q are gathered into dedicated
++      // contiguous output buffers (when provided) so the downstream SM100
++      // sparse kernel's flat TMA descriptor can address them as [tokens*heads,
++      // head_dim]; this folds the de-interleaving into the store the kernel
++      // already does, instead of a separate q.contiguous() copy.  Everything
++      // else stays in place. Given q_fp8_out but no q_out, q is emitted only in
++      // fp8 (null store_ptr).
++      store_ptr = row_ptr;
++      if (isQ && q_out != nullptr) {
++        store_ptr = q_out + static_cast<int64_t>(tokenIdx) * nq * kHeadDim +
++                    slot * kHeadDim;
++      } else if (!kIcp && isQ && q_fp8_out != nullptr) {
++        store_ptr = nullptr;
++      } else if (isIQ && index_q_out != nullptr) {
++        // bf16 index_q_out: gather here. fp8: written by the explicit fp8
++        // store.
++        if constexpr (!kFp8Idx) {
++          store_ptr = index_q_out +
++                      static_cast<int64_t>(tokenIdx) * niq * kHeadDim +
++                      (slot - iq_begin) * kHeadDim;
++        }
+       }
+     }
+ 
+@@ -719,8 +858,61 @@ __global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
+     if (!isV) {
+       int64_t const pos = positions[tokenIdx];
+       scalar_t const* cos_ptr = cos_sin_cache + pos * rotary_dim;
+-      normAndRope<scalar_t>(elems, laneId, eps, norm_w, do_rope, rotary_dim,
+-                            cos_ptr, /*apply_norm=*/norm_w != nullptr);
++      normAndRope<scalar_t, kIcp>(elems, laneId, eps, norm_w, do_rope,
++                                  rotary_dim, cos_ptr,
++                                  /*apply_norm=*/norm_w != nullptr);
++    }
++    if constexpr (kIcp) {
++      if (isQ) {
++        storeElems<scalar_t>(store_ptr + dim_base, elems);
++        if (q_fp8_out != nullptr) {
++          storeScaledQElemsFp8<scalar_t, true>(
++              q_fp8_out + static_cast<int64_t>(tokenIdx) * nq * kHeadDim +
++                  slot * kHeadDim + dim_base,
++              elems, q_fp8_inv_scale);
++        }
++#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 900)
++        cudaTriggerProgrammaticLaunchCompletion();
++#endif
++        return;
++      }
++      if (isIQ) {
++        if (index_q_out != nullptr) {
++          storeElemsFp8<true>(
++              reinterpret_cast<uint8_t*>(index_q_out) +
++                  static_cast<int64_t>(tokenIdx) * niq * kHeadDim +
++                  (slot - iq_begin) * kHeadDim + dim_base,
++              elems);
++        } else {
++          storeElems<scalar_t>(store_ptr + dim_base, elems);
++        }
++#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 900)
++        cudaTriggerProgrammaticLaunchCompletion();
++#endif
++        return;
++      }
++      if (isIK) {
++        storeElems<scalar_t>(store_ptr + dim_base, elems);
++        if (index_cache != nullptr) {
++          int64_t const sm = slot_mapping[tokenIdx];
++          if (sm >= 0) {
++            int const u = static_cast<int>(sm % icp.block_tokens);
++            if (u / icp.rows_per_rank == icp.rank) {
++              int64_t const offset = (sm / icp.block_tokens) * icp.page_stride +
++                                     (u % icp.rows_per_rank) * icp.row_stride;
++              storeElemsFp8<true>(
++                  reinterpret_cast<uint8_t*>(index_cache) + offset + dim_base,
++                  elems);
++            }
++          }
++        }
++#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 900)
++        cudaTriggerProgrammaticLaunchCompletion();
++#endif
++        return;
++      }
++      if (isK) storeElems<scalar_t>(store_ptr + dim_base, elems);
++    } else if (!isV) {
+       if constexpr (kFp8Idx) {
+         // index_q is E4M3(scalar_t(q)) bytes; Q/K (and in-place index_k) stay
+         // scalar_t.
+@@ -763,7 +955,7 @@ __global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
+ #ifndef USE_ROCM
+           // kv_cache is [num_blocks, 2*nkv, block_size, 72] bytes (HND), slot
+           // 2*head + side; kv_s_block is its page stride.
+-          storeNvfp4CacheElems<scalar_t>(
++          storeNvfp4CacheElems<scalar_t, kIcp>(
+               reinterpret_cast<uint8_t*>(kv_cache) +
+                   (sm / block_size) * kv_s_block,
+               isK ? 0 : 1, head, static_cast<int>(sm % block_size), block_size,
+@@ -794,6 +986,77 @@ __global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
+ #endif
+ }
+ 
++template <typename scalar_t, typename cache_t, Fp8KVCacheDataType kv_dt,
++          bool kNvfp4, typename out_idx_t, bool kHasIndex, bool kInsertKV,
++          bool kProcessIndex, bool kFp8Idx>
++__global__ void fusedMiniMaxM3QNormRopeKVInsertKernel(
++    scalar_t* __restrict__ qkv,  // [N, qkv_row] in/out (packs index if sparse)
++    scalar_t* __restrict__ q_out,         // [N, nq*128] contiguous, or nullptr
++    uint8_t* __restrict__ q_fp8_out,      // [N, nq*128] E4M3, or nullptr
++    out_idx_t* __restrict__ index_q_out,  // [N, niq*128]; scalar_t or e4m3 byte
++    scalar_t const* __restrict__ q_norm_w,
++    scalar_t const* __restrict__ k_norm_w,
++    scalar_t const* __restrict__ iq_norm_w,
++    scalar_t const* __restrict__ ik_norm_w,
++    scalar_t const* __restrict__ cos_sin_cache,  // [max_pos, rotary_dim]
++    int64_t const* __restrict__ positions,       // [N] i64
++    int64_t const* __restrict__ slot_mapping,    // main K/V slots or nullptr
++    int64_t const* __restrict__ index_slot_mapping,  // index K slots/nullptr
++    cache_t* __restrict__ kv_cache,       // [nb,nkv,bs,2*128] or nullptr
++    out_idx_t* __restrict__ index_cache,  // [nb*bs, 128]; scalar_t or e4m3 byte
++    float const eps, float const q_fp8_inv_scale, int const rotary_dim,
++    int const num_tokens, int const nq, int const nkv, int const niq,
++    int const block_size,
++    // kv_cache strides (in elements) for logical shape [nb, nkv, bs, 2*128].
++    // The content (last) dim is always innermost-contiguous (stride 1), so the
++    // NHD/HND layout choice is captured by the head/token strides.
++    int64_t const kv_s_block, int64_t const kv_s_head, int64_t const kv_s_token,
++    int64_t const kv_s_dim,
++    // NVFP4 main cache only: per-layer K/V dequantization (global) scales.
++    float const* __restrict__ kv_k_scale,
++    float const* __restrict__ kv_v_scale) {
++  fusedMiniMaxM3Body<scalar_t, cache_t, kv_dt, kNvfp4, out_idx_t, kHasIndex,
++                     kInsertKV, kProcessIndex, kFp8Idx>(
++      qkv, q_out, q_fp8_out, index_q_out, q_norm_w, k_norm_w, iq_norm_w,
++      ik_norm_w, cos_sin_cache, positions, slot_mapping, index_slot_mapping,
++      kv_cache, index_cache, eps, q_fp8_inv_scale, rotary_dim, num_tokens, nq,
++      nkv, niq, block_size, kv_s_block, kv_s_head, kv_s_token, kv_s_dim,
++      kv_k_scale, kv_v_scale, IcpWriterParams{});
++}
++
++#ifdef VLLM_MINIMAX_M3_NVFP4
++// Keep the qualified ICP occupancy contract on its opt-in entry only.
++template <typename scalar_t, bool kInsertKV, bool kFlatRow, bool kWriteMeta>
++__global__ __launch_bounds__(256, 8) void fusedMiniMaxM3IcpKernel(
++    scalar_t* __restrict__ qkv, scalar_t* __restrict__ q_out,
++    uint8_t* __restrict__ q_fp8_out, uint8_t* __restrict__ index_q_out,
++    scalar_t const* __restrict__ q_norm_w,
++    scalar_t const* __restrict__ k_norm_w,
++    scalar_t const* __restrict__ iq_norm_w,
++    scalar_t const* __restrict__ ik_norm_w,
++    scalar_t const* __restrict__ cos_sin_cache,
++    int64_t const* __restrict__ positions,
++    int64_t const* __restrict__ slot_mapping,
++
++    uint8_t* __restrict__ kv_cache, uint8_t* __restrict__ index_cache,
++    float const eps, float const q_fp8_inv_scale, int const rotary_dim,
++    int const num_tokens, int const nq, int const nkv, int const niq,
++    int const block_size,
++
++    int64_t const kv_s_block, int64_t const kv_s_head, int64_t const kv_s_token,
++    int64_t const kv_s_dim, float const* __restrict__ k_scale,
++    float const* __restrict__ v_scale, IcpWriterParams const icp) {
++  fusedMiniMaxM3Body<scalar_t, uint8_t, Fp8KVCacheDataType::kAuto, kInsertKV,
++                     uint8_t, true, kInsertKV, true, true, true, kFlatRow,
++                     kWriteMeta>(
++      qkv, q_out, q_fp8_out, index_q_out, q_norm_w, k_norm_w, iq_norm_w,
++      ik_norm_w, cos_sin_cache, positions, slot_mapping, nullptr, kv_cache,
++      index_cache, eps, q_fp8_inv_scale, rotary_dim, num_tokens, nq, nkv, niq,
++      block_size, kv_s_block, kv_s_head, kv_s_token, kv_s_dim, k_scale, v_scale,
++      icp);
++}
++#endif
++
+ // ────────────────────────────────────────────────────────────────────────────
+ // Launch wrapper
+ // ────────────────────────────────────────────────────────────────────────────
+@@ -811,7 +1074,8 @@ void launchFusedMiniMaxM3(
+     int64_t const kv_s_block, int64_t const kv_s_head, int64_t const kv_s_token,
+     int64_t const kv_s_dim, bool const has_index, bool const insert_kv,
+     bool const process_index, bool const fp8_idx, float const* kv_k_scale,
+-    float const* kv_v_scale, cudaStream_t stream) {
++    float const* kv_v_scale, cudaStream_t stream, bool const enable_pdl,
++    IcpWriterParams const& icp) {
+   // Index outputs are scalar_t (bf16) or e4m3 bytes (uint8_t); reinterpret the
+   // void* pointers per instantiation in the LAUNCH macro.
+   // Slot count must match the kernel's compile-time gating.
+@@ -823,8 +1087,10 @@ void launchFusedMiniMaxM3(
+   constexpr int kWarpsPerBlock = kBlockSize / 32;
+   int64_t const total_warps =
+       static_cast<int64_t>(num_tokens) * slots_per_token;
+-  int const grid =
++  int const main_grid =
+       static_cast<int>((total_warps + kWarpsPerBlock - 1) / kWarpsPerBlock);
++  int const grid =
++      main_grid + icp.metadata.meta_blocks + icp.metadata.plan.blocks;
+   if (grid == 0) return;
+ 
+ #ifndef USE_ROCM
+@@ -841,7 +1107,42 @@ void launchFusedMiniMaxM3(
+   attrs[0].id = cudaLaunchAttributeProgrammaticStreamSerialization;
+   attrs[0].val.programmaticStreamSerializationAllowed = 1;
+   config.attrs = attrs;
+-  config.numAttrs = (sm_version >= 90) ? 1 : 0;
++  config.numAttrs = (enable_pdl && sm_version >= 90) ? 1 : 0;
++
++  #ifdef VLLM_MINIMAX_M3_NVFP4
++  if (icp.world_size != 0) {
++    cudaError_t launch_status = cudaSuccess;
++    #define LAUNCH_ICP(INSERT, FLAT, META)                                     \
++      launch_status = cudaLaunchKernelEx(                                      \
++          &config, fusedMiniMaxM3IcpKernel<scalar_t, INSERT, FLAT, META>, qkv, \
++          q_out, q_fp8_out, reinterpret_cast<uint8_t*>(index_q_out), q_norm_w, \
++          k_norm_w, iq_norm_w, ik_norm_w, cos_sin_cache, positions,            \
++          slot_mapping, reinterpret_cast<uint8_t*>(kv_cache),                  \
++          reinterpret_cast<uint8_t*>(index_cache), eps, q_fp8_inv_scale,       \
++          rotary_dim, num_tokens, nq, nkv, niq, block_size, kv_s_block,        \
++          kv_s_head, kv_s_token, kv_s_dim, kv_k_scale, kv_v_scale, icp)
++    if (insert_kv) {
++      if (num_tokens >= 1024) {
++        if (icp.metadata.meta_blocks > 0) {
++          LAUNCH_ICP(true, true, true);
++        } else {
++          LAUNCH_ICP(true, true, false);
++        }
++      } else if (icp.metadata.meta_blocks > 0) {
++        LAUNCH_ICP(true, false, true);
++      } else {
++        LAUNCH_ICP(true, false, false);
++      }
++    } else {
++      LAUNCH_ICP(false, false, false);
++    }
++    #undef LAUNCH_ICP
++    STD_TORCH_CHECK(launch_status == cudaSuccess,
++                    "fused MiniMax-M3 ICP writer launch failed: ",
++                    cudaGetErrorString(launch_status));
++    return;
++  }
++  #endif
+ 
+   #define LAUNCH(HAS_INDEX, INSERT, PROCESS_INDEX, FP8, OUT_T)              \
+     cudaLaunchKernelEx(                                                     \
+@@ -868,7 +1169,7 @@ void launchFusedMiniMaxM3(
+         reinterpret_cast<OUT_T*>(index_cache), eps, q_fp8_inv_scale,        \
+         rotary_dim, num_tokens, nq, nkv, niq, block_size, kv_s_block,       \
+         kv_s_head, kv_s_token, kv_s_dim, kv_k_scale, kv_v_scale)
+-  // clang-format on
++    // clang-format on
+ #endif
+ 
+   if constexpr (kNvfp4) {
+@@ -949,7 +1250,7 @@ void launchFusedMiniMaxM3(
+       static_cast<int>(rotary_dim), num_tokens, nq, nkv, niq,                  \
+       static_cast<int>(block_size), kv_s_block, kv_s_head, kv_s_token,         \
+       kv_s_dim, has_index, insert_kv, process_index, fp8_idx, kv_k_scale_ptr,  \
+-      kv_v_scale_ptr, stream)
++      kv_v_scale_ptr, stream, enable_pdl, icp)
+ #define CALL_FUSED_MINIMAX_M3(_RAW_T, CACHE_T, KV_DTYPE)                       \
+   CALL_FUSED_MINIMAX_M3_IMPL(CACHE_T, KV_DTYPE, false)
+ // clang-format on
+@@ -980,7 +1281,29 @@ void fused_minimax_m3_qknorm_rope_kv_insert(
+         q_fp8_out,  // [N, nq*128] contiguous E4M3
+     double q_fp8_scale,
+     std::optional<torch::stable::Tensor> kv_k_scale,  // [] f32, NVFP4 only
+-    std::optional<torch::stable::Tensor> kv_v_scale) {
++    std::optional<torch::stable::Tensor> kv_v_scale, int64_t index_block_tokens,
++    int64_t index_rows_per_rank, int64_t index_rank, int64_t index_world_size,
++    bool enable_pdl, bool write_icp_metadata,
++    std::optional<torch::stable::Tensor> icp_query_start_loc,
++    std::optional<torch::stable::Tensor> icp_seq_lens, int64_t icp_num_reqs,
++    std::optional<torch::stable::Tensor> icp_positions,
++    std::optional<torch::stable::Tensor> icp_active,
++    std::optional<torch::stable::Tensor> icp_local_nvalid,
++    std::optional<torch::stable::Tensor> icp_local_forced,
++    std::optional<torch::stable::Tensor> icp_global_nvalid,
++    std::optional<torch::stable::Tensor> icp_forced,
++    std::optional<torch::stable::Tensor> icp_n_ordinary,
++    std::optional<torch::stable::Tensor> icp_candidates,
++    std::optional<torch::stable::Tensor> icp_qo_offsets,
++    int64_t icp_chunk_width,
++    std::optional<torch::stable::Tensor> icp_plan_segments,
++    std::optional<torch::stable::Tensor> icp_plan_work,
++    std::optional<torch::stable::Tensor> icp_plan_header,
++    int64_t icp_plan_num_ctas, int64_t icp_plan_num_heads,
++    std::optional<torch::stable::Tensor> icp_plan_ranges,
++    int64_t icp_plan_max_splits, int64_t icp_plan_row_begin,
++    int64_t icp_plan_tile_pages, int64_t icp_plan_min_split_tiles,
++    int64_t icp_plan_abi) {
+   STD_TORCH_CHECK(qkv.is_cuda() && qkv.is_contiguous(),
+                   "qkv must be contiguous CUDA");
+   STD_TORCH_CHECK(
+@@ -1181,17 +1504,329 @@ void fused_minimax_m3_qknorm_rope_kv_insert(
+         "fp8 index path: index_q_out must be fp8 e4m3");
+   }
+ 
+-  STD_TORCH_CHECK(!nvfp4_kv || insert_kv,
++  vllm::minimax_m3_fused_ops::IcpWriterParams icp{};
++  bool const use_icp = index_world_size != 0;
++  if (use_icp) {
++#ifndef VLLM_MINIMAX_M3_NVFP4
++    STD_TORCH_CHECK(false, "ICP writer requires NVIDIA CUDA 12.8 or newer");
++#endif
++    STD_TORCH_CHECK(index_world_size == 2 && index_block_tokens == 128 &&
++                        index_rows_per_rank == 64 &&
++                        (index_rank == 0 || index_rank == 1) &&
++                        num_heads == 32 && num_kv_heads == 2 &&
++                        num_index_heads == 4 && !skip_index_branch && nvfp4_kv,
++                    "ICP writer requires TP2/Q32/KV2/I4/P128/R64 NVFP4");
++    STD_TORCH_CHECK(!index_slot_mapping.has_value(),
++                    "ICP index fragments use the parent slot_mapping");
++    STD_TORCH_CHECK(
++        !enable_pdl,
++        "ICP writer requires enable_pdl=False for live metadata consumers");
++    STD_TORCH_CHECK(q_fp8_scale == 1.0, "ICP writer requires unit q_fp8_scale");
++    STD_TORCH_CHECK(icp_plan_abi == 3, "ICP writer device-plan ABI must be 3");
++    STD_TORCH_CHECK(qkv.dim() == 2 && qkv.size(0) < 2147483647LL,
++                    "ICP qkv must be [N,row] with int32 token extent");
++    auto same_device = [&](torch::stable::Tensor const& t) {
++      return t.is_cuda() && t.get_device_index() == qkv.get_device_index();
++    };
++    STD_TORCH_CHECK(
++        same_device(positions) && positions.is_contiguous() &&
++            positions.numel() >= num_tokens && same_device(cos_sin_cache) &&
++            same_device(q_norm_weight) && q_norm_weight.is_contiguous() &&
++            same_device(k_norm_weight) && k_norm_weight.is_contiguous(),
++        "ICP inputs must be contiguous on the qkv device");
++    STD_TORCH_CHECK(
++        index_q_norm_weight.has_value() && index_k_norm_weight.has_value() &&
++            same_device(*index_q_norm_weight) &&
++            index_q_norm_weight->is_contiguous() &&
++            same_device(*index_k_norm_weight) &&
++            index_k_norm_weight->is_contiguous(),
++        "ICP index norm weights must be contiguous on the qkv device");
++    STD_TORCH_CHECK(kv_cache.has_value() == index_cache.has_value(),
++                    "ICP main and index caches must be bound together");
++    if (insert_kv) {
++      STD_TORCH_CHECK(
++          block_size == index_block_tokens && slot_mapping.has_value() &&
++              same_device(*slot_mapping) && slot_mapping->is_contiguous() &&
++              slot_mapping->numel() >= num_tokens,
++          "ICP insert requires P128 parent slots covering every token");
++      STD_TORCH_CHECK(kv_k_scale.has_value() && kv_v_scale.has_value(),
++                      "ICP NVFP4 insert requires kv_k_scale and kv_v_scale");
++      STD_TORCH_CHECK(same_device(*kv_cache) && same_device(*kv_k_scale) &&
++                          same_device(*kv_v_scale) &&
++                          kv_s_block >= 2 * nkv * block_size * 72,
++                      "ICP main cache/scales must be on the qkv device with "
++                      "full head slots");
++      auto const& idx = *index_cache;
++      STD_TORCH_CHECK(
++          same_device(idx) && idx.dim() == 3 &&
++              idx.scalar_type() ==
++                  torch::headeronly::ScalarType::Float8_e4m3fn &&
++              idx.size(1) == index_rows_per_rank && idx.size(2) == 128 &&
++              idx.stride(2) == 1 && idx.stride(1) >= 128 &&
++              idx.stride(0) >= index_rows_per_rank * idx.stride(1) &&
++              reinterpret_cast<uintptr_t>(idx.data_ptr()) % 4 == 0 &&
++              idx.stride(0) % 4 == 0 && idx.stride(1) % 4 == 0,
++          "ICP index_cache must be aligned FP8 [pages,R,128] fragments");
++      icp.page_stride = idx.stride(0);
++      icp.row_stride = idx.stride(1);
++    }
++    for (auto const* out : {&q_out, &q_fp8_out, &index_q_out}) {
++      STD_TORCH_CHECK(!out->has_value() || same_device(out->value()),
++                      "ICP gather outputs must be on the qkv device");
++    }
++    STD_TORCH_CHECK(!index_q_out.has_value() ||
++                        index_q_out->scalar_type() ==
++                            torch::headeronly::ScalarType::Float8_e4m3fn,
++                    "ICP index_q_out must be FP8 e4m3");
++    icp.block_tokens = static_cast<int32_t>(index_block_tokens);
++    icp.rows_per_rank = static_cast<int32_t>(index_rows_per_rank);
++    icp.rank = static_cast<int32_t>(index_rank);
++    icp.world_size = static_cast<int32_t>(index_world_size);
++  } else {
++    STD_TORCH_CHECK(
++        index_block_tokens == 0 && index_rows_per_rank == 0 &&
++            index_rank == 0 && !write_icp_metadata,
++        "ICP fragment/metadata arguments require index_world_size=2");
++  }
++
++  if (write_icp_metadata) {
++    STD_TORCH_CHECK(
++        (nvfp4_kv && insert_kv) && process_index && fp8_idx && niq == 4 &&
++            nq == 32 && nkv == 2 && index_world_size == 2 &&
++            index_block_tokens == 128 && index_rows_per_rank == 64 &&
++            (index_rank == 0 || index_rank == 1),
++        "ICP live metadata requires the TP2/P128 NVFP4 sparse producer");
++    STD_TORCH_CHECK(icp_num_reqs >= 0 && icp_num_reqs < 2147483647LL,
++                    "icp_num_reqs must be a nonnegative int32 count");
++    auto check_tensor = [&](std::optional<torch::stable::Tensor> const& value,
++                            torch::headeronly::ScalarType dtype, int dims,
++                            char const* name) {
++      STD_TORCH_CHECK(value.has_value(), "write_icp_metadata requires ", name);
++      STD_TORCH_CHECK((value->is_cuda() &&
++                       value->get_device_index() == qkv.get_device_index()) &&
++                          value->is_contiguous() &&
++                          value->scalar_type() == dtype && value->dim() == dims,
++                      name,
++                      " must be contiguous, on the qkv device, and have the "
++                      "declared dtype and rank");
++    };
++    check_tensor(icp_query_start_loc, torch::headeronly::ScalarType::Int, 1,
++                 "icp_query_start_loc");
++    check_tensor(icp_seq_lens, torch::headeronly::ScalarType::Int, 1,
++                 "icp_seq_lens");
++    check_tensor(icp_positions, torch::headeronly::ScalarType::Long, 1,
++                 "icp_positions");
++    check_tensor(icp_active, torch::headeronly::ScalarType::Bool, 1,
++                 "icp_active");
++    check_tensor(icp_local_nvalid, torch::headeronly::ScalarType::Int, 1,
++                 "icp_local_nvalid");
++    check_tensor(icp_local_forced, torch::headeronly::ScalarType::Int, 1,
++                 "icp_local_forced");
++    check_tensor(icp_global_nvalid, torch::headeronly::ScalarType::Int, 1,
++                 "icp_global_nvalid");
++    check_tensor(icp_forced, torch::headeronly::ScalarType::Int, 1,
++                 "icp_forced");
++    check_tensor(icp_n_ordinary, torch::headeronly::ScalarType::Int, 1,
++                 "icp_n_ordinary");
++    check_tensor(icp_candidates, torch::headeronly::ScalarType::Float, 4,
++                 "icp_candidates");
++    int64_t const extent = icp_positions->numel();
++    STD_TORCH_CHECK(extent > 0 && extent >= num_tokens && extent < 2147483647LL,
++                    "ICP metadata extent must cover the producer token extent");
++    STD_TORCH_CHECK(
++        icp_query_start_loc->numel() >= icp_num_reqs + 1 &&
++            icp_seq_lens->numel() >= icp_num_reqs,
++        "ICP metadata scheduler inputs are shorter than icp_num_reqs");
++    STD_TORCH_CHECK(
++        icp_active->numel() == extent && icp_local_nvalid->numel() == extent &&
++            icp_local_forced->numel() == extent &&
++            icp_global_nvalid->numel() == extent &&
++            icp_forced->numel() == extent && icp_n_ordinary->numel() == extent,
++        "ICP retained metadata planes must have the same extent");
++    STD_TORCH_CHECK(
++        icp_candidates->size(0) == extent && icp_candidates->size(1) == 4 &&
++            icp_candidates->size(2) == 16 && icp_candidates->size(3) == 2,
++        "icp_candidates must be float32 [extent,4,16,2] C4 carriers");
++    uintptr_t const rope_begin =
++        reinterpret_cast<uintptr_t>(positions.data_ptr());
++    uintptr_t const rope_end = rope_begin + positions.numel() * sizeof(int64_t);
++    uintptr_t const meta_begin =
++        reinterpret_cast<uintptr_t>(icp_positions->data_ptr());
++    uintptr_t const meta_end = meta_begin + extent * sizeof(int64_t);
++    STD_TORCH_CHECK(
++        meta_end <= rope_begin || rope_end <= meta_begin,
++        "ICP metadata positions must not alias the RoPE input positions");
++    auto& meta = icp.metadata;
++    meta.query_start_loc = icp_query_start_loc->const_data_ptr<int32_t>();
++    meta.seq_lens = icp_seq_lens->const_data_ptr<int32_t>();
++    meta.positions = icp_positions->mutable_data_ptr<int64_t>();
++    meta.active = reinterpret_cast<uint8_t*>(icp_active->data_ptr());
++    meta.local_nvalid = icp_local_nvalid->mutable_data_ptr<int32_t>();
++    meta.local_forced = icp_local_forced->mutable_data_ptr<int32_t>();
++    meta.global_nvalid = icp_global_nvalid->mutable_data_ptr<int32_t>();
++    meta.forced = icp_forced->mutable_data_ptr<int32_t>();
++    meta.n_ordinary = icp_n_ordinary->mutable_data_ptr<int32_t>();
++    meta.candidates = reinterpret_cast<int32_t*>(icp_candidates->data_ptr());
++    meta.num_reqs = static_cast<int32_t>(icp_num_reqs);
++    meta.num_rows = static_cast<int32_t>(extent);
++    meta.rank = static_cast<int32_t>(index_rank);
++    meta.meta_blocks = static_cast<int32_t>((extent + 7) / 8);
++    if (icp_qo_offsets.has_value()) {
++      check_tensor(icp_qo_offsets, torch::headeronly::ScalarType::Int, 2,
++                   "icp_qo_offsets");
++      STD_TORCH_CHECK(
++          icp_chunk_width > 0 && icp_chunk_width < 2147483647LL,
++          "icp_chunk_width must be positive when qo offsets are supplied");
++      STD_TORCH_CHECK(
++          icp_qo_offsets->size(0) >=
++                  (extent + icp_chunk_width - 1) / icp_chunk_width &&
++              icp_qo_offsets->size(1) > 0 &&
++              icp_qo_offsets->size(1) < 2147483647LL,
++          "icp_qo_offsets must cover every metadata chunk slot");
++      meta.qo_offsets = icp_qo_offsets->mutable_data_ptr<int32_t>();
++      meta.chunk_width = static_cast<int32_t>(icp_chunk_width);
++      meta.qo_stride = static_cast<int32_t>(icp_qo_offsets->stride(0));
++      meta.qo_slots = static_cast<int32_t>(icp_qo_offsets->size(0));
++      STD_TORCH_CHECK(icp_plan_row_begin >= 0 && icp_plan_row_begin <= extent,
++                      "icp_plan_row_begin must lie in [0, metadata extent]");
++      meta.row_begin = static_cast<int32_t>(icp_plan_row_begin);
++    } else {
++      STD_TORCH_CHECK(
++          icp_chunk_width == 0 && icp_plan_row_begin == 0,
++          "icp_chunk_width/icp_plan_row_begin require icp_qo_offsets");
++    }
++    bool const any_plan =
++        icp_plan_segments.has_value() || icp_plan_work.has_value() ||
++        icp_plan_header.has_value() || icp_plan_ranges.has_value();
++    if (any_plan) {
++      STD_TORCH_CHECK(icp_qo_offsets.has_value(),
++                      "the ICP device plan is chunked by icp_chunk_width and "
++                      "requires icp_qo_offsets");
++      check_tensor(icp_plan_segments, torch::headeronly::ScalarType::Int, 3,
++                   "icp_plan_segments");
++      check_tensor(icp_plan_work, torch::headeronly::ScalarType::Long, 2,
++                   "icp_plan_work");
++      check_tensor(icp_plan_header, torch::headeronly::ScalarType::Int, 2,
++                   "icp_plan_header");
++      check_tensor(icp_plan_ranges, torch::headeronly::ScalarType::Int, 3,
++                   "icp_plan_ranges");
++      int64_t const slots = icp_plan_segments->size(0);
++      int64_t const plan_blocks =
++          (extent + icp_chunk_width - 1) / icp_chunk_width;
++      STD_TORCH_CHECK(icp_plan_work->size(0) == slots &&
++                          icp_plan_header->size(0) == slots &&
++                          icp_plan_header->size(1) == 4 &&
++                          icp_plan_segments->size(1) == 5,
++                      "ICP device plan planes must be [slots,5,M+1], "
++                      "[slots,num_ctas+3*max_work] and [slots,4]");
++      STD_TORCH_CHECK(slots >= plan_blocks,
++                      "ICP device plan must cover every metadata chunk slot");
++      STD_TORCH_CHECK(
++          icp_plan_num_ctas >= 1 &&
++              icp_plan_num_ctas <= vllm::minimax_m3_fused_ops::kIcpPlanThreads,
++          "icp_plan_num_ctas must be in [1, 256]");
++      STD_TORCH_CHECK(icp_plan_num_heads >= 1 && icp_plan_num_heads <= 0xFFFF,
++                      "icp_plan_num_heads must be in [1, 65535]");
++      int64_t const max_segments = icp_plan_segments->size(2) - 1;
++      STD_TORCH_CHECK(max_segments >= 1 && max_segments <= 0xFFFF,
++                      "ICP device plan segment capacity must be in [1, 65535]");
++      int64_t const work_cols = icp_plan_work->size(1) - icp_plan_num_ctas;
++      STD_TORCH_CHECK(
++          work_cols >= 3 && work_cols % 3 == 0 && work_cols / 3 < 2147483647LL,
++          "icp_plan_work must hold num_ctas + 3 * max_work columns");
++      STD_TORCH_CHECK(extent + icp_chunk_width < 2147483647LL,
++                      "ICP device plan chunk origins must fit int32");
++      STD_TORCH_CHECK(icp_plan_ranges->size(0) == slots &&
++                          icp_plan_ranges->size(1) == 3 &&
++                          icp_plan_ranges->size(2) == 2 * (work_cols / 3),
++                      "icp_plan_ranges must be int32 [slots, 3, 2 * max_work]");
++      STD_TORCH_CHECK(icp_plan_max_splits >= 1 && icp_plan_max_splits <= 64,
++                      "icp_plan_max_splits must be in [1, 64]");
++      STD_TORCH_CHECK(icp_plan_tile_pages >= 1 && icp_plan_tile_pages <= 8 &&
++                          icp_plan_min_split_tiles >= 1 &&
++                          icp_plan_min_split_tiles <= 1 << 20,
++                      "icp_plan_tile_pages must be in [1, 8] and "
++                      "icp_plan_min_split_tiles positive");
++      auto span = [](torch::stable::Tensor const& t) {
++        uintptr_t const b = reinterpret_cast<uintptr_t>(t.data_ptr());
++        return std::make_pair(b, b + t.numel() * t.element_size());
++      };
++      auto disjoint = [](std::pair<uintptr_t, uintptr_t> x,
++                         std::pair<uintptr_t, uintptr_t> y) {
++        return x.second <= y.first || y.second <= x.first;
++      };
++      auto const seg_span = span(*icp_plan_segments);
++      auto const work_span = span(*icp_plan_work);
++      auto const head_span = span(*icp_plan_header);
++      auto const qo_span = span(*icp_qo_offsets);
++      auto const rg_span = span(*icp_plan_ranges);
++      STD_TORCH_CHECK(
++          disjoint(seg_span, work_span) && disjoint(seg_span, head_span) &&
++              disjoint(work_span, head_span) && disjoint(seg_span, qo_span) &&
++              disjoint(work_span, qo_span) && disjoint(head_span, qo_span) &&
++              disjoint(rg_span, seg_span) && disjoint(rg_span, work_span) &&
++              disjoint(rg_span, head_span) && disjoint(rg_span, qo_span),
++          "ICP device plan planes must not alias each other or "
++          "icp_qo_offsets");
++      auto& plan = meta.plan;
++      plan.segments = icp_plan_segments->mutable_data_ptr<int32_t>();
++      plan.work = reinterpret_cast<uint64_t*>(
++          icp_plan_work->mutable_data_ptr<int64_t>());
++      plan.header = icp_plan_header->mutable_data_ptr<int32_t>();
++      plan.seg_slot_stride = icp_plan_segments->stride(0);
++      plan.work_slot_stride = icp_plan_work->stride(0);
++      plan.seg_row_stride = static_cast<int32_t>(icp_plan_segments->stride(1));
++      plan.max_segments = static_cast<int32_t>(max_segments);
++      plan.max_work = static_cast<int32_t>(work_cols / 3);
++      plan.num_ctas = static_cast<int32_t>(icp_plan_num_ctas);
++      plan.num_heads = static_cast<int32_t>(icp_plan_num_heads);
++      plan.blocks = static_cast<int32_t>(plan_blocks);
++      plan.ranges = icp_plan_ranges->mutable_data_ptr<int32_t>();
++      plan.ranges_slot_stride = icp_plan_ranges->stride(0);
++      plan.ranges_row_stride = static_cast<int32_t>(icp_plan_ranges->stride(1));
++      plan.max_splits = static_cast<int32_t>(icp_plan_max_splits);
++      plan.world = static_cast<int32_t>(index_world_size);
++      plan.rows = static_cast<int32_t>(index_rows_per_rank);
++      plan.tile_pages = static_cast<int32_t>(icp_plan_tile_pages);
++      plan.min_split_tiles = static_cast<int32_t>(icp_plan_min_split_tiles);
++    } else {
++      STD_TORCH_CHECK(icp_plan_num_ctas == 0 && icp_plan_num_heads == 0 &&
++                          icp_plan_max_splits == 0 &&
++                          icp_plan_tile_pages == 0 &&
++                          icp_plan_min_split_tiles == 0,
++                      "icp_plan_num_ctas/num_heads/max_splits require the ICP "
++                      "device plan");
++    }
++  } else {
++    STD_TORCH_CHECK(
++        !icp_query_start_loc && !icp_seq_lens && !icp_positions &&
++            !icp_active && !icp_local_nvalid && !icp_local_forced &&
++            !icp_global_nvalid && !icp_forced && !icp_n_ordinary &&
++            !icp_candidates && !icp_qo_offsets && icp_num_reqs == 0 &&
++            icp_chunk_width == 0 && !icp_plan_segments && !icp_plan_work &&
++            !icp_plan_header && !icp_plan_ranges && icp_plan_num_ctas == 0 &&
++            icp_plan_num_heads == 0 && icp_plan_max_splits == 0 &&
++            icp_plan_row_begin == 0 && icp_plan_tile_pages == 0 &&
++            icp_plan_min_split_tiles == 0,
++        "ICP metadata arguments require write_icp_metadata=True");
++  }
++
++  STD_TORCH_CHECK(!nvfp4_kv || insert_kv || use_icp,
+                   "nvfp4 kv_cache_dtype requires kv_cache (insert mode)");
+   float const* kv_k_scale_ptr =
+-      nvfp4_kv ? kv_k_scale->const_data_ptr<float>() : nullptr;
++      nvfp4_kv && insert_kv ? kv_k_scale->const_data_ptr<float>() : nullptr;
+   float const* kv_v_scale_ptr =
+-      nvfp4_kv ? kv_v_scale->const_data_ptr<float>() : nullptr;
++      nvfp4_kv && insert_kv ? kv_v_scale->const_data_ptr<float>() : nullptr;
+ 
+   const torch::stable::accelerator::DeviceGuard device_guard(
+       qkv.get_device_index());
+   auto stream = get_current_cuda_stream(qkv.get_device_index());
+ 
++  if (use_icp) {
++    STD_TORCH_CHECK(vllm::minimax_m3_fused_ops::getSMVersion() >= 100,
++                    "ICP writer requires SM100 or newer");
++  }
++
+   if (nvfp4_kv) {
+ #ifndef USE_ROCM
+     VLLM_STABLE_DISPATCH_HALF_TYPES(
+diff --git a/csrc/libtorch_stable/ops.h b/csrc/libtorch_stable/ops.h
+index 3266d28b..9134be20 100644
+--- a/csrc/libtorch_stable/ops.h
++++ b/csrc/libtorch_stable/ops.h
+@@ -383,7 +383,29 @@ void fused_minimax_m3_qknorm_rope_kv_insert(
+     const std::string& kv_cache_dtype, bool skip_index_branch,
+     std::optional<torch::stable::Tensor> q_fp8_out, double q_fp8_scale,
+     std::optional<torch::stable::Tensor> kv_k_scale,
+-    std::optional<torch::stable::Tensor> kv_v_scale);
++    std::optional<torch::stable::Tensor> kv_v_scale,
++    int64_t index_block_tokens, int64_t index_rows_per_rank, int64_t index_rank,
++    int64_t index_world_size, bool enable_pdl, bool write_icp_metadata,
++    std::optional<torch::stable::Tensor> icp_query_start_loc,
++    std::optional<torch::stable::Tensor> icp_seq_lens, int64_t icp_num_reqs,
++    std::optional<torch::stable::Tensor> icp_positions,
++    std::optional<torch::stable::Tensor> icp_active,
++    std::optional<torch::stable::Tensor> icp_local_nvalid,
++    std::optional<torch::stable::Tensor> icp_local_forced,
++    std::optional<torch::stable::Tensor> icp_global_nvalid,
++    std::optional<torch::stable::Tensor> icp_forced,
++    std::optional<torch::stable::Tensor> icp_n_ordinary,
++    std::optional<torch::stable::Tensor> icp_candidates,
++    std::optional<torch::stable::Tensor> icp_qo_offsets,
++    int64_t icp_chunk_width,
++    std::optional<torch::stable::Tensor> icp_plan_segments,
++    std::optional<torch::stable::Tensor> icp_plan_work,
++    std::optional<torch::stable::Tensor> icp_plan_header,
++    int64_t icp_plan_num_ctas, int64_t icp_plan_num_heads,
++    std::optional<torch::stable::Tensor> icp_plan_ranges,
++    int64_t icp_plan_max_splits, int64_t icp_plan_row_begin,
++    int64_t icp_plan_tile_pages, int64_t icp_plan_min_split_tiles,
++    int64_t icp_plan_abi);
+ 
+ #ifdef VLLM_ENABLE_FUSED_KDA_DECODE
+ void fused_kda_decode(
+diff --git a/csrc/libtorch_stable/torch_bindings.cpp b/csrc/libtorch_stable/torch_bindings.cpp
+index 3d4f9ab2..0ce22e94 100644
+--- a/csrc/libtorch_stable/torch_bindings.cpp
++++ b/csrc/libtorch_stable/torch_bindings.cpp
+@@ -514,7 +514,37 @@ STABLE_TORCH_LIBRARY_FRAGMENT(_C, ops) {
+       "int block_size, Tensor!? q_out, Tensor!? index_q_out, "
+       "str kv_cache_dtype, bool skip_index_branch=False, "
+       "Tensor!? q_fp8_out=None, float q_fp8_scale=1.0, "
+-      "Tensor? kv_k_scale=None, Tensor? kv_v_scale=None) -> ()");
++      "Tensor? kv_k_scale=None, Tensor? kv_v_scale=None, "
++      "int index_block_tokens=0, "
++      "int index_rows_per_rank=0, "
++      "int index_rank=0, "
++      "int index_world_size=0, "
++      "bool enable_pdl=True, "
++      "bool write_icp_metadata=False, "
++      "Tensor? icp_query_start_loc=None, "
++      "Tensor? icp_seq_lens=None, "
++      "int icp_num_reqs=0, "
++      "Tensor!? icp_positions=None, "
++      "Tensor!? icp_active=None, "
++      "Tensor!? icp_local_nvalid=None, "
++      "Tensor!? icp_local_forced=None, "
++      "Tensor!? icp_global_nvalid=None, "
++      "Tensor!? icp_forced=None, "
++      "Tensor!? icp_n_ordinary=None, "
++      "Tensor!? icp_candidates=None, "
++      "Tensor!? icp_qo_offsets=None, "
++      "int icp_chunk_width=0, "
++      "Tensor!? icp_plan_segments=None, "
++      "Tensor!? icp_plan_work=None, "
++      "Tensor!? icp_plan_header=None, "
++      "int icp_plan_num_ctas=0, "
++      "int icp_plan_num_heads=0, "
++      "Tensor!? icp_plan_ranges=None, "
++      "int icp_plan_max_splits=0, "
++      "int icp_plan_row_begin=0, "
++      "int icp_plan_tile_pages=0, "
++      "int icp_plan_min_split_tiles=0, "
++      "int icp_plan_abi=3) -> ()");
+ 
+ #ifdef VLLM_ENABLE_FUSED_KDA_DECODE
+   ops.def(
+diff --git a/tests/v1/cudagraph/test_cudagraph_manager.py b/tests/v1/cudagraph/test_cudagraph_manager.py
+index 1e4071bc..3947effb 100644
+--- a/tests/v1/cudagraph/test_cudagraph_manager.py
++++ b/tests/v1/cudagraph/test_cudagraph_manager.py
+@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
+ import pytest
+ import torch
+ 
++from tests.v1.worker.test_gpu_batch_ordering import _make_runner as _make_batch_runner
+ from vllm.config import (
+     CompilationConfig,
+     CUDAGraphMode,
+@@ -19,6 +20,7 @@ from vllm.config import (
+ from vllm.distributed.device_communicators import pynccl_allocator
+ from vllm.v1.kv_cache_interface import KVCacheConfig
+ from vllm.v1.worker.gpu import cudagraph_utils as gpu_cudagraph_utils
++from vllm.v1.worker.gpu import dp_utils
+ from vllm.v1.worker.gpu.cudagraph_utils import BatchExecutionDescriptor
+ from vllm.v1.worker.gpu.dp_utils import dispatch_cg_and_sync_dp
+ from vllm.v1.worker.gpu.input_batch import InputBuffers
+@@ -305,6 +307,7 @@ def _make_spec_decode_manager(
+     max_num_seqs: int = 8,
+     use_kda_recoverssm: bool = False,
+     varlen_decode: bool = False,
++    decode_phase_only_full_graphs: bool = False,
+ ) -> gpu_cudagraph_utils.CudaGraphManager:
+     monkeypatch.setattr(
+         gpu_cudagraph_utils,
+@@ -328,11 +331,140 @@ def _make_spec_decode_manager(
+         cudagraph_mode=CUDAGraphMode.FULL_AND_PIECEWISE,
+         decode_query_len=decode_query_len,
+         varlen_decode=varlen_decode,
++        decode_phase_only_full_graphs=decode_phase_only_full_graphs,
+     )
+     manager._graphs_captured = True
+     return manager
+ 
+ 
++@pytest.mark.parametrize("query_len", [1, 4])
++@pytest.mark.parametrize("varlen", [False, True])
++def test_short_prefill_cannot_replay_decode_phase_graph(monkeypatch, query_len, varlen):
++    manager = _make_spec_decode_manager(
++        monkeypatch,
++        decode_query_len=query_len,
++        capture_sizes=[4, 8],
++        decode_phase_only_full_graphs=True,
++        varlen_decode=varlen,
++    )
++    batch = dict(
++        num_reqs=2,
++        num_tokens=2 * query_len,
++        uniform_token_count=None if varlen else query_len,
++        num_active_loras=0,
++        max_query_len=query_len,
++    )
++    decode = manager.dispatch(**batch, has_prefill=False)
++    assert decode.cg_mode == CUDAGraphMode.FULL
++    assert decode.decode_phase_only
++    prefill = manager.dispatch(**batch, has_prefill=True)
++    assert prefill.cg_mode == CUDAGraphMode.PIECEWISE
++    assert not prefill.decode_phase_only
++    manager.check_phase_admission(decode, False)
++    with pytest.raises(RuntimeError, match="cannot replay"):
++        manager.check_phase_admission(decode, True)
++    with pytest.raises(RuntimeError, match="requires has_prefill"):
++        manager.dispatch(**batch)
++
++
++@pytest.mark.parametrize("restricted", [False, True])
++@pytest.mark.parametrize("query_len", [1, 4])
++def test_promoted_prompt_tail_keeps_actual_phase(monkeypatch, restricted, query_len):
++    runner = _make_batch_runner(
++        {"decode": (16, 16), "tail": (128, 129)}, decode_query_len=query_len
++    )
++    scheduled = SimpleNamespace(
++        num_scheduled_tokens={"decode": query_len, "tail": query_len},
++        total_num_scheduled_tokens=2 * query_len,
++        scheduled_spec_decode_tokens={
++            "decode": [-1] * (query_len - 1),
++            "tail": [-1] * (query_len - 1),
++        },
++    )
++    state, uniform_count = runner.gather_batch_req_state(scheduled, False)
++    assert state.has_prefill and state.decode_graph_eligible
++    assert uniform_count == query_len
++    assert state.is_prefilling_np.tolist() == [False, True]
++    manager = _make_spec_decode_manager(
++        monkeypatch,
++        decode_query_len=query_len,
++        capture_sizes=[4, 8],
++        decode_phase_only_full_graphs=restricted,
++    )
++    desc, _ = dispatch_cg_and_sync_dp(
++        manager,
++        num_reqs=2,
++        num_tokens=state.num_tokens,
++        uniform_token_count=uniform_count,
++        dp_size=1,
++        dp_rank=0,
++        max_query_len=None,
++        has_prefill=state.has_prefill,
++    )
++    assert desc.cg_mode == (
++        CUDAGraphMode.PIECEWISE if restricted else CUDAGraphMode.FULL
++    )
++
++
++@pytest.mark.parametrize("prefill_rank", [None, 0, 1])
++@pytest.mark.parametrize("dp_rank", [0, 1])
++def test_dp_redispatch_and_reuse_agree_on_actual_phase(
++    monkeypatch, prefill_rank, dp_rank
++):
++    manager = _make_spec_decode_manager(
++        monkeypatch,
++        decode_query_len=1,
++        capture_sizes=[4, 8],
++        decode_phase_only_full_graphs=True,
++    )
++    # A promoted one-token prefill has the same shape as a pure decode.
++    phases = [rank == prefill_rank for rank in range(2)]
++    reduced = torch.tensor(
++        [
++            [4, 4],
++            [
++                (CUDAGraphMode.PIECEWISE if phase else CUDAGraphMode.FULL).value
++                for phase in phases
++            ],
++            [1, 1],
++            [-1 if phase else 1 for phase in phases],
++            [0, 0],
++            [4, 4],
++            [int(phase) for phase in phases],
++        ],
++        dtype=torch.int32,
++    )
++    collectives = []
++
++    def all_reduce(tensor, group):
++        collectives.append(tensor.clone())
++        tensor.copy_(reduced)
++
++    monkeypatch.setattr(dp_utils.dist, "all_reduce", all_reduce)
++    monkeypatch.setattr(
++        dp_utils, "get_dp_group", lambda: SimpleNamespace(cpu_group=None)
++    )
++    monkeypatch.setattr(dp_utils, "should_skip_dp_coordination", lambda: False)
++    batch = dict(
++        num_reqs=4,
++        num_tokens=4,
++        uniform_token_count=1,
++        dp_size=2,
++        dp_rank=dp_rank,
++        max_query_len=None if phases[dp_rank] else 1,
++        has_prefill=phases[dp_rank],
++    )
++    desc, sync = dispatch_cg_and_sync_dp(manager, **batch)
++    assert sync is not None
++    assert sync.has_prefill == any(phases)
++    assert desc.cg_mode == (
++        CUDAGraphMode.PIECEWISE if any(phases) else CUDAGraphMode.FULL
++    )
++    reused, _ = dispatch_cg_and_sync_dp(manager, **batch, dp_sync=sync)
++    assert reused == desc
++    assert len(collectives) == 1
++
++
+ def test_uniform_decode_pads_up_to_full_graph(monkeypatch):
+     manager = _make_spec_decode_manager(monkeypatch)
+     assert [
+diff --git a/tests/v1/simple_kv_offload/test_shutdown.py b/tests/v1/simple_kv_offload/test_shutdown.py
+new file mode 100644
+index 00000000..2b9fff46
+--- /dev/null
++++ b/tests/v1/simple_kv_offload/test_shutdown.py
+@@ -0,0 +1,188 @@
++# SPDX-License-Identifier: Apache-2.0
++# SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++"""CPU tests for DMA queue shutdown and registered host-buffer ownership."""
++
++import threading
++from types import SimpleNamespace
++
++import pytest
++import torch
++
++from vllm.distributed.kv_transfer.kv_connector.v1.simple_cpu_offload_connector import (
++    SimpleCPUOffloadConnector,
++)
++from vllm.v1.simple_kv_offload import copy_backend
++from vllm.v1.simple_kv_offload import worker as worker_module
++from vllm.v1.simple_kv_offload.copy_backend import DmaCopyBackend
++from vllm.v1.simple_kv_offload.metadata import SimpleCPUOffloadMetadata
++from vllm.v1.simple_kv_offload.worker import SimpleCPUOffloadWorker
++
++
++def test_shutdown_drains_unpublished_queue_then_device_work(monkeypatch):
++    """A queued copy and a submitted copy must both finish before shutdown returns."""
++    copy_entered = threading.Event()
++    copy_release = threading.Event()
++    sync_entered = threading.Event()
++    sync_release = threading.Event()
++    shutdown_done = threading.Event()
++    copied = []
++    synced = []
++    backend = DmaCopyBackend()
++
++    class Stream:
++        def synchronize(self):
++            assert backend._thread is not None
++            assert not backend._thread.is_alive()
++            sync_entered.set()
++            assert sync_release.wait(timeout=5)
++            synced.append(self)
++
++    class Event:
++        def record(self, stream):
++            self.stream = stream
++
++    def copy(src, dst, params):
++        if src == [0]:
++            copy_entered.set()
++            assert copy_release.wait(timeout=5)
++        copied.append((src, dst))
++
++    def shutdown():
++        backend.shutdown()
++        shutdown_done.set()
++
++    monkeypatch.setattr(copy_backend, "build_params", lambda *a, **kw: object())
++    monkeypatch.setattr(copy_backend, "copy_blocks", copy)
++    monkeypatch.setattr(
++        copy_backend.current_platform, "set_device", lambda device: None
++    )
++    monkeypatch.setattr(copy_backend.torch, "Event", Event)
++    load, store = Stream(), Stream()
++    backend.init({}, {}, torch.device("cpu"), load, store)
++    events: list[tuple[int, torch.Event]] = []
++    closer = threading.Thread(target=shutdown)
++    try:
++        backend.launch_copy([0], [1], True, 0, events)
++        assert copy_entered.wait(timeout=5)
++        backend.launch_copy([2], [3], False, 1, events)
++        assert events == []
++        closer.start()
++        assert not shutdown_done.wait(timeout=0.05)
++        copy_release.set()
++        assert sync_entered.wait(timeout=5)
++        assert copied == [([0], [1]), ([2], [3])]
++        assert [event_idx for event_idx, _ in events] == [0, 1]
++        assert not shutdown_done.is_set()
++        with pytest.raises(RuntimeError, match="after DMA shutdown"):
++            backend.launch_copy([4], [5], True, 2, events)
++        sync_release.set()
++        closer.join(timeout=5)
++        assert not closer.is_alive()
++        assert shutdown_done.is_set()
++        assert synced == [load, store]
++        backend.shutdown()
++    finally:
++        copy_release.set()
++        sync_release.set()
++        if closer.ident is not None:
++            closer.join(timeout=5)
++        backend.shutdown()
++
++
++@pytest.mark.parametrize("failure", [None, "drain", "unregister"])
++def test_connector_shutdown_keeps_owners_until_drain_and_unregistration(
++    monkeypatch, failure
++):
++    """Cleanup retries retain owners and unregister each successful pin once."""
++    worker = SimpleCPUOffloadWorker(None, None, cpu_capacity_bytes=64)
++    worker.num_cpu_blocks = 2
++    worker.gpu_kv_caches = {
++        "main": torch.zeros((2, 8), dtype=torch.int8),
++        "index": torch.zeros((2, 4), dtype=torch.int8),
++    }
++    transitions = []
++    registered = set()
++    unregistered: list[int] = []
++    should_fail = failure
++
++    class Backend:
++        def init(self, *args):
++            pass
++
++        def shutdown(self):
++            nonlocal should_fail
++            assert worker.gpu_kv_caches is not None
++            assert worker.cpu_kv_caches is not None
++            if should_fail == "drain":
++                should_fail = None
++                raise RuntimeError("drain failed")
++            transitions.append("drain")
++
++    def pin(tensor):
++        registered.add(tensor.data_ptr())
++
++    def unpin(tensor):
++        nonlocal should_fail
++        assert "events" in transitions
++        assert worker.gpu_kv_caches is not None
++        assert worker.cpu_kv_caches is not None
++        if should_fail == "unregister" and unregistered:
++            should_fail = None
++            raise RuntimeError("unregister failed")
++        unregistered.append(tensor.data_ptr())
++
++    monkeypatch.setattr(worker_module, "PIN_MEMORY", True)
++    monkeypatch.setattr(worker_module, "pin_tensor", pin)
++    monkeypatch.setattr(worker_module, "unpin_tensor", unpin)
++    monkeypatch.setattr(worker_module, "DmaCopyBackend", Backend)
++    worker._init_cpu_mode(worker.gpu_kv_caches, 12, torch.device("cpu"))
++    worker._load_events.append(
++        (3, SimpleNamespace(synchronize=lambda: transitions.append("events")))
++    )
++    connector = SimpleCPUOffloadConnector.__new__(SimpleCPUOffloadConnector)
++    connector.worker_handler = worker
++    if failure is not None:
++        with pytest.raises(RuntimeError, match=f"{failure} failed"):
++            connector.shutdown()
++        assert worker.gpu_kv_caches is not None
++        assert worker.cpu_kv_caches is not None
++        assert worker._registered_cpu_tensors
++        assert not worker._shutdown_complete
++    connector.shutdown()
++    connector.shutdown()
++    assert set(unregistered) == registered
++    assert len(unregistered) == len(registered) == 2
++    assert worker._registered_cpu_tensors == []
++    assert worker.gpu_kv_caches is None
++    assert worker.cpu_kv_caches is None
++    assert worker._backend is None
++    assert worker._load_events == []
++    with pytest.raises(RuntimeError, match="after CPU offload shutdown"):
++        worker.bind_connector_metadata(SimpleCPUOffloadMetadata())
++    with pytest.raises(RuntimeError, match="after CPU offload shutdown"):
++        worker.register_kv_caches({})
++
++
++def test_partial_cpu_registration_is_unregistered_at_shutdown(monkeypatch):
++    """Initialization failures must preserve the successfully registered owners."""
++    worker = SimpleCPUOffloadWorker(None, None, cpu_capacity_bytes=64)
++    worker.num_cpu_blocks = 2
++    gpu = {name: torch.zeros((2, 4), dtype=torch.int8) for name in ("main", "index")}
++    pins: list[int] = []
++    unpins = []
++
++    def pin(tensor):
++        if pins:
++            raise RuntimeError("registration failed")
++        pins.append(tensor.data_ptr())
++
++    monkeypatch.setattr(worker_module, "PIN_MEMORY", True)
++    monkeypatch.setattr(worker_module, "pin_tensor", pin)
++    monkeypatch.setattr(
++        worker_module, "unpin_tensor", lambda tensor: unpins.append(tensor.data_ptr())
++    )
++    with pytest.raises(RuntimeError, match="registration failed"):
++        worker._init_cpu_mode(gpu, 8, torch.device("cpu"))
++    assert len(worker._registered_cpu_tensors) == 1
++    worker.shutdown()
++    assert unpins == pins
+diff --git a/tests/v1/worker/test_attn_utils.py b/tests/v1/worker/test_attn_utils.py
+index 9c9c26c3..5090c648 100644
+--- a/tests/v1/worker/test_attn_utils.py
++++ b/tests/v1/worker/test_attn_utils.py
+@@ -104,9 +104,15 @@ def test_get_kv_cache_spec_resolves_hisparse_block_size(
+ 
+ 
+ class _FakeMetadataBuilder:
+-    def __init__(self, support: AttentionCGSupport, varlen_bound: int | None = None):
++    def __init__(
++        self,
++        support: AttentionCGSupport,
++        varlen_bound: int | None = None,
++        decode_phase_only: bool = False,
++    ):
+         self.support = support
+         self.varlen_bound = varlen_bound
++        self.cudagraph_decode_phase_only = decode_phase_only
+ 
+     def get_cudagraph_support(self, *_args):
+         return self.support
+@@ -141,7 +147,7 @@ def test_attention_checks_preserve_global_and_target_scoped_support():
+         0,
+     )
+     target_group.metadata_builders = [
+-        _FakeMetadataBuilder(AttentionCGSupport.ALWAYS)  # type: ignore[list-item]
++        _FakeMetadataBuilder(AttentionCGSupport.ALWAYS, decode_phase_only=True)  # type: ignore[list-item]
+     ]
+     draft_group = AttentionGroup(
+         _DraftBackend,
+@@ -158,6 +164,8 @@ def test_attention_checks_preserve_global_and_target_scoped_support():
+     unfiltered = get_attn_cg_support(groups, None)
+     assert unfiltered.min_cg_support == AttentionCGSupport.UNIFORM_BATCH
+     assert unfiltered.min_cg_attn_backend == "_DraftBackend"
++    assert unfiltered.decode_phase_only
++    assert unfiltered.decode_phase_only_backend == "_TargetBackend"
+ 
+     # Adaptive verification validates only the target's varlen graphs.
+     target_only = get_attn_cg_support(
+@@ -167,6 +175,12 @@ def test_attention_checks_preserve_global_and_target_scoped_support():
+     )
+     assert target_only.min_cg_support == AttentionCGSupport.ALWAYS
+     assert target_only.min_cg_attn_backend is None
++    narrowed = target_only.narrow(AttentionCGSupport.NEVER, "encoder")
++    assert narrowed.decode_phase_only
++    assert narrowed.decode_phase_only_backend == "_TargetBackend"
++    assert not get_attn_cg_support(
++        groups, None, checked_layer_names={"draft"}
++    ).decode_phase_only
+     assert (
+         get_query_lens_mismatch_unsupported_backend(
+             groups,
+@@ -492,6 +506,59 @@ def test_reshape_padded_kv_cache_strides_by_padded_page():
+     assert kv_cache[0].is_contiguous()
+ 
+ 
++class _RawPageSpec(FullAttentionSpec):
++    @property
++    def uses_raw_page_view(self) -> bool:
++        return True
++
++
++def _raw_page_spec() -> _RawPageSpec:
++    return _RawPageSpec(
++        block_size=4,
++        num_kv_heads=1,
++        head_size=2,
++        dtype=torch.int8,
++        page_size_padded=64,
++    )
++
++
++def test_raw_page_views_copy_every_byte_with_shared_storage():
++    spec = _raw_page_spec()
++    num_blocks, num_layers = 3, 2
++    raw = torch.arange(num_blocks * num_layers * spec.page_size_bytes, dtype=torch.int8)
++    caches = dense_kv_cache_views(
++        raw, spec, num_blocks, num_layers, KVCacheLayout.LBHNC
++    )
++    assert spec.has_layer_views and spec.uses_slot_mapping
++    assert caches[0].shape == (num_blocks, 1, 1, spec.page_size_bytes)
++    assert caches[1].storage_offset() == num_blocks * spec.page_size_bytes
++    expected = raw.view(num_layers, num_blocks, -1).clone()
++
++    copy_kv_cache_blocks_inplace(
++        caches, num_blocks, [KVCacheBlockCopy(src_block_id=0, dst_block_id=2)]
++    )
++
++    for layer_idx, cache in enumerate(caches):
++        torch.testing.assert_close(cache[2].flatten(), expected[layer_idx, 0])
++        torch.testing.assert_close(cache[1].flatten(), expected[layer_idx, 1])
++
++
++@pytest.mark.parametrize(
++    "layout", [x for x in KVCacheLayout if x != KVCacheLayout.LBHNC]
++)
++def test_raw_page_views_reject_incompatible_layout(layout):
++    with pytest.raises(ValueError, match="require the LBHNC cache layout"):
++        compute_layout_strides(_raw_page_spec(), 3, 2, layout)
++
++
++def test_raw_page_views_reject_kernel_splitting_and_main_only_merge():
++    spec = _raw_page_spec()
++    with pytest.raises(ValueError, match="kernel block splitting"):
++        compute_layout_strides(spec, 3, 2, KVCacheLayout.LBHNC, kernel_block_size=2)
++    with pytest.raises(AssertionError, match="main-only attention spec"):
++        FullAttentionSpec.merge([spec])
++
++
+ @pytest.mark.parametrize(
+     (
+         "kernel_block_sizes",
+diff --git a/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py b/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py
+index 74191206..eb7c683a 100644
+--- a/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py
++++ b/tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py
+@@ -12,6 +12,7 @@ See https://github.com/vllm-project/vllm/issues/49224.
+ 
+ import contextlib
+ import gc
++import weakref
+ from types import SimpleNamespace
+ from typing import Any
+ 
+@@ -127,6 +128,95 @@ def test_profile_cudagraph_memory_disabled_returns_zero(monkeypatch):
+     assert runner.events == []
+ 
+ 
++def test_profiling_teardown_releases_cache_aliases_but_keeps_model_resources(
++    monkeypatch,
++):
++    events: list[str] = []
++
++    class Layer(torch.nn.Module):
++        def __init__(self):
++            super().__init__()
++            self.kv_cache = torch.zeros(16)
++            self.reader_view: torch.Tensor | None = self.kv_cache.view(2, 8)
++
++        def release_kv_cache(self):
++            assert events[0] == "drain"
++            assert runner.cudagraph_manager is None
++            self.reader_view = None
++            events.append("release_alias")
++
++        def shutdown_model_resources(self):
++            pytest.fail("profiling must preserve model-scoped peer resources")
++
++    layer = Layer()
++    old_cache = weakref.ref(layer.kv_cache)
++    runner: Any = SimpleNamespace(
++        model=torch.nn.Sequential(layer),
++        model_state=SimpleNamespace(supports_mm_inputs=False),
++        compilation_config=SimpleNamespace(static_forward_context={"attn": layer}),
++        cudagraph_manager=object(),
++        kv_caches={"attn": layer.kv_cache},
++        cache_config=SimpleNamespace(num_gpu_blocks=1),
++        lora_config=None,
++        maybe_remove_all_loras=lambda _: None,
++    )
++    monkeypatch.setattr(
++        torch.accelerator, "synchronize", lambda: events.append("drain")
++    )
++    monkeypatch.setattr(torch.accelerator, "empty_cache", lambda: None)
++
++    cgu._teardown_profiling_state(runner)
++
++    assert "release_alias" in events
++    assert layer.kv_cache.numel() == 0
++    assert layer.reader_view is None
++    assert old_cache() is None
++    assert runner.model[0] is layer
++
++
++def test_shutdown_closes_shared_model_resources_after_drain_before_cache_release(
++    monkeypatch,
++):
++    from vllm.v1.worker.utils import clear_layer_kv_caches
++
++    events = []
++    runner = mrv2.GPUModelRunner.__new__(mrv2.GPUModelRunner)
++    runner.cudagraph_manager = object()
++    runner.vllm_config = SimpleNamespace()
++    runner.aux_output_connector = None
++
++    class Resource(torch.nn.Module):
++        def __init__(self):
++            super().__init__()
++            self.kv_cache = torch.zeros(1)
++
++        def release_kv_cache(self):
++            events.append("release_cache")
++
++        def shutdown_model_resources(self):
++            assert runner.cudagraph_manager is None
++            events.append("close_peer")
++
++    resource = Resource()
++    runner.model = torch.nn.Sequential(resource)
++    runner.speculator = SimpleNamespace(model=torch.nn.Sequential(resource))
++
++    # The profiling cache reset must not close a model-scoped peer window.
++    clear_layer_kv_caches(runner.model.modules())
++    assert events == ["release_cache"]
++    events.clear()
++
++    monkeypatch.setattr(
++        torch.accelerator, "synchronize", lambda: events.append("drain")
++    )
++    monkeypatch.setattr(torch.accelerator, "empty_cache", lambda: None)
++    monkeypatch.setattr(mrv2, "free_before_shutdown", lambda _: None)
++    runner.shutdown()
++    assert events[:2] == ["drain", "close_peer"]
++    assert events.count("close_peer") == 1
++    assert all(event == "release_cache" for event in events[2:])
++
++
+ def test_profile_cudagraph_memory_no_graphs_tears_down(monkeypatch):
+     _patch_module(monkeypatch)
+     runner = _make_profiling_runner(CUDAGraphMode.FULL, needs_capture=False)
+diff --git a/tests/v1/worker/test_gpu_ubatch_slicing.py b/tests/v1/worker/test_gpu_ubatch_slicing.py
+index ebf334e4..78834aed 100644
+--- a/tests/v1/worker/test_gpu_ubatch_slicing.py
++++ b/tests/v1/worker/test_gpu_ubatch_slicing.py
+@@ -294,13 +294,14 @@ def _sync_dp(
+     """
+     dp_size = len(num_tokens_per_rank)
+     uniform_token_counts = uniform_token_count_per_rank or [0] * dp_size
+-    reduced = torch.zeros(6, dp_size, dtype=torch.int32)
++    reduced = torch.zeros(7, dp_size, dtype=torch.int32)
+     reduced[0] = torch.tensor(num_tokens_per_rank, dtype=torch.int32)
+     reduced[1] = CUDAGraphMode.NONE.value
+     reduced[2] = torch.tensor(uniform_token_counts, dtype=torch.int32)
+     reduced[3] = -1  # max_query_len, -1 means None
+     reduced[4] = int(allow_ubatching)
+     reduced[5] = 8  # num_reqs
++    reduced[6] = -1  # actual prefill phase unknown to these ordinary backends
+ 
+     with (
+         patch.object(dp_utils.dist, "all_reduce", lambda t, group: t.copy_(reduced)),
+diff --git a/vllm/_custom_ops.py b/vllm/_custom_ops.py
+index eef11836..9086756b 100644
+--- a/vllm/_custom_ops.py
++++ b/vllm/_custom_ops.py
+@@ -3,7 +3,7 @@
+ 
+ from enum import IntEnum
+ from functools import cache
+-from typing import TYPE_CHECKING, Literal
++from typing import TYPE_CHECKING, Literal, Protocol
+ 
+ import torch
+ 
+@@ -2563,6 +2563,22 @@ def reshape_and_cache_flash(
+     )
+ 
+ 
++class MiniMaxM3IcpDevicePlan(Protocol):
++    """Host-only interface to the preallocated MSA device-plan store."""
++
++    abi_version: int
++
++    def writer_kwargs(self) -> dict[str, torch.Tensor | int]: ...
++
++    def check_writer_launch(
++        self, *, chunk_width: int, num_rows: int, row_begin: int = 0
++    ) -> None: ...
++
++    def note_writer_launch(
++        self, *, chunk_width: int, num_rows: int, row_begin: int = 0
++    ) -> None: ...
++
++
+ def fused_minimax_m3_qknorm_rope_kv_insert(
+     qkv: torch.Tensor,
+     q_norm_weight: torch.Tensor,
+@@ -2589,6 +2605,28 @@ def fused_minimax_m3_qknorm_rope_kv_insert(
+     q_fp8_scale: float = 1.0,
+     kv_k_scale: torch.Tensor | None = None,
+     kv_v_scale: torch.Tensor | None = None,
++    *,
++    index_block_tokens: int = 0,
++    index_rows_per_rank: int = 0,
++    index_rank: int = 0,
++    index_world_size: int = 0,
++    enable_pdl: bool = True,
++    write_icp_metadata: bool = False,
++    icp_query_start_loc: torch.Tensor | None = None,
++    icp_seq_lens: torch.Tensor | None = None,
++    icp_num_reqs: int = 0,
++    icp_positions: torch.Tensor | None = None,
++    icp_active: torch.Tensor | None = None,
++    icp_local_nvalid: torch.Tensor | None = None,
++    icp_local_forced: torch.Tensor | None = None,
++    icp_global_nvalid: torch.Tensor | None = None,
++    icp_forced: torch.Tensor | None = None,
++    icp_n_ordinary: torch.Tensor | None = None,
++    icp_candidates: torch.Tensor | None = None,
++    icp_qo_offsets: torch.Tensor | None = None,
++    icp_chunk_width: int = 0,
++    icp_plan_row_begin: int = 0,
++    icp_device_plan: MiniMaxM3IcpDevicePlan | None = None,
+ ) -> None:
+     """Fused MiniMax-M3 attention pre-processing (in-place).
+ 
+@@ -2625,7 +2663,81 @@ def fused_minimax_m3_qknorm_rope_kv_insert(
+     ``[index_q | index_k]`` tail, but the kernel only processes the main q/k/v
+     branches and main KV cache. This is used by MiniMax-M3 index-topk reuse
+     layers that consume top-k block ids selected by an earlier sparse layer.
++
++    ``index_world_size=2`` enables TP2/Q32/KV2/I4/P128/R64 ICP with
++    ``enable_pdl=False`` and unit Q scale. Main KV retains the per-head slot
++    layout above, including the parent page stride. ICP preserves its
++    reciprocal-multiply NVFP4 quantization and direct FP32-to-FP8 index Q;
++    ordinary calls retain model-dtype-rounded index Q and public NVFP4 math.
++    Main Q is also stored in model dtype (in ``q_out`` when supplied).
++    Rank ownership affects only the FP8 ``[pages,64,128]`` index fragment.
++
++    ``write_icp_metadata=True`` adds live metadata and optional ABI-3 plan
++    CTAs to the same producer grid. ``icp_device_plan`` is preallocated; its
++    generation advances only after a successful native launch.
+     """
++    # Keep the ordinary call compatible with existing compiled extensions.
++    # ICP capability is checked once by the model when it opts in.
++    icp_kwargs: dict[str, torch.Tensor | int | bool | None] = {}
++    if (
++        index_world_size
++        or index_block_tokens
++        or index_rows_per_rank
++        or index_rank
++        or not enable_pdl
++        or write_icp_metadata
++        or icp_device_plan is not None
++        or icp_query_start_loc is not None
++        or icp_seq_lens is not None
++        or icp_positions is not None
++        or icp_active is not None
++        or icp_local_nvalid is not None
++        or icp_local_forced is not None
++        or icp_global_nvalid is not None
++        or icp_forced is not None
++        or icp_n_ordinary is not None
++        or icp_candidates is not None
++        or icp_qo_offsets is not None
++        or icp_num_reqs
++        or icp_chunk_width
++        or icp_plan_row_begin
++    ):
++        icp_kwargs = dict(
++            index_block_tokens=index_block_tokens,
++            index_rows_per_rank=index_rows_per_rank,
++            index_rank=index_rank,
++            index_world_size=index_world_size,
++            enable_pdl=enable_pdl,
++            write_icp_metadata=write_icp_metadata,
++            icp_query_start_loc=icp_query_start_loc,
++            icp_seq_lens=icp_seq_lens,
++            icp_num_reqs=icp_num_reqs,
++            icp_positions=icp_positions,
++            icp_active=icp_active,
++            icp_local_nvalid=icp_local_nvalid,
++            icp_local_forced=icp_local_forced,
++            icp_global_nvalid=icp_global_nvalid,
++            icp_forced=icp_forced,
++            icp_n_ordinary=icp_n_ordinary,
++            icp_candidates=icp_candidates,
++            icp_qo_offsets=icp_qo_offsets,
++            icp_chunk_width=icp_chunk_width,
++            icp_plan_row_begin=icp_plan_row_begin,
++            icp_plan_abi=3,
++        )
++    if icp_device_plan is not None:
++        if not write_icp_metadata or icp_positions is None:
++            raise ValueError(
++                "icp_device_plan requires write_icp_metadata=True and icp_positions"
++            )
++        if icp_device_plan.abi_version != 3:
++            raise RuntimeError("MiniMax-M3 native writer requires device-plan ABI 3")
++        icp_device_plan.check_writer_launch(
++            chunk_width=icp_chunk_width,
++            num_rows=icp_positions.numel(),
++            row_begin=icp_plan_row_begin,
++        )
++        icp_kwargs.update(icp_device_plan.writer_kwargs())
+     torch.ops._C.fused_minimax_m3_qknorm_rope_kv_insert(
+         qkv,
+         q_norm_weight,
+@@ -2652,7 +2764,15 @@ def fused_minimax_m3_qknorm_rope_kv_insert(
+         q_fp8_scale,
+         kv_k_scale,
+         kv_v_scale,
+-    )
++        **icp_kwargs,
++    )
++    if icp_device_plan is not None:
++        assert icp_positions is not None
++        icp_device_plan.note_writer_launch(
++            chunk_width=icp_chunk_width,
++            num_rows=icp_positions.numel(),
++            row_begin=icp_plan_row_begin,
++        )
+ 
+ 
+ def fused_kda_decode(
+diff --git a/vllm/config/attention.py b/vllm/config/attention.py
+index 8a9be633..b9c7de61 100644
+--- a/vllm/config/attention.py
++++ b/vllm/config/attention.py
+@@ -12,6 +12,7 @@ from vllm.v1.attention.backends.registry import AttentionBackendEnum
+ 
+ IndexerKVDType = Literal["auto", "bf16", "fp8", "mxfp4", "nvfp4"]
+ MiniMaxM3MSADecodeBackend = Literal["triton", "cutlass"]
++MiniMaxM3MSAIndexerBackend = Literal["default", "msa_icp"]
+ 
+ 
+ @config
+@@ -43,6 +44,11 @@ class AttentionConfig:
+     minimax_m3_msa_decode_backend: MiniMaxM3MSADecodeBackend = "triton"
+     """Sparse decode kernel used by the MiniMax M3 MSA backend."""
+ 
++    minimax_m3_msa_indexer_backend: MiniMaxM3MSAIndexerBackend = "default"
++    """Use `msa_icp` for the opt-in TP2/P128 compound-cache indexer.
++    Requires `minimax_m3_msa_decode_backend="cutlass"` and companion MSA ICP
++    kernels. The default preserves the ordinary MiniMax M3 indexer."""
++
+     backend_per_kind: dict[str, AttentionBackendEnum] = field(default_factory=dict)
+     """Per-KV-cache-group attention backend overrides, keyed by
+     `KVCacheSpecKind` (e.g. `{"mla_attention": "FLASHINFER_MLA",
+diff --git a/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py b/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py
+index 0bd8ebe3..4838bf7e 100644
+--- a/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py
++++ b/vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py
+@@ -248,6 +248,10 @@ class SimpleCPUOffloadConnector(KVConnectorBase_V1, SupportsHMA):
+             return self.worker_handler.build_connector_worker_meta()
+         return None
+ 
++    def shutdown(self) -> None:
++        if self.worker_handler is not None:
++            self.worker_handler.shutdown()
++
+     # --- Scheduler-side methods ---
+ 
+     def bind_gpu_block_pool(self, gpu_block_pool: "BlockPool") -> None:
+diff --git a/vllm/model_executor/layers/linear.py b/vllm/model_executor/layers/linear.py
+index 65cda325..cc59c310 100644
+--- a/vllm/model_executor/layers/linear.py
++++ b/vllm/model_executor/layers/linear.py
+@@ -1364,10 +1364,10 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+ 
+     ``index_q`` must have the same head count as the KV heads
+     (``total_num_index_heads == total_num_kv_heads``) and ``index_head_size ==
+-    head_size``, so it shards exactly like K/V -- including the KV-head
+-    *replication* path when ``tp_size > total_num_kv_heads`` (this is what makes
+-    a TP size greater than the KV-head count work). ``index_k`` is a single
+-    shared head, replicated to every rank.
++    head_size``. By default it shards like K/V, including KV-head replication
++    when ``tp_size > total_num_kv_heads``. With indexer context parallelism,
++    ``index_world_size`` consecutive TP ranks replicate index-Q heads and
++    shard only across groups. ``index_k`` is replicated to every rank.
+     """
+ 
+     def __init__(
+@@ -1381,9 +1381,11 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+         bias: bool = False,
+         quant_config: QuantizationConfig | None = None,
+         prefix: str = "",
++        *,
++        index_world_size: int = 1,
++        tp_rank: int | None = None,
++        tp_size: int | None = None,
+     ) -> None:
+-        # index_q rides the KV-head sharding/replication path, so its head count
+-        # must match the KV heads.
+         assert total_num_index_heads == total_num_kv_heads, (
+             "MinimaxM3QKVParallelLinearWithIndexer requires "
+             "total_num_index_heads == total_num_kv_heads"
+@@ -1396,7 +1398,11 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+         self.total_num_index_heads = total_num_index_heads
+         self.index_head_size = index_head_size
+ 
+-        tp_size = get_tensor_model_parallel_world_size()
++        if tp_size is None:
++            tp_size = get_tensor_model_parallel_world_size()
++        if index_world_size < 1:
++            raise ValueError("index_world_size must be positive")
++        self.index_world_size = index_world_size
+         self.num_heads = divide(self.total_num_heads, tp_size)
+         if tp_size >= self.total_num_kv_heads:
+             self.num_kv_heads = 1
+@@ -1404,8 +1410,13 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+         else:
+             self.num_kv_heads = divide(self.total_num_kv_heads, tp_size)
+             self.num_kv_head_replicas = 1
+-        # index_q shards identically to the KV heads.
+-        self.num_index_heads = self.num_kv_heads
++        index_shards = divide(tp_size, index_world_size)
++        if index_shards >= self.total_num_index_heads:
++            self.num_index_heads = 1
++            self.num_index_head_replicas = divide(tp_size, self.total_num_index_heads)
++        else:
++            self.num_index_heads = divide(self.total_num_index_heads, index_shards)
++            self.num_index_head_replicas = index_world_size
+ 
+         # Global per-group sizes (replicated groups counted x tp_size, matching
+         # the QKVParallelLinear convention). index_k is a single replicated head.
+@@ -1431,6 +1442,8 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+             gather_output=False,
+             quant_config=quant_config,
+             prefix=prefix,
++            tp_rank=tp_rank,
++            tp_size=tp_size,
+         )
+ 
+     def validate_shard_id(self, shard_id: Any) -> TypeIs[str | None]:
+@@ -1443,14 +1456,14 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+         )
+ 
+     def _get_shard_offset_mapping(self, loaded_shard_id: str) -> int | None:
+-        h = self.head_size
++        h, ih = self.head_size, self.index_head_size
+         nq, nkv, nidx = self.num_heads, self.num_kv_heads, self.num_index_heads
+         return {
+             "q": 0,
+             "k": nq * h,
+             "v": (nq + nkv) * h,
+             "index_q": (nq + 2 * nkv) * h,
+-            "index_k": (nq + 2 * nkv + nidx) * h,
++            "index_k": (nq + 2 * nkv) * h + nidx * ih,
+         }.get(loaded_shard_id)
+ 
+     def _get_shard_size_mapping(self, loaded_shard_id: str) -> int | None:
+@@ -1459,7 +1472,7 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+             "q": self.num_heads * h,
+             "k": self.num_kv_heads * h,
+             "v": self.num_kv_heads * h,
+-            "index_q": self.num_index_heads * h,
++            "index_q": self.num_index_heads * self.index_head_size,
+             "index_k": self.index_head_size,
+         }.get(loaded_shard_id)
+ 
+@@ -1482,12 +1495,13 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+                 weight_block_size, shard_size, shard_offset
+             )
+ 
+-        # index_k is fully replicated: num_heads == tp_size makes
+-        # load_qkv_weight pick shard_id_int == 0 on every rank. q/k/v/index_q ride
+-        # the KV-head replication factor.
+-        num_heads = (
+-            self.tp_size if loaded_shard_id == "index_k" else self.num_kv_head_replicas
+-        )
++        # The loader selects checkpoint rows using tp_rank // num_heads.
++        if loaded_shard_id == "index_k":
++            num_heads = self.tp_size
++        elif loaded_shard_id == "index_q":
++            num_heads = self.num_index_head_replicas
++        else:
++            num_heads = self.num_kv_head_replicas
+         param.load_qkv_weight(
+             loaded_weight=loaded_weight,
+             num_heads=num_heads,
+@@ -1523,6 +1537,8 @@ class MinimaxM3QKVParallelLinearWithIndexer(QKVParallelLinear):
+             shard_rank = self.tp_rank
+         elif loaded_shard_id == "index_k":
+             shard_rank = 0  # replicated to every rank
++        elif loaded_shard_id == "index_q":
++            shard_rank = self.tp_rank // self.num_index_head_replicas
+         else:
+             shard_rank = self.tp_rank // self.num_kv_head_replicas
+         loaded_weight = loaded_weight.narrow(
+diff --git a/vllm/models/minimax_m3/nvidia/model.py b/vllm/models/minimax_m3/nvidia/model.py
+index 06c28a7a..7e905c27 100644
+--- a/vllm/models/minimax_m3/nvidia/model.py
++++ b/vllm/models/minimax_m3/nvidia/model.py
+@@ -13,6 +13,7 @@ The MiniMax-M3-preview config selects a single set of branches:
+ """
+ 
+ from collections.abc import Iterable
++from typing import TYPE_CHECKING
+ 
+ import torch
+ from torch import nn
+@@ -89,6 +90,10 @@ from vllm.models.minimax_m3.common.vision_tower import MiniMaxVLVisionModel
+ from vllm.multimodal import MULTIMODAL_REGISTRY
+ from vllm.sequence import IntermediateTensors
+ from vllm.utils.torch_utils import kv_cache_dtype_str_to_dtype
++
++if TYPE_CHECKING:
++    from .sparse_attention_icp import MiniMaxM3SparseICPAttention
++
+ from vllm.v1.kv_cache_interface import (
+     FullAttentionSpec,
+     KVCacheSpec,
+@@ -709,8 +714,18 @@ class MiniMaxM3DecoderLayer(nn.Module):
+             force_sparse_attn or layer_id in _sparse_attention_layer_ids(config)
+         )
+ 
++        self.self_attn: (
++            MiniMaxM3SparseAttention | MiniMaxM3SparseICPAttention | MiniMaxM3Attention
++        )
+         if is_sparse_attention_layer:
+-            self.self_attn = MiniMaxM3SparseAttention(
++            sparse_layer_cls: type[
++                MiniMaxM3SparseAttention | MiniMaxM3SparseICPAttention
++            ] = MiniMaxM3SparseAttention
++            if vllm_config.attention_config.minimax_m3_msa_indexer_backend == "msa_icp":
++                from . import sparse_attention_icp
++
++                sparse_layer_cls = sparse_attention_icp.MiniMaxM3SparseICPAttention
++            self.self_attn = sparse_layer_cls(
+                 config=config,
+                 layer_id=layer_id,
+                 quant_config=quant_config,
+@@ -872,6 +887,18 @@ class MiniMaxM3Model(nn.Module, EagleModelMixin):
+             prev_defers = layer.ffn_all_reduce_deferred
+         self.fuse_final_norm_allreduce = prev_defers
+ 
++        if vllm_config.attention_config.minimax_m3_msa_indexer_backend == "msa_icp":
++            from .sparse_attention_icp import bind_model_candidate_exchange
++
++            bind_model_candidate_exchange(self, vllm_config)
++
++    def shutdown_model_resources(self) -> None:
++        """Drain the model-scoped ICP exchange before destroying its TP group."""
++        exchange = getattr(self, "_icp_candidate_exchange", None)
++        if exchange is not None:
++            exchange.close()
++            self._icp_candidate_exchange = None
++
+     def embed_input_ids(self, input_ids: torch.Tensor) -> torch.Tensor:
+         return self.embed_tokens(input_ids)
+ 
+diff --git a/vllm/v1/attention/backend.py b/vllm/v1/attention/backend.py
+index 3387a317..5ee960ba 100644
+--- a/vllm/v1/attention/backend.py
++++ b/vllm/v1/attention/backend.py
+@@ -603,6 +603,9 @@ class AttentionMetadataBuilder(ABC, Generic[M]):
+     supports_update_block_table: bool = False
+     # Whether the builder constructor requires the block-table width.
+     requires_block_table_width: ClassVar[bool] = False
++    # Shape-compatible short prefills must not replay a phase-specific decode
++    # route. PIECEWISE graphs still dispatch attention outside the graph.
++    cudagraph_decode_phase_only: ClassVar[bool] = False
+     # Whether update_draft_decode_metadata() can regenerate all decode metadata
+     # from persistent device buffers with capture-safe ops only. Lets a
+     # speculator record the refresh inside its draft decode CUDA graph, so no
+diff --git a/vllm/v1/kv_cache_interface.py b/vllm/v1/kv_cache_interface.py
+index cf707611..5ddc5225 100644
+--- a/vllm/v1/kv_cache_interface.py
++++ b/vllm/v1/kv_cache_interface.py
+@@ -277,6 +277,11 @@ class KVCacheSpec:
+         """
+         return True
+ 
++    @property
++    def uses_raw_page_view(self) -> bool:
++        """Whether the layer view must expose every page byte for KV lifecycle."""
++        return False
++
+     @property
+     def uses_slot_mapping(self) -> bool:
+         """Whether the worker computes a per-token slot mapping for this spec.
+@@ -306,6 +311,12 @@ def compute_layer_kv_cache_shape_bytes(
+ ) -> tuple[int, ...]:
+     """Return the 4D logical shape ``(B, H, N, C)`` where C is in bytes."""
+     bs = kernel_block_size if kernel_block_size is not None else spec.block_size
++    if spec.uses_raw_page_view:
++        if bs != spec.block_size:
++            raise ValueError(
++                "Raw compound KV pages do not support kernel block splitting"
++            )
++        return (num_blocks, 1, 1, spec.page_size_bytes)
+     assert spec.block_size % bs == 0, (
+         f"Kernel block size {bs} must divide KV cache block size {spec.block_size}."
+     )
+@@ -327,6 +338,8 @@ def compute_layout_strides(
+     fixed_strides: tuple[int | None, ...] = (None,) * 5,
+ ) -> tuple[int, ...]:
+     """Byte strides in logical ``[L, B, H, N, C]`` axis order."""
++    if spec.uses_raw_page_view and layout != KVCacheLayout.LBHNC:
++        raise ValueError("Raw compound KV pages require the LBHNC cache layout")
+     assert len(fixed_strides) == 5
+     assert all(stride is None or stride > 0 for stride in fixed_strides)
+     shape = (
+@@ -609,6 +622,9 @@ class FullAttentionSpec(AttentionSpec):
+         assert all(isinstance(spec, FullAttentionSpec) for spec in specs), (
+             "All attention layers in the same KV cache group must be FullAttentionSpec."
+         )
++        assert not any(spec.uses_raw_page_view for spec in specs), (
++            "Raw compound pages cannot be merged into a main-only attention spec."
++        )
+ 
+         sliding_window = set(
+             spec.sliding_window for spec in specs if spec.sliding_window is not None
+diff --git a/vllm/v1/simple_kv_offload/copy_backend.py b/vllm/v1/simple_kv_offload/copy_backend.py
+index 58de7a7e..a5954523 100644
+--- a/vllm/v1/simple_kv_offload/copy_backend.py
++++ b/vllm/v1/simple_kv_offload/copy_backend.py
+@@ -33,6 +33,7 @@ class DmaCopyBackend:
+         self._queue: queue.SimpleQueue | None = None
+         self._thread: threading.Thread | None = None
+         self._shutdown: bool = False
++        self._submission_lock = threading.Lock()
+ 
+     def init(
+         self,
+@@ -77,28 +78,38 @@ class DmaCopyBackend:
+         events_list: list[tuple[int, torch.Event]],
+         wait_event: torch.Event | None = None,
+     ) -> None:
+-        params = self._store_params if is_store else self._load_params
+-        assert params is not None and self._queue is not None
+-        self._queue.put(
+-            (
+-                src_blocks,
+-                dst_blocks,
+-                params,
+-                is_store,
+-                event_idx,
+-                events_list,
+-                wait_event,
++        with self._submission_lock:
++            if self._shutdown:
++                raise RuntimeError("Cannot submit a copy after DMA shutdown")
++            params = self._store_params if is_store else self._load_params
++            assert params is not None and self._queue is not None
++            self._queue.put(
++                (
++                    src_blocks,
++                    dst_blocks,
++                    params,
++                    is_store,
++                    event_idx,
++                    events_list,
++                    wait_event,
++                )
+             )
+-        )
+ 
+     def shutdown(self) -> None:
+-        if self._shutdown:
+-            return
+-        self._shutdown = True
+-        if self._queue is not None:
+-            self._queue.put(None)
++        """Drain queued submissions and device work before their owners can exit."""
++        with self._submission_lock:
++            if not self._shutdown:
++                self._shutdown = True
++                if self._queue is not None:
++                    self._queue.put(None)
++        # The FIFO sentinel follows every accepted job, including jobs whose
++        # completion events have not yet been published. A timed join cannot
++        # establish that it is safe to release GPU aliases or registered memory.
+         if self._thread is not None:
+-            self._thread.join(timeout=5.0)
++            self._thread.join()
++        for stream in (self._load_stream, self._store_stream):
++            if stream is not None:
++                stream.synchronize()
+ 
+     @staticmethod
+     def _copy_loop(
+diff --git a/vllm/v1/simple_kv_offload/cuda_mem_ops.py b/vllm/v1/simple_kv_offload/cuda_mem_ops.py
+index 1f304415..74ff2ff6 100644
+--- a/vllm/v1/simple_kv_offload/cuda_mem_ops.py
++++ b/vllm/v1/simple_kv_offload/cuda_mem_ops.py
+@@ -33,6 +33,13 @@ def pin_tensor(tensor: torch.Tensor) -> None:
+         raise RuntimeError(f"cudaHostRegister failed: {err}")
+ 
+ 
++def unpin_tensor(tensor: torch.Tensor) -> None:
++    """Undo pin_tensor after all DMA referencing the tensor has completed."""
++    err = torch.cuda.cudart().cudaHostUnregister(tensor.data_ptr())
++    if err.value != 0:
++        raise RuntimeError(f"cudaHostUnregister failed: {err}")
++
++
+ class _CUmemLocation(ctypes.Structure):
+     _fields_ = [("type", ctypes.c_uint), ("id", ctypes.c_int)]
+ 
+diff --git a/vllm/v1/simple_kv_offload/worker.py b/vllm/v1/simple_kv_offload/worker.py
+index c120951e..73649532 100644
+--- a/vllm/v1/simple_kv_offload/worker.py
++++ b/vllm/v1/simple_kv_offload/worker.py
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ """Worker-side handler for SimpleCPUOffloadConnector."""
+ 
++import threading
+ from typing import TYPE_CHECKING
+ 
+ import torch
+@@ -10,7 +11,7 @@ from vllm.config import VllmConfig
+ from vllm.logger import init_logger
+ from vllm.utils.torch_utils import PIN_MEMORY
+ from vllm.v1.simple_kv_offload.copy_backend import DmaCopyBackend
+-from vllm.v1.simple_kv_offload.cuda_mem_ops import pin_tensor
++from vllm.v1.simple_kv_offload.cuda_mem_ops import pin_tensor, unpin_tensor
+ from vllm.v1.simple_kv_offload.disk_backend import DiskBackend
+ from vllm.v1.simple_kv_offload.metadata import (
+     SimpleCPUOffloadMetadata,
+@@ -56,6 +57,9 @@ class SimpleCPUOffloadWorker:
+         self.store_stream: torch.cuda.Stream | None = None
+ 
+         self._backend: DmaCopyBackend | DiskBackend | None = None
++        self._registered_cpu_tensors: list[torch.Tensor] = []
++        self._shutdown_lock = threading.Lock()
++        self._shutdown_complete = False
+ 
+         # Ordered (event_idx, Event). Events pre-allocated on main thread.
+         self._load_events: list[tuple[int, torch.Event]] = []
+@@ -92,6 +96,8 @@ class SimpleCPUOffloadWorker:
+                 by resolving to their underlying raw storage.
+ 
+         """
++        if self._shutdown_complete:
++            raise RuntimeError("Cannot register KV caches after CPU offload shutdown")
+         if not kv_caches:
+             logger.warning("No KV caches to offload.")
+             return
+@@ -232,6 +238,7 @@ class SimpleCPUOffloadWorker:
+             tensor = torch.zeros(cpu_shape, dtype=gpu_tensor.dtype, device="cpu")
+             if pin_memory:
+                 pin_tensor(tensor)
++                self._registered_cpu_tensors.append(tensor)
+             self.cpu_kv_caches[name] = tensor
+ 
+         self._backend = DmaCopyBackend()
+@@ -244,6 +251,8 @@ class SimpleCPUOffloadWorker:
+         )
+ 
+     def bind_connector_metadata(self, metadata: SimpleCPUOffloadMetadata) -> None:
++        if self._shutdown_complete:
++            raise RuntimeError("Cannot bind metadata after CPU offload shutdown")
+         self._connector_metadata = metadata
+         if metadata.load_event >= 0:
+             self._pending_load_event_indices.add(metadata.load_event)
+@@ -373,3 +382,31 @@ class SimpleCPUOffloadWorker:
+         else:
+             self._load_hwm = hwm
+         return hwm
++
++    def shutdown(self) -> None:
++        """Release CPU-offload owners only after queued and submitted DMA drains."""
++        if self.disk_mode:
++            # DiskBackend owns a separate I/O and staging-buffer lifecycle.
++            # Preserve its existing connector behavior in this CPU-only fix.
++            return
++        with self._shutdown_lock:
++            if self._shutdown_complete:
++                return
++            if self._backend is not None:
++                self._backend.shutdown()
++            self._flush_and_sync_all()
++            while self._registered_cpu_tensors:
++                tensor = self._registered_cpu_tensors[-1]
++                unpin_tensor(tensor)
++                self._registered_cpu_tensors.pop()
++            self._connector_metadata = None
++            self._pending_load_event_indices.clear()
++            self._pending_store_event_indices.clear()
++            self._completed_store_events.clear()
++            self._store_compute_done = None
++            self.cpu_kv_caches = None
++            self.gpu_kv_caches = None
++            self._backend = None
++            self.load_stream = None
++            self.store_stream = None
++            self._shutdown_complete = True
+diff --git a/vllm/v1/worker/gpu/attn_utils.py b/vllm/v1/worker/gpu/attn_utils.py
+index 8aa9ba3c..279944af 100644
+--- a/vllm/v1/worker/gpu/attn_utils.py
++++ b/vllm/v1/worker/gpu/attn_utils.py
+@@ -55,6 +55,8 @@ if TYPE_CHECKING:
+ class AttentionCGSupportInfo:
+     min_cg_support: AttentionCGSupport = AttentionCGSupport.ALWAYS
+     min_cg_attn_backend: str | None = None
++    decode_phase_only: bool = False
++    decode_phase_only_backend: str | None = None
+ 
+     def narrow(
+         self, support: AttentionCGSupport, backend: str | None
+@@ -65,7 +67,9 @@ class AttentionCGSupportInfo:
+         encoder-only layers) contribute to the runner's cudagraph decision.
+         """
+         if support.value < self.min_cg_support.value:
+-            return AttentionCGSupportInfo(support, backend)
++            return AttentionCGSupportInfo(
++                support, backend, self.decode_phase_only, self.decode_phase_only_backend
++            )
+         return self
+ 
+ 
+@@ -120,6 +124,7 @@ class FastPrefillHelper:
+             num_tokens=num_logits,
+             uniform_token_count=None,
+             num_active_loras=num_active_loras,
++            has_prefill=has_prefill,
+         )
+         num_logits_padded = min(desc.num_tokens, self.max_num_tokens)
+         return FastPrefillBatchMetadata(
+@@ -298,6 +303,8 @@ def get_attn_cg_support(
+     """Return the weakest CUDA graph support among the checked layers."""
+     min_cg_support = AttentionCGSupport.ALWAYS
+     min_cg_attn_backend = None
++    decode_phase_only = False
++    decode_phase_only_backend = None
+     for groups in attn_groups:
+         for group in groups:
+             if checked_layer_names is not None and checked_layer_names.isdisjoint(
+@@ -312,9 +319,14 @@ def get_attn_cg_support(
+             if cg_support.value < min_cg_support.value:
+                 min_cg_support = cg_support
+                 min_cg_attn_backend = group.backend.__name__
++            if getattr(builder, "cudagraph_decode_phase_only", False):
++                decode_phase_only = True
++                decode_phase_only_backend = group.backend.__name__
+     return AttentionCGSupportInfo(
+         min_cg_support=min_cg_support,
+         min_cg_attn_backend=min_cg_attn_backend,
++        decode_phase_only=decode_phase_only,
++        decode_phase_only_backend=decode_phase_only_backend,
+     )
+ 
+ 
+diff --git a/vllm/v1/worker/gpu/cudagraph_utils.py b/vllm/v1/worker/gpu/cudagraph_utils.py
+index 73be6231..2cd7f17d 100644
+--- a/vllm/v1/worker/gpu/cudagraph_utils.py
++++ b/vllm/v1/worker/gpu/cudagraph_utils.py
+@@ -78,6 +78,7 @@ class BatchExecutionDescriptor:
+     num_active_loras: int = 0
+     # Number of microbatches the batch is split into (DBO). 1 means no splitting.
+     num_ubatches: int = 1
++    decode_phase_only: bool = False
+ 
+ 
+ def make_cudagraph_stats(
+@@ -111,6 +112,7 @@ def _is_compatible(
+     num_active_loras: int,
+     max_query_len: int | None,
+     num_ubatches: int,
++    has_prefill: bool | None = None,
+ ) -> bool:
+     # desc.uniform_token_count=None (PIECEWISE) can handle any uniform_token_count
+     # desc.num_reqs=None means no request padding needed (PIECEWISE)
+@@ -130,6 +132,7 @@ def _is_compatible(
+         and desc.num_tokens >= num_tokens
+         and desc.num_active_loras == num_active_loras
+         and desc.num_ubatches == num_ubatches
++        and (not desc.decode_phase_only or has_prefill is False)
+     )
+ 
+ 
+@@ -152,6 +155,7 @@ class CudaGraphManager:
+         lora_capture_cases: list[int] | None = None,
+         varlen_decode: bool = False,
+         ubatch_runner: "UBatchRunner | None" = None,
++        decode_phase_only_full_graphs: bool = False,
+     ):
+         self.vllm_config = vllm_config
+         self.device = device
+@@ -161,6 +165,7 @@ class CudaGraphManager:
+         self.cudagraph_mode = cudagraph_mode
+         self.decode_query_len = decode_query_len
+         self.varlen_decode = varlen_decode
++        self.decode_phase_only_full_graphs = decode_phase_only_full_graphs
+         # DBO supports FULL CUDA graphs only.
+         self.ubatch_runner = ubatch_runner
+ 
+@@ -221,6 +226,9 @@ class CudaGraphManager:
+         # Counts above the largest captured case clamp to it.
+         return self._lora_dispatch_map.get(num_active_loras, self._max_lora_case)
+ 
++    def _is_decode_phase_only(self, cg_mode: CUDAGraphMode) -> bool:
++        return self.decode_phase_only_full_graphs and cg_mode == CUDAGraphMode.FULL
++
+     def _maybe_ubatch_twin(
+         self, desc: BatchExecutionDescriptor
+     ) -> BatchExecutionDescriptor | None:
+@@ -309,6 +317,7 @@ class CudaGraphManager:
+                     num_reqs=min(num_tokens, self.max_num_reqs),
+                     max_query_len=self.decode_query_len,
+                     num_active_loras=num_active_loras,
++                    decode_phase_only=self._is_decode_phase_only(decode_mode),
+                 )
+                 descs_by_mode[decode_mode].append(desc)
+             # Capture uniform decode specfifc graphs if required
+@@ -331,6 +340,7 @@ class CudaGraphManager:
+                         num_reqs=rounded_num_reqs,
+                         uniform_token_count=decode_query_len,
+                         num_active_loras=num_active_loras,
++                        decode_phase_only=self._is_decode_phase_only(decode_mode),
+                     )
+ 
+                     # avoid duplicate graphs
+@@ -361,6 +371,7 @@ class CudaGraphManager:
+                     num_tokens=num_tokens,
+                     num_reqs=num_reqs,
+                     num_active_loras=num_active_loras,
++                    decode_phase_only=self._is_decode_phase_only(mixed_mode),
+                 )
+                 descs_by_mode[mixed_mode].append(desc)
+ 
+@@ -523,8 +534,11 @@ class CudaGraphManager:
+         num_active_loras: int,
+         max_query_len: int | None = None,
+         num_ubatches: int = 1,
++        has_prefill: bool | None = None,
+     ) -> BatchExecutionDescriptor:
+         """Find matching cudagraph descriptor from priority-ordered candidates."""
++        if self.decode_phase_only_full_graphs and has_prefill is None:
++            raise RuntimeError("Decode-phase-only graph dispatch requires has_prefill")
+         effective_loras = self._resolve_effective_loras(num_active_loras)
+         key = (num_tokens, effective_loras)
+         if self._graphs_captured and num_tokens > 0 and key in self._candidates:
+@@ -537,6 +551,7 @@ class CudaGraphManager:
+                     effective_loras,
+                     max_query_len,
+                     num_ubatches,
++                    has_prefill,
+                 ):
+                     return desc
+         return BatchExecutionDescriptor(
+@@ -547,6 +562,14 @@ class CudaGraphManager:
+             num_ubatches=num_ubatches,
+         )
+ 
++    def check_phase_admission(
++        self, desc: BatchExecutionDescriptor, has_prefill: bool | None
++    ) -> None:
++        if desc.decode_phase_only and has_prefill is not False:
++            raise RuntimeError(
++                f"Decode-phase-only graph cannot replay with has_prefill={has_prefill}"
++            )
++
+     def run_fullgraph(self, desc: BatchExecutionDescriptor):
+         """Replay a captured FULL cudagraph."""
+         assert desc.cg_mode == CUDAGraphMode.FULL, (
+@@ -588,6 +611,7 @@ class ModelCudaGraphManager(CudaGraphManager):
+         lora_capture_cases: list[int] | None = None,
+         varlen_decode: bool = False,
+         ubatch_runner: "UBatchRunner | None" = None,
++        decode_phase_only_full_graphs: bool = False,
+     ):
+         super().__init__(
+             vllm_config,
+@@ -597,6 +621,7 @@ class ModelCudaGraphManager(CudaGraphManager):
+             lora_capture_cases=lora_capture_cases,
+             varlen_decode=varlen_decode,
+             ubatch_runner=ubatch_runner,
++            decode_phase_only_full_graphs=decode_phase_only_full_graphs,
+         )
+         self.hidden_states: torch.Tensor | None = None
+         self.aux_hidden_states: list[torch.Tensor] = []
+diff --git a/vllm/v1/worker/gpu/dp_utils.py b/vllm/v1/worker/gpu/dp_utils.py
+index 15db7c19..680e1653 100644
+--- a/vllm/v1/worker/gpu/dp_utils.py
++++ b/vllm/v1/worker/gpu/dp_utils.py
+@@ -39,6 +39,8 @@ class DPSyncState:
+     # Agreed upper bound on any rank's request count. Holds the padded count when
+     # a FULL descriptor imposed one, else the most any rank scheduled.
+     num_reqs: int
++    # Actual phase agreed across ranks, independent of decode-shape promotion.
++    has_prefill: bool | None = None
+ 
+ 
+ def sync_cudagraph_and_dp_padding(
+@@ -54,6 +56,7 @@ def sync_cudagraph_and_dp_padding(
+     parallel_config: ParallelConfig | None = None,
+     allow_ubatching: bool = False,
+     uniform_decode: bool = False,
++    has_prefill: bool | None = None,
+ ) -> tuple[BatchExecutionDescriptor, DPSyncState | None]:
+     """Coordinates the batch descriptor and DP padding across all ranks.
+ 
+@@ -64,13 +67,14 @@ def sync_cudagraph_and_dp_padding(
+     """
+     assert dp_size > 1, "DP size must be greater than 1"
+     group = get_dp_group().cpu_group
+-    tensor = torch.zeros(6, dp_size, dtype=torch.int32, device="cpu")
++    tensor = torch.zeros(7, dp_size, dtype=torch.int32, device="cpu")
+     tensor[0][dp_rank] = num_tokens
+     tensor[1][dp_rank] = desired_batch_desc.cg_mode.value
+     tensor[2][dp_rank] = uniform_token_count or 0  # (0 means None)
+     tensor[3][dp_rank] = max_query_len or -1  # (-1 means None)
+     tensor[4][dp_rank] = int(allow_ubatching)
+     tensor[5][dp_rank] = num_reqs
++    tensor[6][dp_rank] = -1 if has_prefill is None else int(has_prefill)
+     if should_skip_dp_coordination():
+         tensor[:] = tensor[:, dp_rank, None].clone()
+     else:
+@@ -82,6 +86,14 @@ def sync_cudagraph_and_dp_padding(
+     max_query_lens_across_dp = tensor[3]
+     allow_ubatching_across_dp = tensor[4]
+     num_reqs_across_dp = tensor[5]
++    phases_across_dp = tensor[6]
++    synced_has_prefill = (
++        True
++        if bool(torch.any(phases_across_dp == 1).item())
++        else False
++        if bool(torch.all(phases_across_dp == 0).item())
++        else None
++    )
+ 
+     # If ranks disagree on the uniform token count, or its 0 (means None) set to None
+     synced_uniform_token_count: int | None = int(uniform_token_counts_across_dp[0])
+@@ -125,6 +137,7 @@ def sync_cudagraph_and_dp_padding(
+                     synced_uniform_token_count,
+                     num_active_loras=num_active_loras,
+                     num_ubatches=num_ubatches,
++                    has_prefill=synced_has_prefill,
+                 )
+                 if 2 * int(num_tokens_across_dp.min()) < ubatch_desc.num_tokens:
+                     # If one rank has an empty second microbatch, run without
+@@ -150,6 +163,7 @@ def sync_cudagraph_and_dp_padding(
+                 uniform_token_count=synced_uniform_token_count,
+                 eager=ubatch_desc.cg_mode == CUDAGraphMode.NONE,
+                 num_reqs=num_reqs,
++                has_prefill=synced_has_prefill,
+             )
+ 
+     synced_cg_mode = CUDAGraphMode(int(cg_mode_across_dp.min().item()))
+@@ -168,6 +182,7 @@ def sync_cudagraph_and_dp_padding(
+                 uniform_token_count=synced_uniform_token_count,
+                 eager=True,
+                 num_reqs=int(num_reqs_across_dp.max()),
++                has_prefill=synced_has_prefill,
+             ),
+         )
+ 
+@@ -192,6 +207,7 @@ def sync_cudagraph_and_dp_padding(
+         synced_uniform_token_count,
+         num_active_loras=num_active_loras,
+         max_query_len=synced_max_query_len,
++        has_prefill=synced_has_prefill,
+     )
+ 
+     # Update num_tokens_across_dp to reflect padded size.
+@@ -207,6 +223,7 @@ def sync_cudagraph_and_dp_padding(
+             and synced_desc.num_reqs is not None
+             else int(num_reqs_across_dp.max())
+         ),
++        has_prefill=synced_has_prefill,
+     )
+ 
+ 
+@@ -224,6 +241,7 @@ def dispatch_cg_and_sync_dp(
+     allow_ubatching: bool = False,
+     uniform_decode: bool = False,
+     dp_sync: DPSyncState | None = None,
++    has_prefill: bool | None = None,
+ ) -> tuple[BatchExecutionDescriptor, DPSyncState | None]:
+     """Pick a cudagraph descriptor for this batch, agreeing it across DP ranks.
+ 
+@@ -245,6 +263,8 @@ def dispatch_cg_and_sync_dp(
+         max_query_len: Upper bound on per-request query length, for selecting
+             varlen decode graphs. None, as for a batch with a prefill, keeps
+             the batch out of graphs that constrain it.
++        has_prefill: Whether this rank contains an actual prefilling request.
++            Required by backends with decode-phase-only FULL graphs.
+         need_eager: Force `CUDAGraphMode.NONE` instead of dispatching.
+         num_active_loras: Active LoRA count for this rank. Does not need
+             cross-rank agreement; it never changes a bucket's token count.
+@@ -285,6 +305,7 @@ def dispatch_cg_and_sync_dp(
+             dp_sync.uniform_token_count if dp_sync is not None else uniform_token_count,
+             num_active_loras=num_active_loras,
+             max_query_len=max_query_len,
++            has_prefill=dp_sync.has_prefill if dp_sync is not None else has_prefill,
+         )
+ 
+     if dp_size == 1:
+@@ -322,4 +343,5 @@ def dispatch_cg_and_sync_dp(
+         parallel_config=parallel_config,
+         allow_ubatching=allow_ubatching,
+         uniform_decode=uniform_decode,
++        has_prefill=has_prefill,
+     )
+diff --git a/vllm/v1/worker/gpu/model_runner.py b/vllm/v1/worker/gpu/model_runner.py
+index 61d6197c..5486bce2 100644
+--- a/vllm/v1/worker/gpu/model_runner.py
++++ b/vllm/v1/worker/gpu/model_runner.py
+@@ -146,7 +146,7 @@ from vllm.v1.worker.gpu.sample.logits_processor import build_custom_logits_proce
+ from vllm.v1.worker.gpu.sample.output import SamplerOutput
+ from vllm.v1.worker.gpu.sample.prompt_logprob import PromptLogprobsWorker
+ from vllm.v1.worker.gpu.sample.sampler import Sampler
+-from vllm.v1.worker.gpu.shutdown import free_before_shutdown
++from vllm.v1.worker.gpu.shutdown import free_before_shutdown, shutdown_model_resources
+ from vllm.v1.worker.gpu.spec_decode import init_speculator
+ from vllm.v1.worker.gpu.spec_decode.adaptive_verification import (
+     AdaptiveVerificationManager,
+@@ -743,7 +743,14 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+             lora_capture_cases=self.lora_capture_cases,
+             varlen_decode=self.adaptive_verification is not None,
+             ubatch_runner=self.ubatch_runner,
++            decode_phase_only_full_graphs=attn_cg_support.decode_phase_only,
+         )
++        if attn_cg_support.decode_phase_only:
++            logger.info(
++                "Backend %s restricts FULL cudagraph replay to batches with "
++                "no prefilling requests.",
++                attn_cg_support.decode_phase_only_backend,
++            )
+         if self.cache_config.kv_sharing_fast_prefill and self.pcp_manager is None:
+             self.fast_prefill = FastPrefillHelper(
+                 self.cudagraph_manager, self.max_num_tokens
+@@ -1739,6 +1746,9 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+         batch_req_state, uniform_tok_count = self.gather_batch_req_state(
+             scheduler_output, dummy_run
+         )
++        has_prefill = (
++            batch_req_state.has_prefill if batch_req_state is not None else False
++        )
+         if batch_req_state is not None:
+             num_toks = batch_req_state.num_tokens
+             if batch_req_state.has_prefill:
+@@ -1780,6 +1790,7 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+                 self.ubatch_runner is not None and not skip_attn_for_dummy_run
+             ),
+             uniform_decode=uniform_tok_count == self.decode_query_len,
++            has_prefill=has_prefill,
+         )
+ 
+         if batch_desc.num_tokens == 0:
+@@ -1993,6 +2004,7 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+             self.kv_connector.pre_forward(
+                 **connector_kwargs, attn_metadata=attn_metadata
+             )
++            self.cudagraph_manager.check_phase_admission(batch_desc, has_prefill)
+             model_output = self.cudagraph_manager.run_fullgraph(batch_desc)
+         else:
+             # For piecewise and eager mode, just call model().
+@@ -2360,11 +2372,17 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+         if hasattr(self, "model_state") and self.model_state.supports_mm_inputs:
+             self.model_state.encoder_runner.clear()
+         free_before_shutdown(self.vllm_config)
++        speculator = getattr(self, "speculator", None)
++        shutdown_model_resources(
++            (
++                getattr(self, "model", None),
++                getattr(speculator, "model", None),
++            )
++        )
+         if hasattr(self, "model_state"):
+             del self.model_state
+         # Detach the layer-level KV/state cache tensors before dropping the
+         # models; the model objects can outlive this runner.
+-        speculator = getattr(self, "speculator", None)
+         if speculator is not None:
+             if draft_model := getattr(speculator, "model", None):
+                 clear_layer_kv_caches(draft_model.modules())
+diff --git a/vllm/v1/worker/gpu/shutdown.py b/vllm/v1/worker/gpu/shutdown.py
+index 83008396..0245e679 100644
+--- a/vllm/v1/worker/gpu/shutdown.py
++++ b/vllm/v1/worker/gpu/shutdown.py
+@@ -1,11 +1,34 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++from collections.abc import Iterable
++
++from torch import nn
++
+ from vllm.config import VllmConfig
+ from vllm.logger import init_logger
+ 
+ logger = init_logger(__name__)
+ 
+ 
++def shutdown_model_resources(models: Iterable[nn.Module | None]) -> None:
++    """Close model-owned resources after draining graphs, before TP teardown.
++
++    This is deliberately separate from temporary KV profiling-cache release.
++    Shared modules run the optional hook once even if both model roots own them.
++    """
++    seen: set[int] = set()
++    for model in models:
++        if model is None:
++            continue
++        for module in model.modules():
++            if id(module) in seen:
++                continue
++            seen.add(id(module))
++            close = getattr(module, "shutdown_model_resources", None)
++            if callable(close):
++                close()
++
++
+ def free_before_shutdown(vllm_config: VllmConfig) -> None:
+     from vllm.model_executor.layers.rotary_embedding import _ROPE_DICT
+     from vllm.v1.worker.workspace import reset_workspace_manager
+diff --git a/vllm/v1/worker/utils.py b/vllm/v1/worker/utils.py
+index db0f81b8..7fef1434 100644
+--- a/vllm/v1/worker/utils.py
++++ b/vllm/v1/worker/utils.py
+@@ -731,6 +731,9 @@ def clear_layer_kv_caches(layers: Iterable[Any]) -> None:
+     alone does not release the KV cache memory on teardown paths.
+     """
+     for layer in layers:
++        release_kv_cache = getattr(layer, "release_kv_cache", None)
++        if release_kv_cache is not None:
++            release_kv_cache()
+         if not hasattr(layer, "kv_cache"):
+             continue
+         kv_cache = layer.kv_cache

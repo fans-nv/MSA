@@ -1,0 +1,10 @@
+{
+  "exit_code": 1,
+  "sources_unchanged": true,
+  "before": {
+    "vllm/models/minimax_m3/nvidia/model.py": "0e597b4c3080f55f7fd9fc8e8143019bcfd004ed85da7c0f9b594dbed77425c0"
+  },
+  "after": {
+    "vllm/models/minimax_m3/nvidia/model.py": "0e597b4c3080f55f7fd9fc8e8143019bcfd004ed85da7c0f9b594dbed77425c0"
+  }
+}

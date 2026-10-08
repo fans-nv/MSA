@@ -1,0 +1,33 @@
+vllm/models/minimax_m3/nvidia/model.py:224: error: "Parameter" has no attribute "weight_loader"  [attr-defined]
+vllm/models/minimax_m3/nvidia/model.py:228: error: Incompatible types in assignment (expression has type "None", variable has type "Parameter")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:647: error: Argument "q_fp8_scale" to "fused_minimax_m3_qknorm_rope_kv_insert" has incompatible type "Tensor | Module"; expected "float"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:648: error: Argument "kv_k_scale" to "fused_minimax_m3_qknorm_rope_kv_insert" has incompatible type "Tensor | Module | None"; expected "Tensor | None"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:649: error: Argument "kv_v_scale" to "fused_minimax_m3_qknorm_rope_kv_insert" has incompatible type "Tensor | Module | None"; expected "Tensor | None"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:670: error: Argument 1 to "forward" of "MiniMaxM3SparseImpl" has incompatible type "MiniMaxM3SparseAttention"; expected "AttentionLayer"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:670: note: Following member(s) of "MiniMaxM3SparseAttention" have conflicts:
+vllm/models/minimax_m3/nvidia/model.py:670: note:     _k_scale: expected "Tensor", got "Tensor | Module"
+vllm/models/minimax_m3/nvidia/model.py:670: note:     _k_scale_cpu: expected "Tensor", got "Tensor | Module"
+vllm/models/minimax_m3/nvidia/model.py:670: note:     <8 more conflict(s) not shown>
+vllm/models/minimax_m3/nvidia/model.py:722: error: Incompatible types in assignment (expression has type "MiniMaxM3Attention", variable has type "MiniMaxM3SparseAttention")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:772: error: Argument 3 to "fused_allreduce_gemma_rms_norm" has incompatible type "MiniMAXGemmaRMSNorm"; expected "GemmaRMSNorm"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:786: error: Argument 3 to "fused_allreduce_gemma_rms_norm" has incompatible type "MiniMAXGemmaRMSNorm"; expected "GemmaRMSNorm"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:824: error: Incompatible types in assignment (expression has type "PPMissingLayer", variable has type "VocabParallelEmbedding")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:846: error: Incompatible types in assignment (expression has type "None", variable has type "Tensor")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:861: error: Incompatible types in assignment (expression has type "PPMissingLayer", variable has type "MiniMAXGemmaRMSNorm")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:871: error: Incompatible types in assignment (expression has type "bool", variable has type "Tensor | Module")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:872: error: Incompatible types in assignment (expression has type "Tensor | Module", variable has type "bool")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:889: error: Argument 1 to "embed_input_ids" of "MiniMaxM3Model" has incompatible type "Tensor | None"; expected "Tensor"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:917: error: Dict entry 1 has incompatible type "str": "Any | None"; expected "str": "Tensor"  [dict-item]
+vllm/models/minimax_m3/nvidia/model.py:924: error: Argument 2 to "fused_allreduce_gemma_rms_norm" has incompatible type "Any | None"; expected "Tensor"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:924: error: Argument 3 to "fused_allreduce_gemma_rms_norm" has incompatible type "MiniMAXGemmaRMSNorm"; expected "GemmaRMSNorm"  [arg-type]
+vllm/models/minimax_m3/nvidia/model.py:993: error: "Parameter" has no attribute "weight_loader"  [attr-defined]
+vllm/models/minimax_m3/nvidia/model.py:1011: error: "Parameter" has no attribute "weight_loader"  [attr-defined]
+vllm/models/minimax_m3/nvidia/model.py:1067: error: Incompatible types in assignment (expression has type "PPMissingLayer", variable has type "ParallelLMHead")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:1178: error: Incompatible types in assignment (expression has type "Tensor | Module", base class "SupportsPP" defined the type as "_MakeEmptyIntermediateTensors")  [assignment]
+vllm/models/minimax_m3/nvidia/model.py:1184: error: Incompatible return value type (got "Tensor | Module", expected Module)  [return-value]
+vllm/models/minimax_m3/nvidia/model.py:1188: error: Incompatible return value type (got "Tensor | Module", expected Module)  [return-value]
+vllm/models/minimax_m3/nvidia/model.py:1307: error: "Tensor" not callable  [operator]
+vllm/models/minimax_m3/nvidia/model.py:1310: error: "Tensor" not callable  [operator]
+vllm/models/minimax_m3/nvidia/model.py:1313: error: "Tensor" not callable  [operator]
+Found 27 errors in 1 file (checked 1 source file)
+$ mypy --python-version 3.11 

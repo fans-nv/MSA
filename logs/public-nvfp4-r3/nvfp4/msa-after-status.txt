@@ -1,0 +1,12 @@
+ M python/fmha_sm100/decode_q8kv4/__init__.py
+ M python/fmha_sm100/decode_q8kv4/_build_utils.py
+ M python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp
+ M python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp
+ M python/fmha_sm100/decode_q8kv4/interface.py
+ M python/fmha_sm100/decode_q8kv4/jit.py
+ M python/fmha_sm100/icp/__init__.py
+ M python/fmha_sm100/icp/_cache.py
+ M python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py
+ M python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py
+ M python/fmha_sm100/icp/prewarm.py
+ M tests/icp/test_prewarm_cache.py

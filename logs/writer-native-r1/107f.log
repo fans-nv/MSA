@@ -1,0 +1,441 @@
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb0ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb0ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb1ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb1ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb0ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb0ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb1ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas warning : Value of threads per SM for entry _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb1ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE is out of range. .minnctapersm will be ignored
+ptxas info    : 40 bytes gmem
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 7.079 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 7.017 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.648 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 12.206 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.555 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.022 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.133 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.001 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.585 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.753 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.817 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.520 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.046 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.180 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 5.987 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.571 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.724 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 12.134 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 13.095 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.083 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16E13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.090 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 5.957 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.524 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.675 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.707 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.374 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.010 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.061 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 5.941 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.502 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.670 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.726 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.531 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.136 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.576 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.097 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.671 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.808 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 12.203 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.743 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.128 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE2ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.297 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.113 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.585 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.812 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 12.012 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.706 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.019 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE1ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.537 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.092 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.576 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.684 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.905 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.577 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 5.988 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfE13__nv_bfloat16LNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S7_PhPT3_PKS6_SC_SC_SC_SC_PKlSE_SE_PT0_SA_ffiiiiiillllPKfSI_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.083 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 5.938 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.538 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.703 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.824 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.899 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 5.975 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEtLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.151 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb0ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 5.988 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 6.551 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb0ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 6.799 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.882 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 12.606 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb0ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 6.017 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEfLNS_18Fp8KVCacheDataTypeE0ELb0ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 11.380 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 15.935 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE0ELb1EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE0ELb1EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 16.292 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c108BFloat16EhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 14.594 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb0ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb0ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 14.983 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 39 registers, used 0 barriers
+ptxas info    : Compile time = 21.346 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb0ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb0ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, used 1 barriers, 3084 bytes smem
+ptxas info    : Compile time = 93.239 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb1ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb1ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 20.922 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb1ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c108BFloat16ELb1ELb1ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, used 1 barriers, 3084 bytes smem
+ptxas info    : Compile time = 90.022 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb1ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 16.249 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE0ELb1EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE0ELb1EhLb1ELb1ELb1ELb1EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers
+ptxas info    : Compile time = 15.964 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops37fusedMiniMaxM3QNormRopeKVInsertKernelIN3c104HalfEhLNS_18Fp8KVCacheDataTypeE0ELb1ES3_Lb1ELb1ELb0ELb0EEEvPT_S6_PhPT3_PKS5_SB_SB_SB_SB_PKlSD_SD_PT0_S9_ffiiiiiillllPKfSH_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 34 registers, used 0 barriers
+ptxas info    : Compile time = 14.843 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb0ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb0ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 36 registers, used 0 barriers
+ptxas info    : Compile time = 15.276 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb0ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 39 registers, used 0 barriers
+ptxas info    : Compile time = 21.626 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb0ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb0ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, used 1 barriers, 3084 bytes smem
+ptxas info    : Compile time = 92.037 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb1ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb1ELb0EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 38 registers, used 0 barriers
+ptxas info    : Compile time = 20.060 ms
+ptxas info    : Compiling entry function '_ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb1ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE' for 'sm_107f'
+ptxas info    : Function properties for _ZN4vllm20minimax_m3_fused_ops23fusedMiniMaxM3IcpKernelIN3c104HalfELb1ELb1ELb1EEEvPT_S5_PhS6_PKS4_S8_S8_S8_S8_PKlSA_S6_S6_ffiiiiiillllPKfSC_NS0_15IcpWriterParamsE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, used 1 barriers, 3084 bytes smem
+ptxas info    : Compile time = 90.721 ms

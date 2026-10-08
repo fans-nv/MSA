@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="13" time="1.910" timestamp="2026-10-08T10:37:49.142537-07:00" hostname="516ea03-lcedt"><testcase classname="tests.icp.test_prewarm_cache" name="test_a_source_edit_moves_only_its_components_directory[nvfp4-cute/src/sm100/fwd/atten_fwd_nvfp4_kv.py]" time="0.029" /><testcase classname="tests.icp.test_prewarm_cache" name="test_nvfp4_prewarm_rejects_disabled_aot_even_if_manifest_matches" time="1.047" /><testcase classname="tests.icp.test_prewarm_cache" name="test_nvfp4_aot_import_rejects_other_architectures_and_sources" time="0.009" /><testcase classname="tests.icp.test_prewarm_cache" name="test_incomplete_nvfp4_export_is_rejected_before_copying" time="0.001" /><testcase classname="tests.icp.test_prewarm_cache" name="test_nvfp4_export_without_source_metadata_is_not_a_cache_hit" time="0.008" /><testcase classname="tests.icp.test_prewarm_cache" name="test_production_fixture_matches_compound_abi_and_actual_loader_keys" time="0.002" /><testcase classname="tests.icp.test_prewarm_cache" name="test_public_production_profile_uses_head_slots_and_calibrated_scales" time="0.003"><failure message="assert tensor([0.7500]) is tensor([0.7500])">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7726c1d03d10&gt;
+
+    def test_public_production_profile_uses_head_slots_and_calibrated_scales(monkeypatch):
+        from fmha_sm100.icp.attention.nvfp4_prefill._prewarm import required_aot_keys
+    
+        calls, inputs = _captured_production_call(monkeypatch, layout="public")
+        assert len(calls) == 2
+        assert {key for key, _ in calls} == set(required_aot_keys("107a", layouts=("public",)))
+        pointer = inputs["k"].untyped_storage().data_ptr()
+        for name, offset, width in (("k", 0, 64), ("k_sf", 8192, 8),
+                                    ("v", 9216, 64), ("v_sf", 17408, 8)):
+            tensor = inputs[name]
+            assert tensor.shape == (6, 2, 128, width)
+            assert tensor.stride() == (45056, 18432, width, 1)
+            assert tensor.storage_offset() == offset
+            assert tensor.untyped_storage().data_ptr() == pointer
+        # Actual launch arguments: K calibration in forward; V only in combine.
+&gt;       assert calls[0][1][4] is inputs["k_global_scale"]
+E       assert tensor([0.7500]) is tensor([0.7500])
+
+tests/icp/test_prewarm_cache.py:556: AssertionError</failure></testcase><testcase classname="tests.icp.test_prewarm_cache" name="test_import_rejects_other_valid_variants_from_actual_loaders[compact]" time="0.006" /><testcase classname="tests.icp.test_prewarm_cache" name="test_import_rejects_other_valid_variants_from_actual_loaders[sm100]" time="0.005" /><testcase classname="tests.icp.test_prewarm_cache" name="test_import_rejects_other_valid_variants_from_actual_loaders[fp8_q]" time="0.005" /><testcase classname="tests.icp.test_prewarm_cache" name="test_import_rejects_other_valid_variants_from_actual_loaders[dequant]" time="0.005" /><testcase classname="tests.icp.test_prewarm_cache" name="test_import_requires_exact_loader_filenames" time="0.008" /><testcase classname="tests.icp.test_prewarm_cache" name="test_verify_requires_production_profiles_in_recorded_inventory" time="0.058" /></testsuite></testsuites>

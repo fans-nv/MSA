@@ -1,0 +1,30 @@
+{
+  "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "python_version": "3.11",
+  "files": {
+    "vllm/config/attention.py": {
+      "baseline": "07eed9b986d37c3bdb9c2f9a6bdea45e436fac824cd098a1e833a839e6bb6092",
+      "candidate": "d2fa451d06db30174afa74dee9b8db1057a265981fbb0a55ba427f3e46541110"
+    },
+    "vllm/model_executor/layers/linear.py": {
+      "baseline": "7a9b90937865fa35d955ffc2017f23d3997bc4fba954e2667870b1b4854a38e0",
+      "candidate": "2611496d8ba262956557367d97a3a9e7e4e39c7f94d8f69283be0109884aada3"
+    }
+  },
+  "baseline_errors": 23,
+  "candidate_errors": 23,
+  "new": [],
+  "resolved": [],
+  "diagnostics": {
+    "vllm/model_executor/layers/linear.py: error: Incompatible types in assignment (expression has type \"Callable[[Tensor, Tensor, Tensor | None], Tensor]\", variable has type \"Tensor | Module\")  [assignment]": 1,
+    "vllm/model_executor/layers/linear.py: error: \"Tensor\" not callable  [operator]": 2,
+    "vllm/model_executor/layers/linear.py: error: Incompatible types in assignment (expression has type \"list[int]\", variable has type \"Tensor | Module\")  [assignment]": 1,
+    "vllm/model_executor/layers/linear.py: error: Item Module of \"Tensor | Module\" has no attribute \"__iter__\" (not iterable)  [union-attr]": 1,
+    "vllm/model_executor/layers/linear.py: error: \"Parameter\" has no attribute \"packed_factor\"  [attr-defined]": 8,
+    "vllm/model_executor/layers/linear.py: error: \"BasevLLMParameter\" has no attribute \"output_dim\"  [attr-defined]": 2,
+    "vllm/model_executor/layers/linear.py: error: Argument 3 to \"getattr\" has incompatible type \"MergedColumnParallelLinear\"; expected \"Parameter\"  [arg-type]": 2,
+    "vllm/model_executor/layers/linear.py: error: Item \"Parameter\" of \"Any | Parameter\" has no attribute \"weight_loader\"  [union-attr]": 2,
+    "vllm/model_executor/layers/linear.py: error: Argument 3 to \"getattr\" has incompatible type \"QKVParallelLinear\"; expected \"Parameter\"  [arg-type]": 2,
+    "vllm/model_executor/layers/linear.py: error: \"Parameter\" has no attribute \"tp_rank\"  [attr-defined]": 2
+  }
+}

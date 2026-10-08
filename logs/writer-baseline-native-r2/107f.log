@@ -1,0 +1,11 @@
+csrc/libtorch_stable/../attention/dtype_fp8.cuh(34): error: identifier "TORCH_UTILS_CHECK" is undefined
+    TORCH_UTILS_CHECK(false, "Unsupported fp8 kv cache data type: ", dtype_str);
+    ^
+
+csrc/libtorch_stable/../attention/dtype_fp8.cuh(35): warning #940-D: missing return statement at end of non-void function "vllm::get_fp8_kv_cache_data_type"
+  }
+  ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+1 error detected in the compilation of "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/logs/writer-baseline-native-r2/baseline.cu".

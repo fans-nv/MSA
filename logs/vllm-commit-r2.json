@@ -1,0 +1,18 @@
+{
+  "command": ["git", "commit", "--file", "review/vllm-public-consolidation-20261008/vllm-commit-message.txt"],
+  "cwd": "worktrees/vllm-icp-public",
+  "note": "The message path was passed as an absolute workspace path. Hook output was observed directly; the completion chunk is retained in vllm-commit-r2-tail.log.",
+  "exit_code": 0,
+  "commit": "516bd9a9d9962aff25582f774a49640e022bf348",
+  "configured_hooks": "all passed or reported no applicable files",
+  "passed": [
+    "ruff-check", "ruff-format", "typos", "clang-format",
+    "check-buildkite-step-keys", "check-test-tethering", "mypy",
+    "SPDX headers", "root lazy imports", "filename spaces",
+    "Dockerfile dependency graph", "forbidden imports", "torch.cuda API guard",
+    "configuration defaults and field documentation", "with-statement boolean operations",
+    "suggestion", "signoff-commit"
+  ],
+  "hooks_bypassed": false,
+  "prior_attempt": "The first commit attempt failed only the new test tethering check. The model directory was added to the existing CPU Basic Models Other job before this successful retry."
+}

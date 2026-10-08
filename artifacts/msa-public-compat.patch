@@ -1,0 +1,1255 @@
+diff --git a/python/fmha_sm100/decode_q8kv4/__init__.py b/python/fmha_sm100/decode_q8kv4/__init__.py
+index 6fbc143..5b62216 100644
+--- a/python/fmha_sm100/decode_q8kv4/__init__.py
++++ b/python/fmha_sm100/decode_q8kv4/__init__.py
+@@ -80,17 +80,17 @@ try:
+         return get_reduction_module(None if device is None else int(device)).reduction
+ 
+     tvm_ffi.register_global_func(
+-        "fmha_sm100.decode_q8kv4.jit_get_fmha_fwd_sparse_variant",
++        f"{__name__}.native_v2.jit_get_fmha_fwd_sparse_variant",
+         _jit_get_fmha_fwd_sparse_variant,
+         override=True,
+     )
+     tvm_ffi.register_global_func(
+-        "fmha_sm100.decode_q8kv4.jit_get_plan",
++        f"{__name__}.native_v2.jit_get_plan",
+         _jit_get_plan,
+         override=True,
+     )
+     tvm_ffi.register_global_func(
+-        "fmha_sm100.decode_q8kv4.jit_get_reduction",
++        f"{__name__}.native_v2.jit_get_reduction",
+         _jit_get_reduction,
+         override=True,
+     )
+diff --git a/python/fmha_sm100/decode_q8kv4/_build_utils.py b/python/fmha_sm100/decode_q8kv4/_build_utils.py
+index 97c03c6..a2761cf 100644
+--- a/python/fmha_sm100/decode_q8kv4/_build_utils.py
++++ b/python/fmha_sm100/decode_q8kv4/_build_utils.py
+@@ -237,6 +237,29 @@ def build_lock(cache_dir: Path):
+             fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+ 
+ 
++def qmul4_result_path(arch: str, *, probe_root: Path) -> Path:
++    """Resolve the existing capability cache without compiling a probe."""
++    nvcc = cuda_home() / "bin/nvcc"
++    probe_key = hashlib.sha256()
++    probe_key.update(str(nvcc.resolve()).encode())
++    probe_key.update(str(cuda_version()).encode())
++    probe_key.update(arch.encode())
++    probe_key.update(QMUL4_PROBE_SOURCE.encode())
++    return probe_root / probe_key.hexdigest()[:16] / "qmul4.result"
++
++
++def cached_qmul4_support(arch: str, *, probe_root: Path) -> bool:
++    """Read the selected toolchain's verdict; a missing or invalid record is an error."""
++    path = qmul4_result_path(arch, probe_root=probe_root)
++    try:
++        result = path.read_text(encoding="utf-8").strip()
++    except OSError as exc:
++        raise RuntimeError(f"Missing Q8KV4 capability record: {path}") from exc
++    if result not in ("supported", "unsupported"):
++        raise RuntimeError(f"Invalid Q8KV4 capability record: {path}")
++    return result == "supported"
++
++
+ def supports_qmul4(arch: str, *, probe_root: Path) -> bool:
+     """Return whether the selected NVCC accepts the public QMUL4 PTX form for ``arch``.
+ 
+@@ -245,12 +268,7 @@ def supports_qmul4(arch: str, *, probe_root: Path) -> bool:
+     """
+ 
+     nvcc = cuda_home() / "bin/nvcc"
+-    probe_key = hashlib.sha256()
+-    probe_key.update(str(nvcc.resolve()).encode())
+-    probe_key.update(str(cuda_version()).encode())
+-    probe_key.update(arch.encode())
+-    probe_key.update(QMUL4_PROBE_SOURCE.encode())
+-    probe_dir = probe_root / probe_key.hexdigest()[:16]
++    probe_dir = qmul4_result_path(arch, probe_root=probe_root).parent
+     with build_lock(probe_dir):
+         return _probe_qmul4(nvcc, arch, probe_dir)
+ 
+@@ -260,6 +278,9 @@ def _probe_qmul4(nvcc: Path, arch: str, probe_dir: Path) -> bool:
+     if result_path.is_file():
+         return result_path.read_text(encoding="utf-8").strip() == "supported"
+ 
++    from ..icp import _jit_guard
++
++    _jit_guard.on_compile("q8kv4", "qmul4_probe", arch=arch, where=str(probe_dir))
+     probe_dir.mkdir(parents=True, exist_ok=True)
+     source_path = probe_dir / "qmul4_probe.cu"
+     object_path = probe_dir / f"qmul4_probe.{os.getpid()}.o"
+diff --git a/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp b/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp
+index 780d765..2bd43d6 100644
+--- a/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp
++++ b/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp
+@@ -26,6 +26,13 @@
+ 
+ namespace fmha_sm100::decode_q8kv4 {
+ 
++#ifndef MSA_Q8KV4_CALLBACK_PREFIX
++#define MSA_Q8KV4_CALLBACK_PREFIX "fmha_sm100.decode_q8kv4.native_v2"
++#endif
++#ifndef MSA_Q8KV4_PYTHON_PACKAGE
++#define MSA_Q8KV4_PYTHON_PACKAGE "fmha_sm100.decode_q8kv4"
++#endif
++
+ // ============================================================================
+ // Initialization — ensures tvm_ffi functions are registered.
+ // Called lazily on first API use. Safe from any context.
+@@ -39,14 +46,15 @@ void initialize() {
+     if (!Py_IsInitialized()) {
+       Py_Initialize();
+     }
+-    // Importing the package registers the JIT callbacks. It may be vendored
+-    // under another top-level package (vllm.third_party.fmha_sm100), so look
+-    // for the registered callback instead of the module name.
+-    if (!tvm::ffi::Function::GetGlobal("fmha_sm100.decode_q8kv4.jit_get_plan")) {
++    // A vendored package and an independently installed package own separate
++    // callbacks, including when an older vendor registers unversioned names.
++    if (!tvm::ffi::Function::GetGlobal(MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_plan")) {
+       PyGILState_STATE gstate = PyGILState_Ensure();
+-      int const status = PyRun_SimpleString("import fmha_sm100.decode_q8kv4");
++      PyObject *module = PyImport_ImportModule(MSA_Q8KV4_PYTHON_PACKAGE);
++      bool const imported = module != nullptr;
++      Py_XDECREF(module);
+       PyGILState_Release(gstate);
+-      TORCH_CHECK(status == 0, "failed to import fmha_sm100.decode_q8kv4");
++      TORCH_CHECK(imported, "failed to import " MSA_Q8KV4_PYTHON_PACKAGE);
+     }
+     g_initialized = true;
+   });
+@@ -298,7 +306,7 @@ public:
+     if (it != plan_fn_cache_.end())
+       return it->second;
+     auto jit_fn =
+-        tvm::ffi::Function::GetGlobalRequired("fmha_sm100.decode_q8kv4.jit_get_plan");
++        tvm::ffi::Function::GetGlobalRequired(MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_plan");
+     auto fn = jit_fn((int64_t)device).cast<tvm::ffi::Function>();
+     plan_fn_cache_[device] = fn;
+     return fn;
+@@ -309,7 +317,7 @@ public:
+     if (it != reduction_fn_cache_.end())
+       return it->second;
+     auto jit_fn =
+-        tvm::ffi::Function::GetGlobalRequired("fmha_sm100.decode_q8kv4.jit_get_reduction");
++        tvm::ffi::Function::GetGlobalRequired(MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_reduction");
+     auto fn = jit_fn((int64_t)device).cast<tvm::ffi::Function>();
+     reduction_fn_cache_[device] = fn;
+     return fn;
+@@ -327,7 +335,7 @@ public:
+         return it->second;
+     }
+     auto jit_fn = tvm::ffi::Function::GetGlobalRequired(
+-        "fmha_sm100.decode_q8kv4.jit_get_fmha_fwd_sparse_variant");
++        MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_fmha_fwd_sparse_variant");
+     auto fn = jit_fn((int64_t)topk, split_kv, (int64_t)device, (int64_t)gqa_ratio,
+                      (int64_t)block_scale_shift)
+                   .cast<tvm::ffi::Function>();
+diff --git a/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp b/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp
+index 41e6084..5c93f5d 100644
+--- a/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp
++++ b/python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp
+@@ -11,10 +11,10 @@
+ namespace py = pybind11;
+ using namespace fmha_sm100::decode_q8kv4;
+ 
+-PYBIND11_MODULE(_fmha_sm100_decode_q8kv4_cpp, module) {
++PYBIND11_MODULE(TORCH_EXTENSION_NAME, module) {
+   module.doc() = "SM100 Q8KV4 paged sparse decode attention backend";
+ 
+-  py::class_<PlanInfo, std::unique_ptr<PlanInfo>>(module, "_PlanHandle");
++  py::class_<PlanInfo, std::unique_ptr<PlanInfo>>(module, "_PlanHandle", py::module_local());
+ 
+   module.def("plan_decode", &make_decode_plan, py::arg("qo_segment_lens"),
+              py::arg("kv_segment_lens"), py::arg("num_qo_heads"), py::arg("num_kv_heads"),
+diff --git a/python/fmha_sm100/decode_q8kv4/interface.py b/python/fmha_sm100/decode_q8kv4/interface.py
+index 18f927c..b30fa6d 100644
+--- a/python/fmha_sm100/decode_q8kv4/interface.py
++++ b/python/fmha_sm100/decode_q8kv4/interface.py
+@@ -5,20 +5,28 @@
+ 
+ from __future__ import annotations
+ 
++import hashlib
++import importlib.util
+ import logging
+ import math
+ import os
++import shlex
++import shutil
++import subprocess
++import sys
++import sysconfig
+ import time
+ from dataclasses import dataclass
++from pathlib import Path
+ 
+ import torch
+ 
+-logger = logging.getLogger(__name__)
+-
+-from ._build_utils import cuda_home
++from ._build_utils import build_lock, cuda_home, cuda_version
+ from .jit import MAX_BLOCK_SCALE_SHIFT as _MAX_BLOCK_SCALE_SHIFT
+ from .jit import MAX_TOPK as _MAX_TOPK
+ 
++logger = logging.getLogger(__name__)
++
+ __all__ = [
+     "BatchDecodeWithPagedKVCacheWrapper",
+     "DecodePlan",
+@@ -154,11 +162,117 @@ def _select_num_kv_splits(
+     return selected
+ 
+ 
++def _cpp_toolchain_identity() -> tuple:
++    """Fingerprint the resolved host compiler and CUDA toolkit without compiling."""
++    command = shlex.split(os.environ.get("CXX", "c++"))
++    if not command or (compiler := shutil.which(command[0])) is None:
++        raise RuntimeError(f"Cannot resolve Q8KV4 host compiler: {command}")
++    version = subprocess.run(
++        [compiler, *command[1:], "--version"],
++        capture_output=True,
++        text=True,
++        check=True,
++        timeout=10,
++    )
++    executables = [Path(compiler).resolve()]
++    # Preserve ordinary CXX launcher support (for example 'ccache g++').
++    executables.extend(
++        Path(found).resolve()
++        for arg in command[1:]
++        if not arg.startswith("-") and (found := shutil.which(arg))
++    )
++    toolkit = cuda_home()
++    executables.append((toolkit / "bin/nvcc").resolve())
++    hashes = tuple(
++        (str(path), hashlib.sha256(path.read_bytes()).hexdigest())
++        for path in executables
++    )
++    return (
++        tuple(command),
++        hashes,
++        version.stdout,
++        version.stderr,
++        str(toolkit),
++        cuda_version(),
++    )
++
++
++def cpp_extension_name() -> str:
++    """Separate host modules by source, Python ABI and callback ownership."""
++    import tvm_ffi
++
++    root = Path(__file__).resolve().parent
++    digest = hashlib.sha256()
++    for path in sorted((root / "csrc/api").glob("*")):
++        if path.is_file():
++            digest.update(path.name.encode() + b"\0" + path.read_bytes())
++    for name in ("interface.py", "__init__.py", "_build_utils.py"):
++        digest.update((root / name).read_bytes())
++    identity = (
++        __package__,
++        torch.__version__,
++        torch.version.cuda,
++        getattr(tvm_ffi, "__version__", None),
++        sysconfig.get_config_var("SOABI"),
++        _cpp_toolchain_identity(),
++    )
++    digest.update(repr(identity).encode())
++    return f"_fmha_sm100_decode_q8kv4_cpp_{digest.hexdigest()[:16]}"
++
++
++def cpp_extension_path() -> Path:
++    """Resolve the actual host-library path without creating a build directory."""
++    from torch.utils.cpp_extension import get_default_build_root
++
++    root = os.environ.get("TORCH_EXTENSIONS_DIR")
++    if root is None:
++        accelerator = (
++            f"rocm{torch.version.hip.replace('.', '')}"
++            if torch.version.hip
++            else f"cu{torch.version.cuda.replace('.', '')}"
++            if torch.version.cuda
++            else "cpu"
++        )
++        python = f"py{sys.version_info.major}{sys.version_info.minor}{getattr(sys, 'abiflags', '')}"
++        root = os.path.join(get_default_build_root(), f"{python}_{accelerator}")
++    name = cpp_extension_name()
++    return Path(root).expanduser() / name / f"{name}.so"
++
++
++def _cpp_compile_flags() -> list[str]:
++    return [
++        "-std=c++20",
++        "-O2",
++        f'-DMSA_Q8KV4_CALLBACK_PREFIX=\\"{__package__}.native_v2\\"',
++        f'-DMSA_Q8KV4_PYTHON_PACKAGE=\\"{__package__}\\"',
++    ]
++
++
+ def _jit_compile_cpp_backend():
+-    """JIT-compile the C++ backend using torch.utils.cpp_extension.load()."""
++    """Serialize first-use build and cache loading across ranks."""
++    path = cpp_extension_path()
++    with build_lock(path.parent):
++        return _load_or_build_cpp_backend(path)
++
++
++def _load_or_build_cpp_backend(path: Path):
++    """Load a completed host library or build it while holding its directory lock."""
+     import tvm_ffi
+     from torch.utils.cpp_extension import load
+ 
++    from ..icp import _jit_guard
++
++    name = path.stem
++    if path.is_file():
++        spec = importlib.util.spec_from_file_location(name, path)
++        if spec is None or spec.loader is None:
++            raise ImportError(f"Cannot load Q8KV4 host extension: {path}")
++        module = importlib.util.module_from_spec(spec)
++        spec.loader.exec_module(module)
++        return module
++    _jit_guard.on_compile("q8kv4", name, where=str(path.parent))
++    path.parent.mkdir(parents=True, exist_ok=True)
++
+     pkg_dir = os.path.dirname(os.path.abspath(__file__))
+     csrc_dir = os.path.join(pkg_dir, "csrc")
+     tvm_ffi_dir = os.path.dirname(tvm_ffi.__file__)
+@@ -171,7 +285,7 @@ def _jit_compile_cpp_backend():
+ 
+     started_at = time.time()
+     cpp = load(
+-        name="_fmha_sm100_decode_q8kv4_cpp",
++        name=name,
+         sources=[
+             os.path.join(csrc_dir, "api", "decode_attention_api.cpp"),
+             os.path.join(csrc_dir, "api", "decode_attention_binding.cpp"),
+@@ -182,7 +296,8 @@ def _jit_compile_cpp_backend():
+             "-ltvm_ffi",
+             f"-Wl,-rpath,{os.path.join(tvm_ffi_dir, 'lib')}",
+         ],
+-        extra_cflags=["-std=c++20", "-O2"],
++        extra_cflags=_cpp_compile_flags(),
++        build_directory=str(path.parent),
+         verbose=True,
+     )
+     logger.info(
+@@ -244,10 +359,13 @@ def _prepare_decode_plan(
+     topk: int,
+     num_kv_splits: int | None = None,
+     usable_sm_count: int | None = None,
++    split_mode: str | None = None,
+ ):
+     """Prepare the opaque reusable schedule used by the public wrapper."""
+     from . import jit
+ 
++    if split_mode not in (None, "legacy", "streamk"):
++        raise ValueError("split_mode must be None, 'legacy', or 'streamk'")
+     batch_size, q_len_per_req = _normalize_decode_shape(batch_size, q_len_per_req)
+ 
+     device_idx = _device_index(device)
+@@ -276,7 +394,7 @@ def _prepare_decode_plan(
+         usable_sm_count=sm_count,
+         device=device_idx,
+         topk=topk,
+-        split_mode=(
++        split_mode=split_mode if split_mode is not None else (
+             _split_mode(
+                 num_q_heads // num_kv_heads,
+                 batch_size * q_len_per_req * num_kv_heads,
+@@ -367,6 +485,7 @@ def plan_decode(
+     num_kv_splits: int | None = None,
+     usable_sm_count: int | None = None,
+     block_scale_shift: int = 0,
++    split_mode: str | None = None,
+ ) -> DecodePlan:
+     """Build the reusable schedule outside CUDA Graph capture.
+ 
+@@ -375,6 +494,11 @@ def plan_decode(
+     TopK lists are run-time inputs of :func:`run_decode`, so one plan serves every layer of a
+     step.
+ 
++    ``split_mode`` optionally selects the direct (``"legacy"``) or persistent
++    (``"streamk"``) schedule independently of ``num_kv_splits``. None retains
++    automatic selection when splits are unspecified, or the direct schedule
++    when ``num_kv_splits`` is explicit.
++
+     ``block_scale_shift`` names the cache's block-scale convention: the kernel divides every
+     E4M3 block scale by ``2 ** block_scale_shift`` before forming ``code * scale`` and folds the
+     factor back into the scores and the output. Use 0 when ``code * scale`` already fits E4M3
+@@ -410,6 +534,7 @@ def plan_decode(
+         topk=topk,
+         num_kv_splits=num_kv_splits,
+         usable_sm_count=usable_sm_count,
++        split_mode=split_mode,
+     )
+     return DecodePlan(
+         backend_plan=backend_plan,
+diff --git a/python/fmha_sm100/decode_q8kv4/jit.py b/python/fmha_sm100/decode_q8kv4/jit.py
+index aafd37c..f9ab9fa 100644
+--- a/python/fmha_sm100/decode_q8kv4/jit.py
++++ b/python/fmha_sm100/decode_q8kv4/jit.py
+@@ -22,6 +22,7 @@ from ._build_utils import cutlass_root as _cutlass_root
+ from ._build_utils import cutlass_version as _cutlass_version
+ from ._build_utils import require_cuda_version
+ from ._build_utils import supports_qmul4
++from ._build_utils import cached_qmul4_support
+ from ._build_utils import target_arch as _resolve_target_arch
+ 
+ logger = logging.getLogger(__name__)
+@@ -145,14 +146,15 @@ rule nvcc_link
+ """
+ 
+ 
+-def _recipe(name: str, nvcc_flags: str, templates=(), **key) -> _jit_cache.Recipe:
++def _recipe(name: str, nvcc_flags: str, templates=(), *, namespace=None,
++            cuda_root=None, **key) -> _jit_cache.Recipe:
+     """One library's cache recipe (compiler, flags, build rules, ``key``); the files it compiles
+     from are checked per record."""
+     return _jit_cache.Recipe(
+-        _namespace(),
++        _namespace() if namespace is None else namespace,
+         name,
+         {
+-            "nvcc": str(_cuda_home() / "bin/nvcc"),
++            "nvcc": str((_cuda_home() if cuda_root is None else cuda_root) / "bin/nvcc"),
+             "nvcc_flags": nvcc_flags,
+             "rules": _NINJA_RULES,
+             **key,
+@@ -284,7 +286,7 @@ class JitSpec:
+             "fixed_q_tokens_per_batch": 0,
+         }
+ 
+-    def recipe(self) -> _jit_cache.Recipe:
++    def recipe(self, *, namespace=None, cuda_root=None) -> _jit_cache.Recipe:
+         return _recipe(
+             self.uri,
+             _nvcc_flags(self.dequant_mode, self.target_arch, self.block_scale_shift),
+@@ -293,6 +295,8 @@ class JitSpec:
+                 _TEMPLATES / "decode_attention_run.cu.jinja",
+             ),
+             params=self._params,
++            namespace=namespace,
++            cuda_root=cuda_root,
+         )
+ 
+     def build(self) -> Path:
+@@ -305,6 +309,9 @@ class JitSpec:
+         return tvm_ffi.load_module(str(self.build()))
+ 
+     def _build(self, cache_dir: Path) -> Path:
++        from ..icp import _jit_guard
++
++        _jit_guard.on_compile("q8kv4", self.uri, arch=self.target_arch, where=str(cache_dir))
+         params = self._params
+         inst_template = jinja2.Template(
+             (_TEMPLATES / "decode_attention_inst.cu.jinja").read_text()
+@@ -418,18 +425,61 @@ def get_fmha_fwd_variant(
+     )
+ 
+ 
++def _fixed_recipe(
++    component: str, arch: str, dequant_mode: str, *, namespace=None, cuda_root=None
++) -> _jit_cache.Recipe:
++    return _recipe(
++        f"{component}_{dequant_mode}_{arch}",
++        _nvcc_flags(dequant_mode, arch),
++        namespace=namespace,
++        cuda_root=cuda_root,
++    )
++
++
++def icp_prewarm_recipes(
++    arch: str, *, read_only: bool = False
++) -> dict[str, _jit_cache.Recipe]:
++    """The real plan/forward Recipes selected by GQA16, block-shift3 ICP decode."""
++    cuda_root = _cuda_home()
++    namespace = _jit_cache.Namespace(_cache_root(), cuda_root)
++    if read_only:
++        supported = cached_qmul4_support(
++            arch, probe_root=_cache_root() / "capability_probes"
++        )
++    else:
++        supported = _supports_qmul4(arch)
++    mode = _FP16_DEQUANT if _qmul4_disabled() or not supported else _QMUL4_DEQUANT
++    recipes = {
++        "plan": _fixed_recipe(
++            "decode_attention_plan",
++            arch,
++            mode,
++            namespace=namespace,
++            cuda_root=cuda_root,
++        )
++    }
++    for split in (False, True):
++        spec = JitSpec(_SPARSE_VARIANTS[split], split, mode, arch, 16, 3)
++        name = "forward_split_gqa16_shift3" if split else "forward_gqa16_shift3"
++        recipes[name] = spec.recipe(namespace=namespace, cuda_root=cuda_root)
++    return recipes
++
++
+ def _build_fixed_module(component: str, source: Path, label: str, arch: str):
+     import tvm_ffi
+ 
+     dequant_mode = _dequant_mode(arch)
+ 
+     def build(cache_dir: Path) -> Path:
++        from ..icp import _jit_guard
++
++        _jit_guard.on_compile("q8kv4", component, arch=arch, where=str(cache_dir))
+         so_path = cache_dir / f"{component}.so"
+         _write_ninja(cache_dir, so_path, [source], dequant_mode, arch)
+         _run_ninja(cache_dir, label)
+         return so_path
+ 
+-    recipe = _recipe(f"{component}_{dequant_mode}_{arch}", _nvcc_flags(dequant_mode, arch))
++    recipe = _fixed_recipe(component, arch, dequant_mode)
+     return tvm_ffi.load_module(str(recipe.build(build)))
+ 
+ 
+diff --git a/python/fmha_sm100/icp/__init__.py b/python/fmha_sm100/icp/__init__.py
+index afae50a..be61b25 100644
+--- a/python/fmha_sm100/icp/__init__.py
++++ b/python/fmha_sm100/icp/__init__.py
+@@ -16,6 +16,9 @@ __version__ = "0.1.1"
+ # Consumers still check those ABIs against the extensions they actually load.
+ ICP_INTEGRATION_ABI = 1
+ VLLM_INTEGRATION_ABI = ICP_INTEGRATION_ABI
++# Public vLLM head-slot layout, calibrated prefill and isolated Q8KV4 prewarm.
++# Native score/plan/carrier layouts are unchanged.
++PUBLIC_VLLM_ABI = 1
+ 
+ #: Public name -> the submodule that defines it. Resolved on first access, so
+ #: importing this package costs no torch import: `_build` answers arch and
+@@ -102,6 +105,7 @@ __all__ = [
+     "__version__",
+     "VLLM_INTEGRATION_ABI",
+     "ICP_INTEGRATION_ABI",
++    "PUBLIC_VLLM_ABI",
+ ]
+ 
+ 
+diff --git a/python/fmha_sm100/icp/_cache.py b/python/fmha_sm100/icp/_cache.py
+index 833a016..6ded630 100644
+--- a/python/fmha_sm100/icp/_cache.py
++++ b/python/fmha_sm100/icp/_cache.py
+@@ -18,6 +18,7 @@ Components and their inputs (relative to ``fmha_sm100/``):
+     fmha    csrc/**, jit.py, _jit_cache.py, CUTLASS shared FMHA/plan/top-k
+     decode  icp/scorer/decode/*.py + DSL version CuTe decode scorer
+     nvfp4   cute/**/*.py, *.cu + DSL version    shared sparse attention/CSR
++    q8kv4   decode_q8kv4/**, _jit_cache.py, CUTLASS main decode attention
+ 
+ The NVFP4 CSR extension uses a fingerprinted ``cpp_extension`` directory
+ (``TORCH_EXTENSIONS_DIR``). Its effective artifact path is recorded and checked.
+@@ -67,6 +68,15 @@ def _component_files(component: str) -> list[pathlib.Path]:
+         root = SOURCE_ROOT / "cute"
+         files = [p for p in root.rglob("*")
+                  if p.suffix in (".py", ".cu") and "__pycache__" not in p.parts]
++        files.extend((PACKAGE / "attention" / "nvfp4_prefill").glob("*.py"))
++    elif component == "q8kv4":
++        root = SOURCE_ROOT / "decode_q8kv4"
++        files = [p for p in root.rglob("*")
++                 if p.suffix in (*_FMHA_SUFFIXES, ".cpp", ".py")
++                 and "__pycache__" not in p.parts]
++        files.append(SOURCE_ROOT / "_jit_cache.py")
++        for relative in ("cutlass/include", "cutlass/tools/util/include"):
++            files.extend(p for p in (SOURCE_ROOT / relative).rglob("*") if p.is_file())
+     else:
+         raise KeyError(f"unknown cache component {component!r}; known: {COMPONENTS}")
+     files = sorted(p for p in files if p.is_file())
+@@ -76,7 +86,7 @@ def _component_files(component: str) -> list[pathlib.Path]:
+     return files
+ 
+ 
+-COMPONENTS = ("icp", "fmha", "decode", "nvfp4")
++COMPONENTS = ("icp", "fmha", "decode", "nvfp4", "q8kv4")
+ 
+ 
+ def _extra_key(component: str) -> str:
+diff --git a/python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py b/python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py
+index 3c89be4..18d0186 100644
+--- a/python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py
++++ b/python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py
+@@ -16,7 +16,9 @@ K2Q_EXTENSION = "msa_build_k2q_csr"
+ 
+ #: The admitted TP2 compound-page variant: two local KV heads, D128, GQA16,
+ #: top-16 of P128 blocks, 45056-byte pages, BF16 query, paged causal KV with
+-#: seqused_k and no global scales. ``(q_dtype, qhead_per_kv, topk)``.
++#: seqused_k. Prewarm covers both historical region-major pages without global
++#: scales and public per-head slots with calibrated K/V tensor scales.
++#: ``(q_dtype, qhead_per_kv, topk)``.
+ PREWARM_VARIANTS = (("bfloat16", 16, 16),)
+ AOT_FAMILIES = ("sparse_forward_sm100_csr_varlen_nvfp4_kv_cache", "combine")
+ 
+diff --git a/python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py b/python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py
+index 045a44c..174af0f 100644
+--- a/python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py
++++ b/python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py
+@@ -30,10 +30,11 @@ _SIDE_SCALE_BYTES = _HEAD_KV * _BLK * (_HEAD_DIM // 16)
+ _SIDE_BYTES = _SIDE_DATA_BYTES + _SIDE_SCALE_BYTES
+ _INDEX_BYTES = (_BLK // 2) * _HEAD_DIM
+ _COMPOUND_PAGE_BYTES = 2 * _SIDE_BYTES + _INDEX_BYTES
++PREWARM_LAYOUTS = ("v13", "public")
+ 
+ 
+-def _compound_cache_views(storage):
+-    """The admitted TP2/P128 ABI: [K data|K SF|V data|V SF|index] per page.
++def _compound_cache_views(storage, layout="v13"):
++    """The admitted TP2/P128 compound pages, with historical or public slots.
+ 
+     Transfer the backing storage before creating target-device views; copying
+     each non-dense view independently would discard the compound page stride.
+@@ -44,6 +45,19 @@ def _compound_cache_views(storage):
+             or storage.shape[1] != _COMPOUND_PAGE_BYTES or not storage.is_contiguous()):
+         raise ValueError("prewarm storage must be dense uint8 [pages,45056]")
+     pages = storage.shape[0]
++    if layout == "public":
++        from ....nvfp4_kv import nvfp4_head_slot_views
++
++        slot_bytes = _BLK * (_HEAD_DIM // 2 + _HEAD_DIM // 16)
++        slots = storage.as_strided(
++            (pages, 2 * _HEAD_KV, _BLK, 72),
++            (_COMPOUND_PAGE_BYTES, slot_bytes, 72, 1),
++            storage.storage_offset(),
++        )
++        return dict(zip(("k", "k_sf", "v", "v_sf"),
++                        nvfp4_head_slot_views(slots[:, 0::2], slots[:, 1::2])))
++    if layout != "v13":
++        raise ValueError(f"unknown compound prewarm layout: {layout!r}")
+     views = {}
+     for name, offset, width in (
+         ("k", 0, _HEAD_DIM // 2),
+@@ -59,7 +73,7 @@ def _compound_cache_views(storage):
+     return views
+ 
+ 
+-def required_aot_keys(arch):
++def required_aot_keys(arch, *, layouts=PREWARM_LAYOUTS):
+     """Exact serving keys, using the same tuple builders as the dev loaders.
+ 
+     This is host-only: Q/output lengths are dynamic, while TP2 head geometry,
+@@ -75,20 +89,25 @@ def required_aot_keys(arch):
+ 
+     sm = int(_cache.normalize_arch(arch).removesuffix("a"))
+     capability = (sm // 10, sm % 10)
+-    views = _compound_cache_views(torch.empty((1, _COMPOUND_PAGE_BYTES), dtype=torch.uint8))
+     keys = []
+-    for q_dtype, qhead_per_kv, topk in PREWARM_VARIANTS:
+-        keys.append(_nvfp4_forward_key(
+-            "vllm", _HEAD_KV, views["k"], views["v"], views["k_sf"], views["v_sf"],
+-            _HEAD_DIM, _BLK, qhead_per_kv, getattr(torch, q_dtype), torch.bfloat16,
+-            True, True, True, _BLK, object(), False,
+-            os.environ.get("MINIMAX_KVFP4_FP8_PAIR_DEQUANT", "1") != "0", False, False,
+-        ))
+-        keys.append(_combine_key(
+-            capability, 3 if capability == (10, 7) else 2, _HEAD_DIM, 128, 64,
+-            topk, _get_cutlass_dtype(torch.bfloat16), _get_cutlass_dtype(torch.bfloat16),
+-            True, False, True, False, True, False, True, 0,
+-        ))
++    for layout in layouts:
++        views = _compound_cache_views(
++            torch.empty((1, _COMPOUND_PAGE_BYTES), dtype=torch.uint8), layout)
++        has_global_scales = layout == "public"
++        for q_dtype, qhead_per_kv, topk in PREWARM_VARIANTS:
++            keys.append(_nvfp4_forward_key(
++                "vllm", _HEAD_KV, views["k"], views["v"], views["k_sf"], views["v_sf"],
++                _HEAD_DIM, _BLK, qhead_per_kv, getattr(torch, q_dtype), torch.bfloat16,
++                True, True, True, _BLK, object(), False,
++                os.environ.get("MINIMAX_KVFP4_FP8_PAIR_DEQUANT", "1") != "0",
++                has_global_scales, False,
++            ))
++            keys.append(_combine_key(
++                capability, 3 if capability == (10, 7) else 2, _HEAD_DIM, 128, 64,
++                topk, _get_cutlass_dtype(torch.bfloat16), _get_cutlass_dtype(torch.bfloat16),
++                True, False, True, False, True, has_global_scales, True,
++                3 if has_global_scales and capability != (10, 7) else 0,
++            ))
+     return tuple(dict.fromkeys(keys))
+ 
+ 
+@@ -102,9 +121,10 @@ def required_aot_entries(arch):
+ 
+ def production_call(q_dtype="bfloat16", qhead_per_kv=16, topk=16, *,
+                     head_kv=2, q_lens=(200, 64), k_lens=(2000, 600), seed=0,
+-                    device="cuda"):
+-    """vLLM v13's call shape: transposed q2k view, total_k=0, schedule from the
+-    CSR builder, no global scales, a caller-owned ``out``. Returns
++                    device="cuda", layout="v13"):
++    """Serving call: transposed q2k, total_k=0, CSR schedule, caller-owned out.
++
++    The public layout includes calibrated K/V tensor scales; v13 omits them. Returns
+     ``(out, inputs)``; K/V bytes are random with unit block scales."""
+     import torch  # noqa: PLC0415
+ 
+@@ -135,7 +155,7 @@ def production_call(q_dtype="bfloat16", qhead_per_kv=16, topk=16, *,
+     q = torch.randn((total_q, heads, dim), generator=g).to(dtype)
+     storage = torch.randint(0, 256, (num_pages, _COMPOUND_PAGE_BYTES), generator=g,
+                             dtype=torch.uint8)
+-    cpu_views = _compound_cache_views(storage)
++    cpu_views = _compound_cache_views(storage, layout)
+     cpu_views["k_sf"].fill_(0x38)
+     cpu_views["v_sf"].fill_(0x38)
+     cu_q = torch.tensor([0, *torch.tensor(q_lens).cumsum(0).tolist()], dtype=torch.int32)
+@@ -144,14 +164,19 @@ def production_call(q_dtype="bfloat16", qhead_per_kv=16, topk=16, *,
+     inputs = {name: t.to(device) for name, t in dict(
+         q=q, q2k=q2k, page_table=table,
+         cu_seqlens_q=cu_q, cu_seqlens_k=cu_k, seq_lens=seq).items()}
+-    inputs.update(_compound_cache_views(storage.to(device)))
++    inputs.update(_compound_cache_views(storage.to(device), layout))
++    inputs["k_global_scale"] = (
++        torch.tensor([0.75], dtype=torch.float32, device=device) if layout == "public" else None)
++    inputs["v_global_scale"] = (
++        torch.tensor([1.25], dtype=torch.float32, device=device) if layout == "public" else None)
+     rowptr, qidx, schedule = build_k2q_csr(
+         inputs["q2k"].transpose(0, 1), inputs["cu_seqlens_q"], inputs["cu_seqlens_k"],
+         _BLK, total_k=0, max_seqlen_k=max(k_lens), max_seqlen_q=max(q_lens),
+         total_rows=sum(pages), qhead_per_kv=qhead_per_kv, return_schedule=True)
+     out = torch.empty((total_q, heads, dim), dtype=torch.bfloat16, device=device)
+     sparse_atten_nvfp4_kv_func(
+-        inputs["q"], inputs["k"], inputs["v"], inputs["k_sf"], inputs["v_sf"], None, None,
++        inputs["q"], inputs["k"], inputs["v"], inputs["k_sf"], inputs["v_sf"],
++        inputs["k_global_scale"], inputs["v_global_scale"],
+         rowptr, qidx, topK=topk, blk_kv=_BLK, causal=True, softmax_scale=dim ** -0.5,
+         cu_seqlens_q=inputs["cu_seqlens_q"], cu_seqlens_k=inputs["cu_seqlens_k"],
+         max_seqlen_q=max(q_lens), max_seqlen_k=max(k_lens),
+@@ -230,8 +255,9 @@ def build(arch: str) -> list[tuple[str, pathlib.Path]]:
+     import torch  # noqa: PLC0415
+ 
+     if torch.cuda.is_available():
+-        for variant in PREWARM_VARIANTS:
+-            production_call(*variant)
++        for layout in PREWARM_LAYOUTS:
++            for variant in PREWARM_VARIANTS:
++                production_call(*variant, layout=layout)
+         torch.cuda.synchronize()
+     else:
+         source = os.environ.get(IMPORT_ENV)
+diff --git a/python/fmha_sm100/icp/prewarm.py b/python/fmha_sm100/icp/prewarm.py
+index 57d548a..29432d7 100644
+--- a/python/fmha_sm100/icp/prewarm.py
++++ b/python/fmha_sm100/icp/prewarm.py
+@@ -17,6 +17,8 @@ require a matching export or a CUDA-device production call as described below:
+             objects of one production-form call (needs a CUDA device, or
+             ``ICP_NVFP4_AOT_IMPORT`` = the aot dir of such a run for the same
+             keyed sources; see ``attention/nvfp4_prefill/_prewarm.py``)
++    q8kv4   main decode's host extension, plan and both GQA16/shift3 forward
++            Recipes, their source records and the cached QMUL4 capability
+ 
+ and writes ``<root>/sm_<arch>/PREWARM-MANIFEST.json``: the MSA commit,
+ per-component source digests and per-file hashes, the toolchain, and every
+@@ -102,7 +104,8 @@ def environment() -> dict:
+     keys = ("TORCH_EXTENSIONS_DIR", "ICP_CACHE_ROOT", "CUDA_HOME", "CC", "CXX",
+             "ICP_KERNEL_LINEINFO", "GPU_TRACE", "SM_TIMING", "FMHA_GMEM_CHECK",
+             "MM_SPARSE_ATTN_AOT_CACHE", "MM_SPARSE_ATTN_AOT_DISABLE",
+-            "MINIMAX_KVFP4_FP8_PAIR_DEQUANT")
++            "MINIMAX_KVFP4_FP8_PAIR_DEQUANT", "CUDACXX", "CUTLASS_ROOT", "CUTLASS_PATH",
++            "FMHA_SM100_DECODE_Q8KV4_ARCH", "FMHA_SM100_DECODE_Q8KV4_DISABLE_QMUL4")
+     if os.environ.get("TORCH_EXTENSIONS_DIR") is None:
+         # torch's default build directory depends on these when no path is set.
+         keys += ("HOME", "XDG_CACHE_HOME")
+@@ -177,8 +180,43 @@ def _build_nvfp4(arch: str) -> list[dict]:
+     return [_artifact("nvfp4", name, path) for name, path in _prewarm.build(arch)]
+ 
+ 
++def _build_q8kv4(arch: str) -> list[dict]:
++    from ..decode_q8kv4 import _build_utils, interface, jit  # noqa: PLC0415
++
++    variable = _build_utils.FMHA_SM100_DECODE_Q8KV4_ARCH
++    previous = os.environ.get(variable)
++    os.environ[variable] = arch
++    jit._target_arch.cache_clear()
++    try:
++        if jit._target_arch() != arch:
++            raise RuntimeError("Q8KV4 prewarm architecture differs from requested target")
++        interface._get_cpp()
++        recipes = jit.icp_prewarm_recipes(arch)
++        jit.get_plan_fn()
++        for split in (False, True):
++            jit.gen_jit_spec(split_kv=split, gqa_ratio=16, block_scale_shift=3).build()
++        out = [_artifact("q8kv4", "cpp_ext", interface.cpp_extension_path())]
++        for name, recipe in recipes.items():
++            path = recipe.lookup()
++            if path is None:
++                raise RuntimeError(f"Q8KV4 prewarm did not publish {name}")
++            out.append(_artifact("q8kv4", name, path))
++            out.append(_artifact("q8kv4", name + ".entry.json", recipe.dir / "entry.json"))
++        namespace = recipes["plan"].namespace
++        out.append(_artifact("q8kv4", "namespace.json", namespace.path / "manifest.json"))
++        out.append(_artifact("q8kv4", "qmul4.result", _build_utils.qmul4_result_path(
++            arch, probe_root=jit._cache_root() / "capability_probes")))
++        return out
++    finally:
++        if previous is None:
++            os.environ.pop(variable, None)
++        else:
++            os.environ[variable] = previous
++        jit._target_arch.cache_clear()
++
++
+ BUILDERS = {"icp": _build_icp, "fmha": _build_fmha,
+-            "decode": _build_decode, "nvfp4": _build_nvfp4}
++            "decode": _build_decode, "nvfp4": _build_nvfp4, "q8kv4": _build_q8kv4}
+ 
+ 
+ def build(arch: str, *, components=_cache.COMPONENTS, commit: str | None = None,
+@@ -200,7 +238,7 @@ def build(arch: str, *, components=_cache.COMPONENTS, commit: str | None = None,
+     inventories = {}
+     for component in components:
+         print(f"[fmha_sm100.icp.prewarm] {component} for sm_{arch} ...", flush=True)
+-        if component in ("icp", "decode", "nvfp4"):
++        if component in ("icp", "decode", "nvfp4", "q8kv4"):
+             built = BUILDERS[component](arch)
+         else:
+             built = BUILDERS[component]()
+@@ -267,6 +305,10 @@ def _required_artifact_names(component: str) -> set[str] | None:
+         from .scorer.decode import icp_decode_score as d  # noqa: PLC0415
+ 
+         return {d.aot_function_name(*profile) for profile in d.AOT_PROFILES}
++    if component == "q8kv4":
++        names = {"plan", "forward_gqa16_shift3", "forward_split_gqa16_shift3"}
++        return names | {name + ".entry.json" for name in names} | {
++            "cpp_ext", "namespace.json", "qmul4.result"}
+     # Writer names contain a torch/flag fingerprint and NVFP4 AOT names depend
+     # on runtime compile arguments. Their complete build inventory is recorded.
+     return None
+@@ -274,6 +316,27 @@ def _required_artifact_names(component: str) -> set[str] | None:
+ 
+ def _native_extension_path(item: dict, arch: str) -> pathlib.Path | None:
+     """Resolve host-side cache paths without compiling or loading native code."""
++    if item["component"] == "q8kv4":
++        from ..decode_q8kv4 import _build_utils, interface, jit  # noqa: PLC0415
++
++        name = item["name"]
++        if name == "cpp_ext":
++            return interface.cpp_extension_path()
++        if name == "qmul4.result":
++            return _build_utils.qmul4_result_path(
++                arch, probe_root=jit._cache_root() / "capability_probes")
++        recipes = jit.icp_prewarm_recipes(arch, read_only=True)
++        if name == "namespace.json":
++            return recipes["plan"].namespace.path / "manifest.json"
++        recipe = recipes.get(name.removesuffix(".entry.json"))
++        if recipe is None:
++            raise ValueError(f"q8kv4: unknown prewarm artifact {name}")
++        if name.endswith(".entry.json"):
++            return recipe.dir / "entry.json"
++        path = recipe.lookup()
++        if path is None:
++            raise RuntimeError(f"q8kv4:{name}: no current dev JIT source record; it will JIT")
++        return path
+     if item["component"] == "fmha":
+         from .scorer.prefill import jit  # noqa: PLC0415
+ 
+diff --git a/tests/icp/test_prewarm_cache.py b/tests/icp/test_prewarm_cache.py
+index 0ff57be..9e84b1e 100644
+--- a/tests/icp/test_prewarm_cache.py
++++ b/tests/icp/test_prewarm_cache.py
+@@ -54,6 +54,9 @@ def root(tmp_path, monkeypatch):
+         ("fmha", "_jit_cache.py"),
+         ("decode", "icp/scorer/decode/_icp_decode_score_kernel.py"),
+         ("nvfp4", "cute/src/sm100/fwd/atten_fwd_nvfp4_kv.py"),
++        ("nvfp4", "icp/attention/nvfp4_prefill/_prewarm.py"),
++        ("q8kv4", "decode_q8kv4/interface.py"),
++        ("q8kv4", "decode_q8kv4/csrc/api/decode_attention_api.cpp"),
+     ],
+ )
+ def test_a_source_edit_moves_only_its_components_directory(
+@@ -64,7 +67,10 @@ def test_a_source_edit_moves_only_its_components_directory(
+         f.write("\n// edit\n" if not edit.endswith(".py") else "\n# edit\n")
+     after = {c: _cache.component_dir(c, "107a") for c in _cache.COMPONENTS}
+     assert before[component] != after[component]
+-    assert {c for c in _cache.COMPONENTS if before[c] != after[c]} == {component}
++    expected = {component}
++    if edit == "_jit_cache.py":
++        expected.add("q8kv4")
++    assert {c for c in _cache.COMPONENTS if before[c] != after[c]} == expected
+ 
+ 
+ def test_arch_is_in_the_key_and_normalised(root):
+@@ -455,7 +461,7 @@ def test_nvfp4_export_without_source_metadata_is_not_a_cache_hit(tmp_path, monke
+ 
+ 
+ def _captured_production_call(
+-    monkeypatch, *, compact=False, capability=(10, 7), q_dtype="bfloat16"
++    monkeypatch, *, compact=False, capability=(10, 7), q_dtype="bfloat16", layout="v13"
+ ):
+     """Run real public forward/combine host paths; substitute only native leaves."""
+     from fmha_sm100.cute import interface
+@@ -509,7 +515,7 @@ def _captured_production_call(
+         patch.setitem(nvfp4_prefill.__dict__, "build_k2q_csr", csr)
+         patch.setitem(nvfp4_prefill.__dict__, "sparse_atten_nvfp4_kv_func", attend)
+         _, inputs = _prewarm.production_call(
+-            q_dtype, q_lens=(2, 1), k_lens=(256, 128), device="cpu"
++            q_dtype, q_lens=(2, 1), k_lens=(256, 128), device="cpu", layout=layout
+         )
+     return calls, inputs
+ 
+@@ -519,7 +525,7 @@ def test_production_fixture_matches_compound_abi_and_actual_loader_keys(monkeypa
+ 
+     calls, inputs = _captured_production_call(monkeypatch)
+     assert len(calls) == 2
+-    assert {key for key, _ in calls} == set(required_aot_keys("107a"))
++    assert {key for key, _ in calls} == set(required_aot_keys("107a", layouts=("v13",)))
+     expected = {"k": (0, 64), "k_sf": (16384, 8), "v": (18432, 64), "v_sf": (34816, 8)}
+     storage_pointer = inputs["k"].untyped_storage().data_ptr()
+     for name, (offset, width) in expected.items():
+@@ -538,6 +544,42 @@ def test_production_fixture_matches_compound_abi_and_actual_loader_keys(monkeypa
+     assert calls[1][0][1:3] == ((10, 7), 3)
+ 
+ 
++@pytest.mark.parametrize("capability", [(10, 0), (10, 3), (10, 7)])
++def test_public_production_profile_uses_head_slots_and_calibrated_scales(monkeypatch, capability):
++    from fmha_sm100.icp.attention.nvfp4_prefill._prewarm import required_aot_keys
++
++    calls, inputs = _captured_production_call(monkeypatch, layout="public", capability=capability)
++    assert len(calls) == 2
++    assert {key for key, _ in calls} == set(required_aot_keys(capability, layouts=("public",)))
++    pointer = inputs["k"].untyped_storage().data_ptr()
++    for name, offset, width in (("k", 0, 64), ("k_sf", 8192, 8),
++                                ("v", 9216, 64), ("v_sf", 17408, 8)):
++        tensor = inputs[name]
++        assert tensor.shape == (6, 2, 128, width)
++        assert tensor.stride() == (45056, 18432, width, 1)
++        assert tensor.storage_offset() == offset
++        assert tensor.untyped_storage().data_ptr() == pointer
++    # Actual launch arguments: K calibration in forward; V only in combine.
++    assert calls[0][1][4].data_ptr() == inputs["k_global_scale"].data_ptr()
++    assert calls[0][1][5] is None
++    assert any(isinstance(arg, torch.Tensor)
++               and arg.data_ptr() == inputs["v_global_scale"].data_ptr()
++               for arg in calls[1][1])
++    assert calls[1][0][1:3] == (capability, 3 if capability == (10, 7) else 2)
++
++
++def test_historical_aot_export_does_not_admit_public_layout(tmp_path, monkeypatch):
++    from fmha_sm100.icp.attention.nvfp4_prefill._prewarm import _import_aot_objects
++
++    calls, _ = _captured_production_call(monkeypatch)
++    source = tmp_path / "source/sm_107a/nvfp4-digest/aot/v2/toolchain"
++    target = tmp_path / "target/sm_107a/nvfp4-digest/aot/v2/toolchain"
++    _aot_export_fixture(source, monkeypatch, keys=[key for key, _ in calls])
++    with pytest.raises(SystemExit, match="missing required production AOT keys"):
++        _import_aot_objects(source, target)
++    assert not target.exists()
++
++
+ @pytest.mark.parametrize("variant", ["compact", "sm100", "fp8_q", "dequant"])
+ def test_import_rejects_other_valid_variants_from_actual_loaders(
+     tmp_path, monkeypatch, variant
+diff --git a/tests/icp/test_q8kv4_prewarm.py b/tests/icp/test_q8kv4_prewarm.py
+new file mode 100644
+index 0000000..598c256
+--- /dev/null
++++ b/tests/icp/test_q8kv4_prewarm.py
+@@ -0,0 +1,306 @@
++# SPDX-FileCopyrightText: Copyright (c) 2026 MiniMax
++# SPDX-License-Identifier: MIT
++"""Host checks for Q8KV4 prewarm, split-policy defaults and callback ownership."""
++
++import hashlib
++import json
++import os
++import subprocess
++import sys
++import threading
++from concurrent.futures import ThreadPoolExecutor
++from pathlib import Path
++from types import SimpleNamespace
++
++import pytest
++import torch
++
++from fmha_sm100 import _jit_cache
++from fmha_sm100.decode_q8kv4 import _build_utils, interface, jit
++from fmha_sm100.icp import _jit_guard, prewarm
++
++
++def _isolated(code, tmp_path):
++    env = dict(
++        os.environ,
++        PYTHONPATH=str(Path(__file__).resolve().parents[2] / "python"),
++        PYTHONDONTWRITEBYTECODE="1",
++        MSA_REGISTER_TVM_FFI="0",
++        ICP_CACHE_ROOT=str(tmp_path / "icp"),
++        TORCH_EXTENSIONS_DIR=str(tmp_path / "extensions"),
++    )
++    result = subprocess.run(
++        [sys.executable, "-c", code],
++        env=env,
++        capture_output=True,
++        text=True,
++        timeout=60,
++    )
++    assert result.returncode == 0, result.stdout + result.stderr
++
++
++@pytest.mark.parametrize(
++    "splits,mode,expected",
++    [
++        (None, None, (8, "streamk")),
++        (1, None, (1, "legacy")),
++        (1, "streamk", (1, "streamk")),
++    ],
++)
++def test_default_split_selection_and_explicit_streamk1(
++    monkeypatch, splits, mode, expected
++):
++    monkeypatch.delenv("MSA_Q8KV4_SPLIT_MODE", raising=False)
++    monkeypatch.setattr(
++        torch.cuda,
++        "get_device_properties",
++        lambda _: SimpleNamespace(multi_processor_count=148),
++    )
++    monkeypatch.setattr(jit, "_target_arch", lambda *_: "107a")
++    monkeypatch.setattr(interface, "_make_backend_plan", lambda *args, **kw: kw)
++    result = interface._prepare_decode_plan(
++        1,
++        1,
++        device=0,
++        num_q_heads=32,
++        num_kv_heads=2,
++        topk=16,
++        num_kv_splits=splits,
++        split_mode=mode,
++    )
++    assert (result["num_kv_splits"], result["split_mode"]) == expected
++
++
++@pytest.mark.parametrize("old_vendor_first", [False, True])
++def test_native_callbacks_survive_legacy_vendor_import_order(
++    tmp_path, old_vendor_first
++):
++    _isolated(
++        f"""
++import types
++import torch
++import tvm_ffi
++def forbidden(*args, **kwargs):
++    raise AssertionError('CUDA initialized')
++torch.cuda._lazy_init = forbidden
++names = ('jit_get_plan', 'jit_get_reduction', 'jit_get_fmha_fwd_sparse_variant')
++def legacy_vendor():
++    for name in names:
++        tvm_ffi.register_global_func('fmha_sm100.decode_q8kv4.' + name,
++                                    lambda *args: 'old-vendor', override=True)
++if {old_vendor_first!r}:
++    legacy_vendor()
++import fmha_sm100.decode_q8kv4 as package
++package.get_plan_fn = lambda *_: types.SimpleNamespace(plan='new-canonical')
++if not {old_vendor_first!r}:
++    legacy_vendor()
++assert tvm_ffi.get_global_func('fmha_sm100.decode_q8kv4.native_v2.jit_get_plan')() == 'new-canonical'
++for name in names:
++    assert tvm_ffi.get_global_func('fmha_sm100.decode_q8kv4.' + name)() == 'old-vendor'
++assert not torch.cuda.is_initialized()
++""",
++        tmp_path,
++    )
++
++
++def test_host_extension_identity_is_namespace_specific_and_path_is_read_only(
++    q8_cache, tmp_path, monkeypatch
++):
++    monkeypatch.setenv("TORCH_EXTENSIONS_DIR", str(tmp_path / "extensions"))
++    canonical = interface.cpp_extension_name()
++    path = interface.cpp_extension_path()
++    assert path.name == canonical + ".so"
++    assert not path.parent.exists()
++    monkeypatch.setattr(interface, "__package__", "vendor.fmha_sm100.decode_q8kv4")
++    assert interface.cpp_extension_name() != canonical
++    flags = " ".join(interface._cpp_compile_flags())
++    assert "vendor.fmha_sm100.decode_q8kv4.native_v2" in flags
++    assert "MSA_Q8KV4_PYTHON_PACKAGE" in flags
++
++
++def test_host_extension_identity_tracks_resolved_compilers(q8_cache, monkeypatch):
++    before = interface.cpp_extension_name()
++    nvcc = _build_utils.cuda_home() / "bin/nvcc"
++    nvcc.write_text(nvcc.read_text() + "# a different toolkit at the same path\n")
++    assert interface.cpp_extension_name() != before
++    before = interface.cpp_extension_name()
++    monkeypatch.setenv("CXX", "c++ -DMSA_TOOLCHAIN_IDENTITY_TEST=1")
++    assert interface.cpp_extension_name() != before
++
++
++def test_host_extension_load_waits_for_other_rank_to_finish_linking(
++    q8_cache, monkeypatch
++):
++    # The producer holds exactly the lock used by the real builder. A consumer
++    # must not open the partial library even though its final path already exists.
++    path = interface.cpp_extension_path()
++    entered = threading.Event()
++    loaded = threading.Event()
++
++    def load(completed):
++        assert completed.read_bytes() == b"complete"
++        loaded.set()
++        return "loaded"
++
++    monkeypatch.setattr(interface, "_load_or_build_cpp_backend", load)
++
++    def consumer():
++        entered.set()
++        return interface._jit_compile_cpp_backend()
++
++    with ThreadPoolExecutor(max_workers=1) as executor:
++        with _build_utils.build_lock(path.parent):
++            path.write_bytes(b"partially linked")
++            pending = executor.submit(consumer)
++            assert entered.wait(5)
++            assert not loaded.wait(0.1)
++            path.write_bytes(b"complete")
++        assert pending.result(timeout=5) == "loaded"
++
++
++@pytest.fixture
++def q8_cache(tmp_path, monkeypatch):
++    toolkit = tmp_path / "cuda"
++    (toolkit / "bin").mkdir(parents=True)
++    nvcc = toolkit / "bin/nvcc"
++    nvcc.write_text(
++        "#!/bin/sh\nprintf 'Cuda compilation tools, release 13.4, V13.4.0\\n'\n"
++    )
++    nvcc.chmod(0o700)
++    monkeypatch.setenv("CUDA_HOME", str(toolkit))
++    monkeypatch.setenv("TORCH_EXTENSIONS_DIR", str(tmp_path / "extensions"))
++    monkeypatch.setenv("ICP_CACHE_ROOT", str(tmp_path / "icp"))
++    monkeypatch.delenv("MINFER_FMHA_CACHE_DIR", raising=False)
++    monkeypatch.delenv(jit.DISABLE_QMUL4_ENV, raising=False)
++    _build_utils.cuda_home.cache_clear()
++    _build_utils.cuda_version.cache_clear()
++    _jit_cache.clear_memo()
++    result = _build_utils.qmul4_result_path(
++        "107a", probe_root=jit._cache_root() / "capability_probes"
++    )
++    result.parent.mkdir(parents=True)
++    result.write_text("unsupported\n")
++    yield result
++    _build_utils.cuda_home.cache_clear()
++    _build_utils.cuda_version.cache_clear()
++    _jit_cache.clear_memo()
++
++
++def _publish_fixture(recipe, source):
++    recipe.namespace.ensure()
++    recipe.dir.mkdir(parents=True)
++    library = recipe.dir / "fixture.so"
++    library.write_bytes(b"artifact integrity fixture, never loaded")
++    entry = {
++        "schema": _jit_cache.SCHEMA,
++        "recipe": recipe.recipe,
++        "records": [
++            {
++                "library": library.name,
++                "inputs": {
++                    str(source): hashlib.sha256(source.read_bytes()).hexdigest()
++                },
++            }
++        ],
++    }
++    (recipe.dir / "entry.json").write_text(json.dumps(entry))
++    return library
++
++
++def test_q8kv4_verification_is_read_only_and_checks_each_recipe(
++    q8_cache, tmp_path, monkeypatch
++):
++    source = tmp_path / "native-input.h"
++    source.write_text("the compiler's recorded input")
++    recipes = jit.icp_prewarm_recipes("107a", read_only=True)
++    assert len(recipes) == 3
++    out = []
++    for name, recipe in recipes.items():
++        library = _publish_fixture(recipe, source)
++        out.append(prewarm._artifact("q8kv4", name, library))
++        out.append(
++            prewarm._artifact("q8kv4", name + ".entry.json", recipe.dir / "entry.json")
++        )
++    cpp = interface.cpp_extension_path()
++    cpp.parent.mkdir(parents=True)
++    cpp.write_bytes(b"host extension fixture, never loaded")
++    out += [
++        prewarm._artifact("q8kv4", "cpp_ext", cpp),
++        prewarm._artifact("q8kv4", "qmul4.result", q8_cache),
++        prewarm._artifact(
++            "q8kv4", "namespace.json", recipes["plan"].namespace.path / "manifest.json"
++        ),
++    ]
++    monkeypatch.setitem(prewarm.BUILDERS, "q8kv4", lambda arch: out)
++    monkeypatch.setattr(prewarm, "toolchain", lambda: {})
++    monkeypatch.setenv("CUTE_DSL_ARCH", "sm_107a")
++    prewarm.build("107a", components=("q8kv4",), commit="fixture")
++    before = {str(p): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
++
++    def forbidden(*args, **kwargs):
++        pytest.fail("verification invoked a compiler or mutated the cache")
++
++    monkeypatch.setattr(_build_utils, "_probe_qmul4", forbidden)
++    monkeypatch.setattr(_jit_cache.Recipe, "build", forbidden)
++    monkeypatch.setattr(jit, "_run_ninja", forbidden)
++    assert prewarm.check("107a", check_toolchain=False, components=("q8kv4",)) == []
++    assert before == {
++        str(p): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()
++    }
++
++    source.write_text("changed native compiler input")
++    _jit_cache.clear_memo()
++    problems = prewarm.check("107a", check_toolchain=False, components=("q8kv4",))
++    assert (
++        sum("no current dev JIT source record" in problem for problem in problems) == 3
++    )
++    q8_cache.unlink()
++    assert any(
++        "capability record" in problem
++        for problem in prewarm.check(
++            "107a", check_toolchain=False, components=("q8kv4",)
++        )
++    )
++
++
++@pytest.mark.parametrize("kind", ["host", "forward", "plan", "capability"])
++def test_runtime_fail_policy_blocks_every_q8kv4_compiler_entry(
++    q8_cache, tmp_path, monkeypatch, kind
++):
++    monkeypatch.setenv("ICP_RUNTIME_JIT", "fail")
++    monkeypatch.setattr(jit, "_dequant_mode", lambda arch: "fp16_fallback")
++    recipes = jit.icp_prewarm_recipes("107a", read_only=True)
++    namespace = recipes["plan"].namespace
++    monkeypatch.setattr(jit, "_namespace", lambda: namespace)
++    monkeypatch.setattr(jit, "_cuda_home", lambda: Path(__file__).parent)
++
++    def forbidden(*args, **kwargs):
++        pytest.fail("fail policy reached the compiler")
++
++    monkeypatch.setattr(jit, "_run_ninja", forbidden)
++    run = _build_utils.subprocess.run
++
++    def version_only(args, **kwargs):
++        if args[-1] != "--version":
++            forbidden()
++        return run(args, **kwargs)
++
++    monkeypatch.setattr(_build_utils.subprocess, "run", version_only)
++    with pytest.raises(_jit_guard.RuntimeJitError):
++        if kind == "host":
++            interface._jit_compile_cpp_backend()
++        elif kind == "forward":
++            jit.JitSpec(
++                "decode_attention_q8kv4", False, "fp16_fallback", "107a", 16, 3
++            ).build()
++        elif kind == "plan":
++            jit._build_fixed_module(
++                "decode_attention_plan",
++                jit._SOURCES / "decode_attention_plan.cu",
++                "plan",
++                "107a",
++            )
++        else:
++            _build_utils._probe_qmul4(
++                tmp_path / "nvcc", "107a", tmp_path / "uncached-probe"
++            )

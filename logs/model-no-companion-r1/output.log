@@ -1,0 +1,35 @@
+........................................................................ [ 41%]
+..ssssssssssssss.ssssss................................ssss...s......... [ 83%]
+..............ssss...........                                            [100%]
+=============================== warnings summary ===============================
+vllm/__init__.py:7
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+  No module named 'vllm._version'
+    from .version import __version__, __version_tuple__  # isort:skip
+
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:15: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    from cutlass.utils import LayoutEnum, block_copy
+
+../../review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/quack/copy_utils.py:562: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    layout_c: cutlass.utils.LayoutEnum,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/models/minimax_m3/test_icp_indexer_windows.py:34: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [1] tests/models/minimax_m3/test_icp_exchange_route.py:147: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [6] tests/models/minimax_m3/test_icp_exchange_route.py:155: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [1] tests/models/minimax_m3/test_icp_exchange_route.py:204: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [4] tests/models/minimax_m3/test_icp_exchange_route.py:215: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [1] tests/models/minimax_m3/test_icp_exchange_route.py:234: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [1] tests/models/minimax_m3/test_icp_live_metadata.py:17: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [2] tests/models/minimax_m3/test_icp_main_attention.py:25: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [3] tests/models/minimax_m3/test_icp_main_attention.py:64: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [1] tests/models/minimax_m3/test_icp_main_attention.py:163: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [4] tests/models/minimax_m3/test_icp_prefill_r13.py:28: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [1] tests/models/minimax_m3/test_icp_prefill_r13.py:81: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [3] tests/models/minimax_m3/test_icp_prefill_selector_mode.py:40: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+SKIPPED [1] tests/models/minimax_m3/test_icp_prefill_selector_mode.py:51: could not import 'fmha_sm100.icp': No module named 'fmha_sm100'
+144 passed, 30 skipped, 4 warnings in 8.30s

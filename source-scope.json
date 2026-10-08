@@ -1,0 +1,1550 @@
+{
+  "sources": {
+    "msa": {
+      "head": "0f658079c9ea9ab63c76b975b7ee4dd54a198334",
+      "tree": "3c19a18efae28719bffd05fcf6f3a9614b853d5c",
+      "branch": "work/icp-dev-public-compat",
+      "base": "ed4e40efcb5895aba1a3554d62cd1dcaf77920cb"
+    },
+    "vllm": {
+      "head": "516bd9a9d9962aff25582f774a49640e022bf348",
+      "tree": "2452f18ca43c02b0e5199eda9672c8b1dfd4cb55",
+      "branch": "work/icp-public-vllm",
+      "base": "242e4213fc9845ff6fe607af1aee626fd8acc990"
+    }
+  },
+  "changes": {
+    "msa_full": {
+      "file_count": 147,
+      "added": 38818,
+      "removed": 581,
+      "files": [
+        {
+          "path": "MANIFEST.in",
+          "added": 11,
+          "removed": 0
+        },
+        {
+          "path": "README.md",
+          "added": 9,
+          "removed": 0
+        },
+        {
+          "path": "THIRD_PARTY_NOTICES.md",
+          "added": 24,
+          "removed": 0
+        },
+        {
+          "path": "docs/ICP_INTEGRATION.md",
+          "added": 140,
+          "removed": 0
+        },
+        {
+          "path": "licenses/Apache-2.0.txt",
+          "added": 201,
+          "removed": 0
+        },
+        {
+          "path": "licenses/BSD-3-Clause-CUTLASS.txt",
+          "added": 34,
+          "removed": 0
+        },
+        {
+          "path": "licenses/BSD-3-Clause-NVIDIA.txt",
+          "added": 27,
+          "removed": 0
+        },
+        {
+          "path": "pyproject.toml",
+          "added": 32,
+          "removed": 19
+        },
+        {
+          "path": "python/fmha_sm100/__init__.py",
+          "added": 90,
+          "removed": 118
+        },
+        {
+          "path": "python/fmha_sm100/api.py",
+          "added": 1668,
+          "removed": 50
+        },
+        {
+          "path": "python/fmha_sm100/csrc/fmha_sm100_inst.jinja",
+          "added": 13,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/csrc/fmha_sm100_params.h",
+          "added": 53,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/csrc/fmha_sm100_variant_run.cu.jinja",
+          "added": 158,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/csrc/gmem_bounds_check.h",
+          "added": 14,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/fmha_cutlass_sm100.cuh",
+          "added": 103,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/fmha_fusion.hpp",
+          "added": 5,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_fwd_epilogue_tma_warpspecialized.hpp",
+          "added": 24,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_fwd_kernel_tma_warpspecialized.hpp",
+          "added": 46,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_fwd_mainloop_tma_warpspecialized.hpp",
+          "added": 537,
+          "removed": 48
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_load_tma_warpspecialized.hpp",
+          "added": 283,
+          "removed": 8
+        },
+        {
+          "path": "python/fmha_sm100/cute/Makefile",
+          "added": 6,
+          "removed": 4
+        },
+        {
+          "path": "python/fmha_sm100/cute/README.md",
+          "added": 22,
+          "removed": 19
+        },
+        {
+          "path": "python/fmha_sm100/cute/__init__.py",
+          "added": 1,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/cute/example.py",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/cute/fp4_indexer_interface.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/interface.py",
+          "added": 138,
+          "removed": 35
+        },
+        {
+          "path": "python/fmha_sm100/cute/q8_indexer_interface.py",
+          "added": 5,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/cute/sparse_index_utils.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/blackwell_prefill/atten_fwd_sm100.py",
+          "added": 14,
+          "removed": 14
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/blackwell_prefill/combine.py",
+          "added": 7,
+          "removed": 7
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/common/aot_cache.py",
+          "added": 28,
+          "removed": 4
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/common/block_info.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/common/mask.py",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/common/tile_scheduler.py",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/build_k2q_csr/__init__.py",
+          "added": 7,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/decode_schedule.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/fp4_indexer.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/fwd/atten_fwd.py",
+          "added": 12,
+          "removed": 12
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/fwd/atten_fwd_nvfp4_kv.py",
+          "added": 66,
+          "removed": 31
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/fwd/combine.py",
+          "added": 39,
+          "removed": 24
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/fwd_decode/atten_fwd.py",
+          "added": 11,
+          "removed": 11
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/fwd_decode/combine.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/fwd_decode/tile_scheduler.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/prepare_k2q_csr.py",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/prepare_scheduler.py",
+          "added": 4,
+          "removed": 4
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/q8kv4_indexer_decode.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/src/sm100/q8kv8_indexer_prefill_plan.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/cute/test_fp4_indexer.py",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/cute/test_q8_indexer.py",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/cute/test_sparse_atten.py",
+          "added": 7,
+          "removed": 7
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/__init__.py",
+          "added": 3,
+          "removed": 3
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/_build_utils.py",
+          "added": 27,
+          "removed": 6
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp",
+          "added": 17,
+          "removed": 9
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/interface.py",
+          "added": 132,
+          "removed": 7
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/jit.py",
+          "added": 55,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/icp/__init__.py",
+          "added": 126,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/_build.py",
+          "added": 737,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/_cache.py",
+          "added": 193,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/_jit_guard.py",
+          "added": 73,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/_symmetric_window.py",
+          "added": 93,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/abi/__init__.py",
+          "added": 141,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/abi/__main__.py",
+          "added": 34,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/abi/refined-icp-v1.json",
+          "added": 108,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/abi/refined_icp_v1.py",
+          "added": 585,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/attention/__init__.py",
+          "added": 1,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py",
+          "added": 80,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py",
+          "added": 274,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/candidate_exchange.py",
+          "added": 341,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/candidates.py",
+          "added": 1164,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/carrier.py",
+          "added": 476,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/carrier_pack.cu",
+          "added": 77,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/fused_exchange.cu",
+          "added": 283,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/fused_exchange.cuh",
+          "added": 296,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/k2_merge.cu",
+          "added": 362,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/k5_exchange.cu",
+          "added": 1099,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/k5t_exchange.cu",
+          "added": 467,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/local_candidates.cu",
+          "added": 828,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/local_candidates.cuh",
+          "added": 320,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/local_candidates_full_row.cuh",
+          "added": 537,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/local_candidates_prefill_full_row.cuh",
+          "added": 520,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/local_candidates_rs.cuh",
+          "added": 590,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/local_candidates_rs_control.cu",
+          "added": 178,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/csrc/merge_topk.cuh",
+          "added": 537,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/exchange.py",
+          "added": 1242,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/exchange_plan.py",
+          "added": 205,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/fused_exchange.py",
+          "added": 193,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/local_indexer.py",
+          "added": 420,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/merge.py",
+          "added": 621,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/merge_reference.py",
+          "added": 603,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/prewarm.py",
+          "added": 539,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/__init__.py",
+          "added": 1,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/decode/__init__.py",
+          "added": 33,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/decode/_icp_decode_score_kernel.py",
+          "added": 482,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/decode/_icp_decode_score_utils.py",
+          "added": 136,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/decode/icp_decode_score.py",
+          "added": 706,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/prefill/__init__.py",
+          "added": 23,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/prefill/api.py",
+          "added": 4,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/scorer/prefill/jit.py",
+          "added": 4,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/tiled_exchange.py",
+          "added": 208,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp_decode_score.py",
+          "added": 4,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/jit.py",
+          "added": 22,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/msa_warmup.py",
+          "added": 1,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/prefill_q8kv4/interface.py",
+          "added": 3,
+          "removed": 3
+        },
+        {
+          "path": "python/fmha_sm100/q8kv4_prefill_adapter.py",
+          "added": 1,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/sparse.py",
+          "added": 11,
+          "removed": 59
+        },
+        {
+          "path": "python/fmha_sm100/sparse_fmha_adapter.py",
+          "added": 4,
+          "removed": 12
+        },
+        {
+          "path": "tests/icp/conftest.py",
+          "added": 268,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/_icp_decode_whole_reference.py",
+          "added": 483,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/icp_decode_fixtures.py",
+          "added": 413,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/icp_device_plan_fixtures.py",
+          "added": 93,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/icp_device_plan_harness.py",
+          "added": 84,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/icp_prefill_fixtures.py",
+          "added": 397,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_decode_aot.py",
+          "added": 99,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_decode_noinit_selector.py",
+          "added": 381,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_decode_score.py",
+          "added": 581,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_fragment_maxscore.py",
+          "added": 421,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_prefill_completion.py",
+          "added": 194,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_prefill_dispatch.py",
+          "added": 115,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_prefill_pipeline.py",
+          "added": 106,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/integration/test_icp_prefill_pipeline_mixed.py",
+          "added": 339,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/regression/test_icp_decode_score_contract.py",
+          "added": 558,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/regression/test_icp_device_plan.py",
+          "added": 1084,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/regression/test_icp_direct_table_bound.py",
+          "added": 193,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/scorer/regression/test_icp_plan_no_device_readback.py",
+          "added": 204,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_abi.py",
+          "added": 198,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_candidate_mapping.py",
+          "added": 352,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_candidates.py",
+          "added": 1777,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_carrier_pack.py",
+          "added": 151,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_decode_selection_fast.py",
+          "added": 541,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_exchange.py",
+          "added": 2350,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_fused_exchange.py",
+          "added": 619,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_local_indexer.py",
+          "added": 145,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_merge_key.py",
+          "added": 1995,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_msa_candidate_composition.py",
+          "added": 340,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_prefill_selection_fast.py",
+          "added": 937,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_prefill_tiny_warp.py",
+          "added": 348,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_prewarm_cache.py",
+          "added": 736,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_q8kv4_prewarm.py",
+          "added": 306,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_selector_prevalidated.py",
+          "added": 160,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_symmetric_window_host.py",
+          "added": 239,
+          "removed": 0
+        },
+        {
+          "path": "tests/icp/test_tiled_exchange.py",
+          "added": 570,
+          "removed": 0
+        },
+        {
+          "path": "tests/jit_cache/test_cute_aot_cache.py",
+          "added": 51,
+          "removed": 12
+        },
+        {
+          "path": "tests/regression/test_icp_consolidation.py",
+          "added": 305,
+          "removed": 0
+        },
+        {
+          "path": "tests/regression/test_icp_dev_compatibility.py",
+          "added": 163,
+          "removed": 0
+        },
+        {
+          "path": "tests/regression/test_nvfp4_scale_compatibility.py",
+          "added": 349,
+          "removed": 0
+        },
+        {
+          "path": "tools/stage_cutlass.py",
+          "added": 91,
+          "removed": 0
+        }
+      ]
+    },
+    "vllm_full": {
+      "file_count": 52,
+      "added": 10941,
+      "removed": 197,
+      "files": [
+        {
+          "path": ".buildkite/test_areas/models_basic.yaml",
+          "added": 3,
+          "removed": 0
+        },
+        {
+          "path": "csrc/libtorch_stable/fused_minimax_m3_icp.cuh",
+          "added": 400,
+          "removed": 0
+        },
+        {
+          "path": "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu",
+          "added": 801,
+          "removed": 148
+        },
+        {
+          "path": "csrc/libtorch_stable/ops.h",
+          "added": 23,
+          "removed": 1
+        },
+        {
+          "path": "csrc/libtorch_stable/torch_bindings.cpp",
+          "added": 31,
+          "removed": 1
+        },
+        {
+          "path": "requirements/minimax_m3_icp.txt",
+          "added": 5,
+          "removed": 0
+        },
+        {
+          "path": "tests/kernels/test_fused_minimax_m3_icp_writer.py",
+          "added": 220,
+          "removed": 0
+        },
+        {
+          "path": "tests/kernels/test_fused_minimax_m3_icp_writer_api.py",
+          "added": 194,
+          "removed": 0
+        },
+        {
+          "path": "tests/kernels/test_minimax_m3_icp_device_plan.py",
+          "added": 642,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_compound_page.py",
+          "added": 175,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_compound_runtime.py",
+          "added": 187,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_compound_spec.py",
+          "added": 208,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_dependency.py",
+          "added": 142,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_exchange_route.py",
+          "added": 294,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_indexer_windows.py",
+          "added": 423,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_live_metadata.py",
+          "added": 32,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_main_attention.py",
+          "added": 233,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_metadata_binding.py",
+          "added": 217,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_offload_admission.py",
+          "added": 132,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_prefill_r13.py",
+          "added": 202,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_prefill_selector_mode.py",
+          "added": 54,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_indexer_qkv_replication.py",
+          "added": 96,
+          "removed": 0
+        },
+        {
+          "path": "tests/v1/cudagraph/test_cudagraph_manager.py",
+          "added": 132,
+          "removed": 0
+        },
+        {
+          "path": "tests/v1/simple_kv_offload/test_shutdown.py",
+          "added": 188,
+          "removed": 0
+        },
+        {
+          "path": "tests/v1/worker/test_attn_utils.py",
+          "added": 69,
+          "removed": 2
+        },
+        {
+          "path": "tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py",
+          "added": 90,
+          "removed": 0
+        },
+        {
+          "path": "tests/v1/worker/test_gpu_ubatch_slicing.py",
+          "added": 2,
+          "removed": 1
+        },
+        {
+          "path": "vllm/_custom_ops.py",
+          "added": 122,
+          "removed": 2
+        },
+        {
+          "path": "vllm/config/attention.py",
+          "added": 6,
+          "removed": 0
+        },
+        {
+          "path": "vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py",
+          "added": 4,
+          "removed": 0
+        },
+        {
+          "path": "vllm/model_executor/layers/linear.py",
+          "added": 34,
+          "removed": 18
+        },
+        {
+          "path": "vllm/models/minimax_m3/common/compound_page.py",
+          "added": 406,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/common/compound_spec.py",
+          "added": 120,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/common/indexer_icp.py",
+          "added": 324,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/indexer_icp.py",
+          "added": 2937,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/model.py",
+          "added": 28,
+          "removed": 1
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/msa_icp.py",
+          "added": 87,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/msa_icp_main.py",
+          "added": 256,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/ops/icp_dispatch.py",
+          "added": 169,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/ops/icp_metadata.py",
+          "added": 97,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/sparse_attention_icp.py",
+          "added": 956,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/attention/backend.py",
+          "added": 3,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/kv_cache_interface.py",
+          "added": 16,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/copy_backend.py",
+          "added": 29,
+          "removed": 18
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/cuda_mem_ops.py",
+          "added": 7,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/worker.py",
+          "added": 38,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/worker/gpu/attn_utils.py",
+          "added": 13,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/worker/gpu/cudagraph_utils.py",
+          "added": 25,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/gpu/dp_utils.py",
+          "added": 23,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/worker/gpu/model_runner.py",
+          "added": 20,
+          "removed": 2
+        },
+        {
+          "path": "vllm/v1/worker/gpu/shutdown.py",
+          "added": 23,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/utils.py",
+          "added": 3,
+          "removed": 0
+        }
+      ]
+    },
+    "vllm_generic_runtime_production": {
+      "file_count": 8,
+      "added": 126,
+      "removed": 4,
+      "files": [
+        {
+          "path": "vllm/v1/attention/backend.py",
+          "added": 3,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/kv_cache_interface.py",
+          "added": 16,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/gpu/attn_utils.py",
+          "added": 13,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/worker/gpu/cudagraph_utils.py",
+          "added": 25,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/gpu/dp_utils.py",
+          "added": 23,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/worker/gpu/model_runner.py",
+          "added": 20,
+          "removed": 2
+        },
+        {
+          "path": "vllm/v1/worker/gpu/shutdown.py",
+          "added": 23,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/utils.py",
+          "added": 3,
+          "removed": 0
+        }
+      ]
+    },
+    "vllm_offload_production": {
+      "file_count": 4,
+      "added": 78,
+      "removed": 19,
+      "files": [
+        {
+          "path": "vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py",
+          "added": 4,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/copy_backend.py",
+          "added": 29,
+          "removed": 18
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/cuda_mem_ops.py",
+          "added": 7,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/worker.py",
+          "added": 38,
+          "removed": 1
+        }
+      ]
+    },
+    "vllm_writer_production": {
+      "file_count": 5,
+      "added": 1377,
+      "removed": 152,
+      "files": [
+        {
+          "path": "csrc/libtorch_stable/fused_minimax_m3_icp.cuh",
+          "added": 400,
+          "removed": 0
+        },
+        {
+          "path": "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu",
+          "added": 801,
+          "removed": 148
+        },
+        {
+          "path": "csrc/libtorch_stable/ops.h",
+          "added": 23,
+          "removed": 1
+        },
+        {
+          "path": "csrc/libtorch_stable/torch_bindings.cpp",
+          "added": 31,
+          "removed": 1
+        },
+        {
+          "path": "vllm/_custom_ops.py",
+          "added": 122,
+          "removed": 2
+        }
+      ]
+    },
+    "msa_public_compatibility": {
+      "file_count": 13,
+      "added": 722,
+      "removed": 65,
+      "files": [
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/__init__.py",
+          "added": 3,
+          "removed": 3
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/_build_utils.py",
+          "added": 27,
+          "removed": 6
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_api.cpp",
+          "added": 17,
+          "removed": 9
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/csrc/api/decode_attention_binding.cpp",
+          "added": 2,
+          "removed": 2
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/interface.py",
+          "added": 132,
+          "removed": 7
+        },
+        {
+          "path": "python/fmha_sm100/decode_q8kv4/jit.py",
+          "added": 55,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/icp/__init__.py",
+          "added": 4,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/icp/_cache.py",
+          "added": 11,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/icp/attention/nvfp4_prefill/__init__.py",
+          "added": 3,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/icp/attention/nvfp4_prefill/_prewarm.py",
+          "added": 50,
+          "removed": 24
+        },
+        {
+          "path": "python/fmha_sm100/icp/prewarm.py",
+          "added": 66,
+          "removed": 3
+        },
+        {
+          "path": "tests/icp/test_prewarm_cache.py",
+          "added": 46,
+          "removed": 4
+        },
+        {
+          "path": "tests/icp/test_q8kv4_prewarm.py",
+          "added": 306,
+          "removed": 0
+        }
+      ]
+    },
+    "msa_existing_shared_fmha": {
+      "file_count": 10,
+      "added": 1236,
+      "removed": 69,
+      "files": [
+        {
+          "path": "python/fmha_sm100/csrc/fmha_sm100_inst.jinja",
+          "added": 13,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/csrc/fmha_sm100_params.h",
+          "added": 53,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/csrc/fmha_sm100_variant_run.cu.jinja",
+          "added": 158,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/csrc/gmem_bounds_check.h",
+          "added": 14,
+          "removed": 0
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/fmha_cutlass_sm100.cuh",
+          "added": 103,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/fmha_fusion.hpp",
+          "added": 5,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_fwd_epilogue_tma_warpspecialized.hpp",
+          "added": 24,
+          "removed": 1
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_fwd_kernel_tma_warpspecialized.hpp",
+          "added": 46,
+          "removed": 5
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_fwd_mainloop_tma_warpspecialized.hpp",
+          "added": 537,
+          "removed": 48
+        },
+        {
+          "path": "python/fmha_sm100/csrc/include/sm100_fmha_load_tma_warpspecialized.hpp",
+          "added": 283,
+          "removed": 8
+        }
+      ]
+    },
+    "vllm_01-offload": {
+      "file_count": 5,
+      "added": 266,
+      "removed": 19,
+      "files": [
+        {
+          "path": "tests/v1/simple_kv_offload/test_shutdown.py",
+          "added": 188,
+          "removed": 0
+        },
+        {
+          "path": "vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py",
+          "added": 4,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/copy_backend.py",
+          "added": 29,
+          "removed": 18
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/cuda_mem_ops.py",
+          "added": 7,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/simple_kv_offload/worker.py",
+          "added": 38,
+          "removed": 1
+        }
+      ]
+    },
+    "vllm_02-runtime": {
+      "file_count": 12,
+      "added": 419,
+      "removed": 7,
+      "files": [
+        {
+          "path": "tests/v1/cudagraph/test_cudagraph_manager.py",
+          "added": 132,
+          "removed": 0
+        },
+        {
+          "path": "tests/v1/worker/test_attn_utils.py",
+          "added": 69,
+          "removed": 2
+        },
+        {
+          "path": "tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py",
+          "added": 90,
+          "removed": 0
+        },
+        {
+          "path": "tests/v1/worker/test_gpu_ubatch_slicing.py",
+          "added": 2,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/attention/backend.py",
+          "added": 3,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/kv_cache_interface.py",
+          "added": 16,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/gpu/attn_utils.py",
+          "added": 13,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/worker/gpu/cudagraph_utils.py",
+          "added": 25,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/gpu/dp_utils.py",
+          "added": 23,
+          "removed": 1
+        },
+        {
+          "path": "vllm/v1/worker/gpu/model_runner.py",
+          "added": 20,
+          "removed": 2
+        },
+        {
+          "path": "vllm/v1/worker/gpu/shutdown.py",
+          "added": 23,
+          "removed": 0
+        },
+        {
+          "path": "vllm/v1/worker/utils.py",
+          "added": 3,
+          "removed": 0
+        }
+      ]
+    },
+    "vllm_03-writer": {
+      "file_count": 8,
+      "added": 2433,
+      "removed": 152,
+      "files": [
+        {
+          "path": "csrc/libtorch_stable/fused_minimax_m3_icp.cuh",
+          "added": 400,
+          "removed": 0
+        },
+        {
+          "path": "csrc/libtorch_stable/fused_minimax_m3_qknorm_rope_kv_insert_kernel.cu",
+          "added": 801,
+          "removed": 148
+        },
+        {
+          "path": "csrc/libtorch_stable/ops.h",
+          "added": 23,
+          "removed": 1
+        },
+        {
+          "path": "csrc/libtorch_stable/torch_bindings.cpp",
+          "added": 31,
+          "removed": 1
+        },
+        {
+          "path": "tests/kernels/test_fused_minimax_m3_icp_writer.py",
+          "added": 220,
+          "removed": 0
+        },
+        {
+          "path": "tests/kernels/test_fused_minimax_m3_icp_writer_api.py",
+          "added": 194,
+          "removed": 0
+        },
+        {
+          "path": "tests/kernels/test_minimax_m3_icp_device_plan.py",
+          "added": 642,
+          "removed": 0
+        },
+        {
+          "path": "vllm/_custom_ops.py",
+          "added": 122,
+          "removed": 2
+        }
+      ]
+    },
+    "vllm_04-model-integration": {
+      "file_count": 27,
+      "added": 7823,
+      "removed": 19,
+      "files": [
+        {
+          "path": ".buildkite/test_areas/models_basic.yaml",
+          "added": 3,
+          "removed": 0
+        },
+        {
+          "path": "requirements/minimax_m3_icp.txt",
+          "added": 5,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_compound_page.py",
+          "added": 175,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_compound_runtime.py",
+          "added": 187,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_compound_spec.py",
+          "added": 208,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_dependency.py",
+          "added": 142,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_exchange_route.py",
+          "added": 294,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_indexer_windows.py",
+          "added": 423,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_live_metadata.py",
+          "added": 32,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_main_attention.py",
+          "added": 233,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_metadata_binding.py",
+          "added": 217,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_offload_admission.py",
+          "added": 132,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_prefill_r13.py",
+          "added": 202,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_icp_prefill_selector_mode.py",
+          "added": 54,
+          "removed": 0
+        },
+        {
+          "path": "tests/models/minimax_m3/test_indexer_qkv_replication.py",
+          "added": 96,
+          "removed": 0
+        },
+        {
+          "path": "vllm/config/attention.py",
+          "added": 6,
+          "removed": 0
+        },
+        {
+          "path": "vllm/model_executor/layers/linear.py",
+          "added": 34,
+          "removed": 18
+        },
+        {
+          "path": "vllm/models/minimax_m3/common/compound_page.py",
+          "added": 406,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/common/compound_spec.py",
+          "added": 120,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/common/indexer_icp.py",
+          "added": 324,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/indexer_icp.py",
+          "added": 2937,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/model.py",
+          "added": 28,
+          "removed": 1
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/msa_icp.py",
+          "added": 87,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/msa_icp_main.py",
+          "added": 256,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/ops/icp_dispatch.py",
+          "added": 169,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/ops/icp_metadata.py",
+          "added": 97,
+          "removed": 0
+        },
+        {
+          "path": "vllm/models/minimax_m3/nvidia/sparse_attention_icp.py",
+          "added": 956,
+          "removed": 0
+        }
+      ]
+    }
+  }
+}

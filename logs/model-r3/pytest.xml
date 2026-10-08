@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="9.058" timestamp="2026-10-08T10:39:39.446631-07:00" hostname="516ea03-lcedt"><testcase classname="" name="tests.models.minimax_m3.test_icp_offload_admission" time="0.000"><error message="collection failure">ImportError while importing test module '/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/tests/models/minimax_m3/test_icp_offload_admission.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/home/fans/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/models/minimax_m3/test_icp_offload_admission.py:11: in &lt;module&gt;
+    from vllm.models.minimax_m3.nvidia.sparse_attention_icp import validate_icp_config
+vllm/models/minimax_m3/nvidia/sparse_attention_icp.py:47: in &lt;module&gt;
+    from vllm.models.minimax_m3.nvidia.indexer_icp import (
+E   ImportError: cannot import name '_prewarm_assert' from 'vllm.models.minimax_m3.nvidia.indexer_icp' (/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/models/minimax_m3/nvidia/indexer_icp.py)</error></testcase></testsuite></testsuites>

@@ -1,0 +1,31 @@
+{
+  "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "files": {
+    "tests/v1/cudagraph/test_cudagraph_manager.py": "cf5a724636be1464bd660239a02d7628a4a84583038f4896e0b9b45c91b38024",
+    "tests/v1/simple_kv_offload/test_shutdown.py": "c2faa15ac330057376914a69e11626f824eae965e9cd611088c13ee29d0ea348",
+    "tests/v1/worker/test_attn_utils.py": "e48bfcebcf874a26808bf2320c271df0f4ba3cddf006bd165fb08192aaced25c",
+    "tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py": "80a2203568e8bf80430c4f099c8a3d7f0b7486b9c4683cdf2b27dc52d61556a8",
+    "tests/v1/worker/test_gpu_ubatch_slicing.py": "f6093693c2a3c8dabe0e724eab6bbd8c450832232d879215b1aa2b918fb70342",
+    "vllm/distributed/kv_transfer/kv_connector/v1/simple_cpu_offload_connector.py": "fdecd2d58163f1a15a73ffbea95dafa0dd359ef96e38165f27f269c877147ab3",
+    "vllm/v1/attention/backend.py": "85bed551e39d752d0f71ce5ee7e4148f7b5dd78582ceae2d34feac5f30a1f93a",
+    "vllm/v1/kv_cache_interface.py": "94b697979bad127204b3a2519c33c0db093ec2484d563ea5d238f86d072729cd",
+    "vllm/v1/simple_kv_offload/copy_backend.py": "3fb51c456f6b401530e9eefc1f612c3153de542bc17395d14e103f611aacad14",
+    "vllm/v1/simple_kv_offload/cuda_mem_ops.py": "63ad1fafa69e7ce8e62c54d07ec75317be0902472abf635c84deb95341c78247",
+    "vllm/v1/simple_kv_offload/worker.py": "3f4668e57982a37412af6de917a4d6ced3dc2331e964020b53384dd1f61a146a",
+    "vllm/v1/worker/gpu/attn_utils.py": "ed036e1bac4a843d3bfa6c775130f8a5f6b56b1603e2e93c2c2332b87c790623",
+    "vllm/v1/worker/gpu/cudagraph_utils.py": "af0c55badee68f1e983b4d56e87808c800e5e74c524ac7af61b4f9f54e984c39",
+    "vllm/v1/worker/gpu/dp_utils.py": "651d9799b3bade2abfd46e8af6c1cc4653a28105781ab5b7dda7a4e81d7312c2",
+    "vllm/v1/worker/gpu/model_runner.py": "96a64a12c04e2382b5a9921332e2c2a5945e3af5d3612930c1a31ffcf2489ea4",
+    "vllm/v1/worker/gpu/shutdown.py": "d8f47532428cdabbf000e02cfb9787b0672db4c6bddcaf2e11bbd0ed810f7af2",
+    "vllm/v1/worker/utils.py": "b2e490c7308f4689794490de1a767667923e1c90f95fdb26db32b892ecb3e6b8"
+  },
+  "python": "3.12.13 (main, May 10 2026, 19:30:01) [Clang 22.1.3 ]",
+  "dependencies": {
+    "pytest": "9.1.1",
+    "torch": "2.14.0+cpu",
+    "numpy": "2.3.5",
+    "mypy": "1.20.2",
+    "pydantic": "2.13.5",
+    "ruff": "0.14.0"
+  }
+}

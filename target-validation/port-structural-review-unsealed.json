@@ -1,0 +1,140 @@
+{
+  "status": "unsealed preparation; fixture and source-structure checks only",
+  "old_driver_sha256": "e8aa7e13756faca42f1168eca4f139119b3b4b582886831ee13b8e9b46cfa5c6",
+  "new_driver_sha256": "c63883987c1a1ef9bf25d40e88801b84393cb8f9449a04335730a0d391f93af2",
+  "host_checks_sha256": "e8a6151369325f53a84fb008f69f69371d1917ba02dad62542845dabe740c253",
+  "readme_sha256": "5dc48e9eb2f4db66b24cdae2c71a05606fc1bd3f0e43b3db67e4608817a6ffc7",
+  "unchanged_function_asts": [
+    "require",
+    "sha",
+    "read_command",
+    "git",
+    "probe_json",
+    "commands",
+    "cache_values",
+    "native_file",
+    "check_build_evidence",
+    "check_fresh_native_build",
+    "junit_summary",
+    "run_logged",
+    "terminate_owned_group",
+    "worker",
+    "execution_paths"
+  ],
+  "expected_changed_functions": [
+    "source_checks",
+    "environment",
+    "target_checks",
+    "main"
+  ],
+  "manifest_pin": null,
+  "selectors": [
+    {
+      "tree": "worktrees/vllm-icp-public",
+      "selector": "tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py",
+      "sha256": "345ebf293606c8ac3344528430b52e4a36a47015889ae2aa29ba0d7c306d3969"
+    },
+    {
+      "tree": "worktrees/vllm-icp-public",
+      "selector": "tests/kernels/test_fused_minimax_m3_icp_writer.py",
+      "sha256": "0034bcb97dddbb3458ca4b142e5e3f98fc808d90bae97b7e70128dabf45b9353"
+    },
+    {
+      "tree": "worktrees/vllm-icp-public",
+      "selector": "tests/kernels/test_minimax_m3_icp_device_plan.py",
+      "sha256": "72bee00779df04c08ed505737f13897c7f1ee443cd4735dca810ff966bd3f602"
+    },
+    {
+      "tree": "worktrees/vllm-icp-public",
+      "selector": "tests/kernels/test_fused_minimax_m3_icp_writer_api.py",
+      "sha256": "0b35672809590fa4504b46979001210ca27a7ec9d41cea9c04da1a344508a34b"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/regression/test_icp_consolidation.py",
+      "sha256": "7bae2d45252318e26bcde2bbf1da564e155b30f367aba27178ffb35fc692a897"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/regression/test_icp_dev_compatibility.py",
+      "sha256": "62f7547c77a57d6a2f67dda50f457d88f34da77b951e6cd5e7c5ce44fc15369c"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/jit_cache/test_cute_aot_cache.py",
+      "sha256": "6c6b5e567e65a5d8c7dbe79f9f21b161e1f0e48f7d96c7ee39fc4512b90d03c0"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_q8kv4_prewarm.py",
+      "sha256": "93666b0e79b25bb00be8bbd5eb0527fd54af0946e4a9c6289688e4d79a42e353"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_prewarm_cache.py",
+      "sha256": "ccf853236b94cac420471830053d7baa10dfc82905a391a1bee18e6ffff1add9"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/smoke/test_sparse_topk_forced.py::test_block_table_gather_after_sort",
+      "sha256": "aa560f1e85153159874428ef6029664ee64e10beb328de86dd64d0b001463a54"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/smoke/test_sparse_topk_large_boundary_bin.py::test_per_token_valid_prefixes_select_exact_topk",
+      "sha256": "e46430fc7e069391dcb2296f951b15e4ee846d02321d8210fb3ae7f1bc79e8b3"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/regression/test_nvfp4_scale_compatibility.py",
+      "sha256": "f4870bc5d04574453c8ce2b85defa03f7fd5e9b56ee1c4028e69e7a7cfcf243d"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_candidates.py::test_the_forced_column_is_excluded_on_every_rank",
+      "sha256": "5476bc46e96973892122fc145f893b78337c20892ec4c721977185903c58b873"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_candidates.py::test_the_global_id_is_the_scan_origin_plus_the_column",
+      "sha256": "5476bc46e96973892122fc145f893b78337c20892ec4c721977185903c58b873"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_candidates.py::test_the_decode_entry_point_is_capturable",
+      "sha256": "5476bc46e96973892122fc145f893b78337c20892ec4c721977185903c58b873"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_fused_exchange.py::test_d3_is_bit_identical_to_selector_plus_k2",
+      "sha256": "0007a00e5da102f8dec2396aa3b36d8c01bba84a9a943f9e1c81b45bf3c8b9da"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_fused_exchange.py::test_multi_chunk_token_offsets_cover_the_extent",
+      "sha256": "0007a00e5da102f8dec2396aa3b36d8c01bba84a9a943f9e1c81b45bf3c8b9da"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_fused_exchange.py::test_cuda_graph_replay_advances_generations_on_device",
+      "sha256": "0007a00e5da102f8dec2396aa3b36d8c01bba84a9a943f9e1c81b45bf3c8b9da"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_exchange.py::test_the_head_directed_transport_matches_the_all_gather_reference",
+      "sha256": "fe9adb38cc6465ceca6aa976538021740ed447180bd967228347931dc00323f6"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_tiled_exchange.py::test_real_window_world_any_matches_k2",
+      "sha256": "a5eaa45288eff2f098d9c062ffd1fc39c4c43e5ae35ca107f98084584dec6a9d"
+    },
+    {
+      "tree": "worktrees/msa-dev-public",
+      "selector": "tests/icp/test_fused_exchange.py::test_real_window_matches_nccl_route",
+      "sha256": "0007a00e5da102f8dec2396aa3b36d8c01bba84a9a943f9e1c81b45bf3c8b9da"
+    }
+  ],
+  "device_imports_forbidden": true,
+  "gpu_or_target_execution": false
+}

@@ -1,0 +1,13 @@
+{
+  "baseline": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "python_version": "3.11",
+  "baseline_errors": 27,
+  "candidate_errors": 26,
+  "new_diagnostics": [],
+  "removed_diagnostics": [
+    "vllm/models/minimax_m3/nvidia/model.py: error: Incompatible types in assignment (expression has type \"MiniMaxM3Attention\", variable has type \"MiniMaxM3SparseAttention\")  [assignment]"
+  ],
+  "new_source_files_clean": 9,
+  "test_files_clean": 13,
+  "scope": "Repository configured hook; ordinary model.py inherited diagnostics remain."
+}

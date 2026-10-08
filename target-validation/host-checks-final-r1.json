@@ -1,0 +1,118 @@
+{
+  "driver_sha256": "7903df7329ad5a2a2566dd1c347b8a88e23a2f04e4aceb8cfc9aefedfdb182dd",
+  "host_checks_sha256": "e8a6151369325f53a84fb008f69f69371d1917ba02dad62542845dabe740c253",
+  "python": "/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/bin/python",
+  "python_version": "3.12.13 (main, May 10 2026, 19:30:01) [Clang 22.1.3 ]",
+  "device_imports_forbidden": true,
+  "gpu_or_build_execution": false,
+  "fixture_success": true,
+  "fixture_tests_run": 19,
+  "fixture_checks": [
+    {
+      "check": "__main__.DriverGuards.test_all_dry_modes_preserve_files_and_exclude_timing_suites",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_changed_header_and_extra_header_are_refused",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_cuda_host_compiler_must_be_absolute_and_pinned_before_probe",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_dirty_source_is_refused",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_environment_pins_toolkits_and_discards_inherited_overrides",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_existing_and_source_nested_output_paths_are_refused",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_internal_worker_cannot_bypass_explicit_execution_flag",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_junit_empty_skipped_and_failed_results_are_refused",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_owned_descendant_is_cleaned_after_launcher_exit",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_public_correctness_plan_has_writer_and_q8_contracts",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_q8_host_compiler_must_match_native_build_compiler_before_probe",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_stale_object_is_refused_before_target_probe",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_symlink_header_is_refused",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_tool_hash_mismatch_is_refused_before_probe",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_unsealed_and_changed_manifest_are_refused",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_unsealed_main_refuses_before_reading_sources_or_probing_target",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_valid_source_and_header_inventory",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_writer_command_must_explicitly_use_pinned_host_compiler",
+      "status": "passed"
+    },
+    {
+      "check": "__main__.DriverGuards.test_wrong_source_path_is_refused",
+      "status": "passed"
+    }
+  ],
+  "actual_candidate_dry_runs": [
+    {
+      "mode": "build",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "{\n  \"mode\": \"build\",\n  \"manifest_sha256\": \"0c2a96870fed4b22fe550fc4402b5cd9cd2867922b20f6fd5c4f1387d484d1b1\",\n  \"sources\": {\n    \"msa\": {\n      \"head\": \"0f658079c9ea9ab63c76b975b7ee4dd54a198334\",\n      \"tree\": \"3c19a18efae28719bffd05fcf6f3a9614b853d5c\",\n      \"branch\": \"work/icp-dev-public-compat\",\n      \"base\": \"ed4e40efcb5895aba1a3554d62cd1dcaf77920cb\"\n    },\n    \"vllm\": {\n      \"head\": \"516bd9a9d9962aff25582f774a49640e022bf348\",\n      \"tree\": \"2452f18ca43c02b0e5199eda9672c8b1dfd4cb55\",\n      \"branch\": \"work/icp-public-vllm\",\n      \"base\": \"242e4213fc9845ff6fe607af1aee626fd8acc990\"\n    }\n  },\n  \"commands\": [\n    {\n      \"name\": \"build-native-writer\",\n      \"argv\": [\n        \"<CMAKE>\",\n        \"--build\",\n        \"<PRECONFIGURED_BUILD_DIR>\",\n        \"--target\",\n        \"_C_stable_libtorch\",\n        \"--parallel\",\n        \"<JOBS>\",\n        \"--verbose\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public\",\n      \"reports\": []\n    },\n    {\n      \"name\": \"install-native-writer\",\n      \"argv\": [\n        \"<CMAKE>\",\n        \"--install\",\n        \"<PRECONFIGURED_BUILD_DIR>\",\n        \"--component\",\n        \"_C_stable_libtorch\",\n        \"--prefix\",\n        \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public\",\n      \"reports\": []\n    }\n  ],\n  \"environment\": {\n    \"PATH\": \"<UV_ENV_BIN>:<CUDA_HOME>/bin:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.codex/tmp/arg0/codex-arg0H8pOxn:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/home/fans/.codex/tmp/arg0/codex-arg0QUze2q:/home/fans/.npm-global/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.linuxbrew/bin:/home/fans/.linuxbrew/sbin:/home/fans/.bun/bin:/home/fans/.cargo/bin:/home/fans/.npm-global/bin:/home/fans/git-trt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/p4v/bin/:/opt/pycharm-community-2020.3.3/bin/\",\n    \"PYTHONPATH\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python\",\n    \"PYTHONDONTWRITEBYTECODE\": \"1\",\n    \"PYTHONNOUSERSITE\": \"1\",\n    \"PYTEST_DISABLE_PLUGIN_AUTOLOAD\": \"1\",\n    \"GIT_OPTIONAL_LOCKS\": \"0\",\n    \"VLLM_TARGET_DEVICE\": \"cuda\",\n    \"CUDA_HOME\": \"<CUDA_HOME>\",\n    \"CUDA_TOOLKIT_PATH\": \"<CUDA_HOME>\",\n    \"CUDA_PATH\": \"<CUDA_HOME>\",\n    \"CUDACXX\": \"<CUDA_HOME>/bin/nvcc\",\n    \"CXX\": \"<CXX>\",\n    \"CUTLASS_ROOT\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python/fmha_sm100/cutlass\",\n    \"CUTLASS_PATH\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python/fmha_sm100/cutlass\",\n    \"FMHA_SM100_DECODE_Q8KV4_ARCH\": \"107a\",\n    \"CUDA_VISIBLE_DEVICES\": \"<GPU_UUIDS>\",\n    \"TORCH_CUDA_ARCH_LIST\": \"10.7\",\n    \"ICP_KERNEL_ARCH\": \"107a\",\n    \"MSA_REGISTER_TVM_FFI\": \"0\",\n    \"RANK\": \"0\",\n    \"LOCAL_RANK\": \"0\",\n    \"WORLD_SIZE\": \"1\",\n    \"HF_HUB_OFFLINE\": \"1\",\n    \"TRANSFORMERS_OFFLINE\": \"1\",\n    \"XDG_CACHE_HOME\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache\",\n    \"UV_CACHE_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/uv\",\n    \"TORCH_EXTENSIONS_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/torch-extensions\",\n    \"ICP_CACHE_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/msa-icp\",\n    \"VLLM_CACHE_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/vllm\",\n    \"VLLM_CONFIG_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/vllm-config\",\n    \"HF_HOME\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/huggingface\",\n    \"TRITON_CACHE_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/triton\",\n    \"CUDA_CACHE_PATH\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/cache/cuda\",\n    \"TMPDIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/build/tmp\"\n  },\n  \"removed_environment\": [],\n  \"target_spec\": {},\n  \"benchmark\": false,\n  \"separately_reviewed_suites\": [\n    \"tests/q8kv4\",\n    \"tests/q8kv4_prefill\"\n  ],\n  \"dry_run\": true,\n  \"unresolved\": \"Supply reviewed target-spec, fresh output and build-evidence for correctness modes\"\n}\n",
+      "stderr": "",
+      "output_created": false,
+      "expected_unsealed_refusal": false
+    },
+    {
+      "mode": "correctness",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "{\n  \"mode\": \"correctness\",\n  \"manifest_sha256\": \"0c2a96870fed4b22fe550fc4402b5cd9cd2867922b20f6fd5c4f1387d484d1b1\",\n  \"sources\": {\n    \"msa\": {\n      \"head\": \"0f658079c9ea9ab63c76b975b7ee4dd54a198334\",\n      \"tree\": \"3c19a18efae28719bffd05fcf6f3a9614b853d5c\",\n      \"branch\": \"work/icp-dev-public-compat\",\n      \"base\": \"ed4e40efcb5895aba1a3554d62cd1dcaf77920cb\"\n    },\n    \"vllm\": {\n      \"head\": \"516bd9a9d9962aff25582f774a49640e022bf348\",\n      \"tree\": \"2452f18ca43c02b0e5199eda9672c8b1dfd4cb55\",\n      \"branch\": \"work/icp-public-vllm\",\n      \"base\": \"242e4213fc9845ff6fe607af1aee626fd8acc990\"\n    }\n  },\n  \"commands\": [\n    {\n      \"name\": \"vllm-writer\",\n      \"argv\": [\n        \"<UV_PYTHON>\",\n        \"-m\",\n        \"pytest\",\n        \"-q\",\n        \"-rs\",\n        \"-p\",\n        \"no:cacheprovider\",\n        \"--noconftest\",\n        \"tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py\",\n        \"tests/kernels/test_fused_minimax_m3_icp_writer.py\",\n        \"tests/kernels/test_minimax_m3_icp_device_plan.py\",\n        \"tests/kernels/test_fused_minimax_m3_icp_writer_api.py\",\n        \"--junitxml=/tmp/vllm-public-actual-dry-l8qbeda_/correctness/vllm-writer.xml\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public\",\n      \"reports\": [\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/vllm-writer.xml\"\n      ]\n    },\n    {\n      \"name\": \"msa-dev-host-contracts\",\n      \"argv\": [\n        \"<UV_PYTHON>\",\n        \"-m\",\n        \"pytest\",\n        \"-q\",\n        \"-rs\",\n        \"-p\",\n        \"no:cacheprovider\",\n        \"tests/regression/test_icp_consolidation.py\",\n        \"tests/regression/test_icp_dev_compatibility.py\",\n        \"tests/jit_cache/test_cute_aot_cache.py\",\n        \"tests/icp/test_q8kv4_prewarm.py\",\n        \"tests/icp/test_prewarm_cache.py\",\n        \"--junitxml=/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-dev-host-contracts.xml\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public\",\n      \"reports\": [\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-dev-host-contracts.xml\"\n      ]\n    },\n    {\n      \"name\": \"msa-dev-topk\",\n      \"argv\": [\n        \"<UV_PYTHON>\",\n        \"-m\",\n        \"pytest\",\n        \"-q\",\n        \"-rs\",\n        \"-p\",\n        \"no:cacheprovider\",\n        \"tests/smoke/test_sparse_topk_forced.py::test_block_table_gather_after_sort\",\n        \"tests/smoke/test_sparse_topk_large_boundary_bin.py::test_per_token_valid_prefixes_select_exact_topk\",\n        \"--junitxml=/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-dev-topk.xml\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public\",\n      \"reports\": [\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-dev-topk.xml\"\n      ]\n    },\n    {\n      \"name\": \"msa-shared-layouts\",\n      \"argv\": [\n        \"<UV_PYTHON>\",\n        \"-m\",\n        \"pytest\",\n        \"-q\",\n        \"-rs\",\n        \"-p\",\n        \"no:cacheprovider\",\n        \"tests/regression/test_nvfp4_scale_compatibility.py\",\n        \"--junitxml=/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-shared-layouts.xml\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public\",\n      \"reports\": [\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-shared-layouts.xml\"\n      ]\n    },\n    {\n      \"name\": \"msa-local-selection\",\n      \"argv\": [\n        \"<UV_PYTHON>\",\n        \"-m\",\n        \"pytest\",\n        \"-q\",\n        \"-rs\",\n        \"-p\",\n        \"no:cacheprovider\",\n        \"tests/icp/test_candidates.py::test_the_forced_column_is_excluded_on_every_rank\",\n        \"tests/icp/test_candidates.py::test_the_global_id_is_the_scan_origin_plus_the_column\",\n        \"tests/icp/test_candidates.py::test_the_decode_entry_point_is_capturable\",\n        \"tests/icp/test_fused_exchange.py::test_d3_is_bit_identical_to_selector_plus_k2\",\n        \"tests/icp/test_fused_exchange.py::test_multi_chunk_token_offsets_cover_the_extent\",\n        \"tests/icp/test_fused_exchange.py::test_cuda_graph_replay_advances_generations_on_device\",\n        \"--junitxml=/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-local-selection.xml\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public\",\n      \"reports\": [\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/msa-local-selection.xml\"\n      ]\n    }\n  ],\n  \"environment\": {\n    \"PATH\": \"<UV_ENV_BIN>:<CUDA_HOME>/bin:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.codex/tmp/arg0/codex-arg0H8pOxn:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/home/fans/.codex/tmp/arg0/codex-arg0QUze2q:/home/fans/.npm-global/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.linuxbrew/bin:/home/fans/.linuxbrew/sbin:/home/fans/.bun/bin:/home/fans/.cargo/bin:/home/fans/.npm-global/bin:/home/fans/git-trt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/p4v/bin/:/opt/pycharm-community-2020.3.3/bin/\",\n    \"PYTHONPATH\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python\",\n    \"PYTHONDONTWRITEBYTECODE\": \"1\",\n    \"PYTHONNOUSERSITE\": \"1\",\n    \"PYTEST_DISABLE_PLUGIN_AUTOLOAD\": \"1\",\n    \"GIT_OPTIONAL_LOCKS\": \"0\",\n    \"VLLM_TARGET_DEVICE\": \"cuda\",\n    \"CUDA_HOME\": \"<CUDA_HOME>\",\n    \"CUDA_TOOLKIT_PATH\": \"<CUDA_HOME>\",\n    \"CUDA_PATH\": \"<CUDA_HOME>\",\n    \"CUDACXX\": \"<CUDA_HOME>/bin/nvcc\",\n    \"CXX\": \"<CXX>\",\n    \"CUTLASS_ROOT\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python/fmha_sm100/cutlass\",\n    \"CUTLASS_PATH\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python/fmha_sm100/cutlass\",\n    \"FMHA_SM100_DECODE_Q8KV4_ARCH\": \"107a\",\n    \"CUDA_VISIBLE_DEVICES\": \"<GPU_UUIDS>\",\n    \"TORCH_CUDA_ARCH_LIST\": \"10.7\",\n    \"ICP_KERNEL_ARCH\": \"107a\",\n    \"MSA_REGISTER_TVM_FFI\": \"0\",\n    \"RANK\": \"0\",\n    \"LOCAL_RANK\": \"0\",\n    \"WORLD_SIZE\": \"1\",\n    \"HF_HUB_OFFLINE\": \"1\",\n    \"TRANSFORMERS_OFFLINE\": \"1\",\n    \"XDG_CACHE_HOME\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache\",\n    \"UV_CACHE_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/uv\",\n    \"TORCH_EXTENSIONS_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/torch-extensions\",\n    \"ICP_CACHE_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/msa-icp\",\n    \"VLLM_CACHE_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/vllm\",\n    \"VLLM_CONFIG_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/vllm-config\",\n    \"HF_HOME\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/huggingface\",\n    \"TRITON_CACHE_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/triton\",\n    \"CUDA_CACHE_PATH\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/cache/cuda\",\n    \"TMPDIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/correctness/tmp\"\n  },\n  \"removed_environment\": [],\n  \"target_spec\": {},\n  \"benchmark\": false,\n  \"separately_reviewed_suites\": [\n    \"tests/q8kv4\",\n    \"tests/q8kv4_prefill\"\n  ],\n  \"dry_run\": true,\n  \"unresolved\": \"Supply reviewed target-spec, fresh output and build-evidence for correctness modes\"\n}\n",
+      "stderr": "",
+      "output_created": false,
+      "expected_unsealed_refusal": false
+    },
+    {
+      "mode": "distributed",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "{\n  \"mode\": \"distributed\",\n  \"manifest_sha256\": \"0c2a96870fed4b22fe550fc4402b5cd9cd2867922b20f6fd5c4f1387d484d1b1\",\n  \"sources\": {\n    \"msa\": {\n      \"head\": \"0f658079c9ea9ab63c76b975b7ee4dd54a198334\",\n      \"tree\": \"3c19a18efae28719bffd05fcf6f3a9614b853d5c\",\n      \"branch\": \"work/icp-dev-public-compat\",\n      \"base\": \"ed4e40efcb5895aba1a3554d62cd1dcaf77920cb\"\n    },\n    \"vllm\": {\n      \"head\": \"516bd9a9d9962aff25582f774a49640e022bf348\",\n      \"tree\": \"2452f18ca43c02b0e5199eda9672c8b1dfd4cb55\",\n      \"branch\": \"work/icp-public-vllm\",\n      \"base\": \"242e4213fc9845ff6fe607af1aee626fd8acc990\"\n    }\n  },\n  \"commands\": [\n    {\n      \"name\": \"distributed-transport\",\n      \"argv\": [\n        \"<UV_PYTHON>\",\n        \"-m\",\n        \"torch.distributed.run\",\n        \"--standalone\",\n        \"--nnodes=1\",\n        \"--nproc-per-node=2\",\n        \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/vllm-public-consolidation-20261008/target-validation/check_sm107.py\",\n        \"--execute\",\n        \"--worker-plan\",\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/worker-plan.json\"\n      ],\n      \"cwd\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public\",\n      \"reports\": [\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/distributed-rank-0.xml\",\n        \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/distributed-rank-1.xml\"\n      ]\n    }\n  ],\n  \"environment\": {\n    \"PATH\": \"<UV_ENV_BIN>:<CUDA_HOME>/bin:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.codex/tmp/arg0/codex-arg0H8pOxn:/home/fans/.codex/packages/app-server-daemon/releases/0.161.0-x86_64-unknown-linux-musl/codex-path:/home/fans/.codex/tmp/arg0/codex-arg0QUze2q:/home/fans/.npm-global/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/usr/local/cuda-12.5/bin:/home/fans/.local/bin:/home/fans/.linuxbrew/bin:/home/fans/.linuxbrew/sbin:/home/fans/.bun/bin:/home/fans/.cargo/bin:/home/fans/.npm-global/bin:/home/fans/git-trt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/p4v/bin/:/opt/pycharm-community-2020.3.3/bin/\",\n    \"PYTHONPATH\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public:/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python\",\n    \"PYTHONDONTWRITEBYTECODE\": \"1\",\n    \"PYTHONNOUSERSITE\": \"1\",\n    \"PYTEST_DISABLE_PLUGIN_AUTOLOAD\": \"1\",\n    \"GIT_OPTIONAL_LOCKS\": \"0\",\n    \"VLLM_TARGET_DEVICE\": \"cuda\",\n    \"CUDA_HOME\": \"<CUDA_HOME>\",\n    \"CUDA_TOOLKIT_PATH\": \"<CUDA_HOME>\",\n    \"CUDA_PATH\": \"<CUDA_HOME>\",\n    \"CUDACXX\": \"<CUDA_HOME>/bin/nvcc\",\n    \"CXX\": \"<CXX>\",\n    \"CUTLASS_ROOT\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python/fmha_sm100/cutlass\",\n    \"CUTLASS_PATH\": \"/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/msa-dev-public/python/fmha_sm100/cutlass\",\n    \"FMHA_SM100_DECODE_Q8KV4_ARCH\": \"107a\",\n    \"CUDA_VISIBLE_DEVICES\": \"<GPU_UUIDS>\",\n    \"TORCH_CUDA_ARCH_LIST\": \"10.7\",\n    \"ICP_KERNEL_ARCH\": \"107a\",\n    \"MSA_REGISTER_TVM_FFI\": \"0\",\n    \"RANK\": \"0\",\n    \"LOCAL_RANK\": \"0\",\n    \"WORLD_SIZE\": \"1\",\n    \"HF_HUB_OFFLINE\": \"1\",\n    \"TRANSFORMERS_OFFLINE\": \"1\",\n    \"XDG_CACHE_HOME\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache\",\n    \"UV_CACHE_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/uv\",\n    \"TORCH_EXTENSIONS_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/torch-extensions\",\n    \"ICP_CACHE_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/msa-icp\",\n    \"VLLM_CACHE_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/vllm\",\n    \"VLLM_CONFIG_ROOT\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/vllm-config\",\n    \"HF_HOME\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/huggingface\",\n    \"TRITON_CACHE_DIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/triton\",\n    \"CUDA_CACHE_PATH\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/cache/cuda\",\n    \"TMPDIR\": \"/tmp/vllm-public-actual-dry-l8qbeda_/distributed/tmp\"\n  },\n  \"removed_environment\": [],\n  \"target_spec\": {},\n  \"benchmark\": false,\n  \"separately_reviewed_suites\": [\n    \"tests/q8kv4\",\n    \"tests/q8kv4_prefill\"\n  ],\n  \"dry_run\": true,\n  \"unresolved\": \"Supply reviewed target-spec, fresh output and build-evidence for correctness modes\"\n}\n",
+      "stderr": "",
+      "output_created": false,
+      "expected_unsealed_refusal": false
+    }
+  ],
+  "actual_candidate_pin_verified": true
+}

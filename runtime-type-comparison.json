@@ -1,0 +1,203 @@
+{
+  "mypy_version": "1.20.2",
+  "python_target": "3.11",
+  "base": "242e4213fc9845ff6fe607af1aee626fd8acc990",
+  "base_error_count": 19,
+  "candidate_error_count": 19,
+  "new_errors": [],
+  "resolved_errors": [],
+  "base_errors": [
+    {
+      "path": "vllm/v1/worker/gpu/cudagraph_utils.py",
+      "line": 494,
+      "message": "Argument 2 to \"graph\" has incompatible type \"tuple[int, int] | None\"; expected \"_POOL_HANDLE | MemPool | None\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/cudagraph_utils.py",
+      "line": 606,
+      "message": "Signature of \"capture\" incompatible with supertype \"CudaGraphManager\"  [override]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/dp_utils.py",
+      "line": 88,
+      "message": "No overload variant of \"all\" matches argument type \"bool\"  [call-overload]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/dp_utils.py",
+      "line": 112,
+      "message": "Argument \"uniform_decode\" to \"check_ubatch_thresholds\" has incompatible type \"Literal[False] | Tensor\"; expected \"bool\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 875,
+      "message": "Argument \"num_sampled_tokens\" to \"maybe_dummy_run_with_lora\" of \"LoRAModelRunnerMixin\" has incompatible type \"None\"; expected \"ndarray[tuple[Any, ...], dtype[Any]]\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 918,
+      "message": "Argument 1 to \"_get_drafter_hidden_states\" of \"GPUModelRunner\" has incompatible type \"Tensor | None\"; expected \"Tensor\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 1404,
+      "message": "Argument 1 to \"compact_batch\" of \"AdaptiveVerificationManager\" has incompatible type \"ndarray[tuple[Any, ...], dtype[Any]] | None\"; expected \"ndarray[tuple[Any, ...], dtype[Any]]\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 1940,
+      "message": "Incompatible types in assignment (expression has type \"None\", variable has type \"Tensor\")  [assignment]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 1994,
+      "message": "Argument 1 to \"pre_forward\" of \"KVConnector\" has incompatible type \"**dict[str, object]\"; expected \"SchedulerOutput\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 2019,
+      "message": "Argument 1 to \"pre_forward\" of \"KVConnector\" has incompatible type \"**dict[str, object]\"; expected \"SchedulerOutput\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 2130,
+      "message": "Argument 2 to \"postprocess_state\" of \"ModelState\" has incompatible type \"int\"; expected \"Tensor\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 2315,
+      "message": "Argument 1 to \"pool\" of \"PoolingRunner\" has incompatible type \"Tensor | None\"; expected \"Tensor\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 165,
+      "message": "Missing positional argument \"self\" in call to \"priority_range\" of \"_CudaStreamBase\"  [call-arg]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 198,
+      "message": "Argument 3 to \"init\" of \"DiskBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 199,
+      "message": "Argument 4 to \"init\" of \"DiskBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 242,
+      "message": "Argument 4 to \"init\" of \"DmaCopyBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 243,
+      "message": "Argument 5 to \"init\" of \"DmaCopyBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "tests/v1/worker/test_gpu_ubatch_slicing.py",
+      "line": 96,
+      "message": "Need type annotation for \"query_start_loc_np\"  [var-annotated]"
+    },
+    {
+      "path": "tests/v1/worker/test_gpu_ubatch_slicing.py",
+      "line": 107,
+      "message": "Need type annotation for \"seq_lens_upper_bound\"  [var-annotated]"
+    }
+  ],
+  "candidate_errors": [
+    {
+      "path": "vllm/v1/worker/gpu/cudagraph_utils.py",
+      "line": 505,
+      "message": "Argument 2 to \"graph\" has incompatible type \"tuple[int, int] | None\"; expected \"_POOL_HANDLE | MemPool | None\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/cudagraph_utils.py",
+      "line": 631,
+      "message": "Signature of \"capture\" incompatible with supertype \"CudaGraphManager\"  [override]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/dp_utils.py",
+      "line": 100,
+      "message": "No overload variant of \"all\" matches argument type \"bool\"  [call-overload]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/dp_utils.py",
+      "line": 124,
+      "message": "Argument \"uniform_decode\" to \"check_ubatch_thresholds\" has incompatible type \"Literal[False] | Tensor\"; expected \"bool\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 882,
+      "message": "Argument \"num_sampled_tokens\" to \"maybe_dummy_run_with_lora\" of \"LoRAModelRunnerMixin\" has incompatible type \"None\"; expected \"ndarray[tuple[Any, ...], dtype[Any]]\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 925,
+      "message": "Argument 1 to \"_get_drafter_hidden_states\" of \"GPUModelRunner\" has incompatible type \"Tensor | None\"; expected \"Tensor\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 1411,
+      "message": "Argument 1 to \"compact_batch\" of \"AdaptiveVerificationManager\" has incompatible type \"ndarray[tuple[Any, ...], dtype[Any]] | None\"; expected \"ndarray[tuple[Any, ...], dtype[Any]]\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 1951,
+      "message": "Incompatible types in assignment (expression has type \"None\", variable has type \"Tensor\")  [assignment]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 2005,
+      "message": "Argument 1 to \"pre_forward\" of \"KVConnector\" has incompatible type \"**dict[str, object]\"; expected \"SchedulerOutput\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 2031,
+      "message": "Argument 1 to \"pre_forward\" of \"KVConnector\" has incompatible type \"**dict[str, object]\"; expected \"SchedulerOutput\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 2142,
+      "message": "Argument 2 to \"postprocess_state\" of \"ModelState\" has incompatible type \"int\"; expected \"Tensor\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/worker/gpu/model_runner.py",
+      "line": 2327,
+      "message": "Argument 1 to \"pool\" of \"PoolingRunner\" has incompatible type \"Tensor | None\"; expected \"Tensor\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 171,
+      "message": "Missing positional argument \"self\" in call to \"priority_range\" of \"_CudaStreamBase\"  [call-arg]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 204,
+      "message": "Argument 3 to \"init\" of \"DiskBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 205,
+      "message": "Argument 4 to \"init\" of \"DiskBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 249,
+      "message": "Argument 4 to \"init\" of \"DmaCopyBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "vllm/v1/simple_kv_offload/worker.py",
+      "line": 250,
+      "message": "Argument 5 to \"init\" of \"DmaCopyBackend\" has incompatible type \"Stream | None\"; expected \"Stream\"  [arg-type]"
+    },
+    {
+      "path": "tests/v1/worker/test_gpu_ubatch_slicing.py",
+      "line": 96,
+      "message": "Need type annotation for \"query_start_loc_np\"  [var-annotated]"
+    },
+    {
+      "path": "tests/v1/worker/test_gpu_ubatch_slicing.py",
+      "line": 107,
+      "message": "Need type annotation for \"seq_lens_upper_bound\"  [var-annotated]"
+    }
+  ]
+}

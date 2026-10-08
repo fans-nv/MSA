@@ -1,0 +1,15 @@
+[
+  "/usr/bin/g++",
+  "-std=c++17",
+  "-fsyntax-only",
+  "-DTORCH_TARGET_VERSION=0x020B000000000000ULL",
+  "-DUSE_CUDA",
+  "-I/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/v13-formal/.venv/lib/python3.12/site-packages/torch/include",
+  "-I/home/fans/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/include/python3.12",
+  "-I/tmp/cu134/nvidia/cu13/include",
+  "-I/tmp/cu134/nvidia/cu13/include/cccl",
+  "-I/home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/review/upstream-consolidation-20261007/logs/writer-sm107-cu134-r2/cublas-declarations",
+  "-Icsrc",
+  "-Icsrc/libtorch_stable",
+  "csrc/libtorch_stable/torch_bindings.cpp"
+]

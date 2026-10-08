@@ -1,0 +1,22 @@
+........................................................................ [ 32%]
+...........................s............................................ [ 64%]
+...................................................................sssss [ 97%]
+s.s.ss                                                                   [100%]
+=============================== warnings summary ===============================
+vllm/__init__.py:7
+  /home/fans/SA-work/MiniMax-M3/rubin-kernel-perf/indexer-dcp-perf/worktrees/vllm-icp-public/vllm/__init__.py:7: RuntimeWarning: Failed to read commit hash:
+  No module named 'vllm._version'
+    from .version import __version__, __version_tuple__  # isort:skip
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/v1/worker/test_gpu_model_runner_v2_cudagraph_profiling.py:436: requires CUDA
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:582: DBO needs a GPU
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:610: DBO needs a GPU
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:639: DBO needs a GPU
+SKIPPED [2] tests/v1/worker/test_gpu_ubatch_slicing.py:748: triton kernel needs CUDA
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:792: triton kernel needs CUDA
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:824: DBO needs a GPU
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:927: needs a graph pool
+SKIPPED [1] tests/v1/worker/test_gpu_ubatch_slicing.py:952: needs a graph pool
+212 passed, 10 skipped, 1 warning in 11.40s
