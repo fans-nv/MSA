@@ -26,6 +26,13 @@
 
 namespace fmha_sm100::decode_q8kv4 {
 
+#ifndef MSA_Q8KV4_CALLBACK_PREFIX
+#define MSA_Q8KV4_CALLBACK_PREFIX "fmha_sm100.decode_q8kv4.native_v2"
+#endif
+#ifndef MSA_Q8KV4_PYTHON_PACKAGE
+#define MSA_Q8KV4_PYTHON_PACKAGE "fmha_sm100.decode_q8kv4"
+#endif
+
 // ============================================================================
 // Initialization — ensures tvm_ffi functions are registered.
 // Called lazily on first API use. Safe from any context.
@@ -39,14 +46,15 @@ void initialize() {
     if (!Py_IsInitialized()) {
       Py_Initialize();
     }
-    // Importing the package registers the JIT callbacks. It may be vendored
-    // under another top-level package (vllm.third_party.fmha_sm100), so look
-    // for the registered callback instead of the module name.
-    if (!tvm::ffi::Function::GetGlobal("fmha_sm100.decode_q8kv4.jit_get_plan")) {
+    // A vendored package and an independently installed package own separate
+    // callbacks, including when an older vendor registers unversioned names.
+    if (!tvm::ffi::Function::GetGlobal(MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_plan")) {
       PyGILState_STATE gstate = PyGILState_Ensure();
-      int const status = PyRun_SimpleString("import fmha_sm100.decode_q8kv4");
+      PyObject *module = PyImport_ImportModule(MSA_Q8KV4_PYTHON_PACKAGE);
+      bool const imported = module != nullptr;
+      Py_XDECREF(module);
       PyGILState_Release(gstate);
-      TORCH_CHECK(status == 0, "failed to import fmha_sm100.decode_q8kv4");
+      TORCH_CHECK(imported, "failed to import " MSA_Q8KV4_PYTHON_PACKAGE);
     }
     g_initialized = true;
   });
@@ -298,7 +306,7 @@ public:
     if (it != plan_fn_cache_.end())
       return it->second;
     auto jit_fn =
-        tvm::ffi::Function::GetGlobalRequired("fmha_sm100.decode_q8kv4.jit_get_plan");
+        tvm::ffi::Function::GetGlobalRequired(MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_plan");
     auto fn = jit_fn((int64_t)device).cast<tvm::ffi::Function>();
     plan_fn_cache_[device] = fn;
     return fn;
@@ -309,7 +317,7 @@ public:
     if (it != reduction_fn_cache_.end())
       return it->second;
     auto jit_fn =
-        tvm::ffi::Function::GetGlobalRequired("fmha_sm100.decode_q8kv4.jit_get_reduction");
+        tvm::ffi::Function::GetGlobalRequired(MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_reduction");
     auto fn = jit_fn((int64_t)device).cast<tvm::ffi::Function>();
     reduction_fn_cache_[device] = fn;
     return fn;
@@ -327,7 +335,7 @@ public:
         return it->second;
     }
     auto jit_fn = tvm::ffi::Function::GetGlobalRequired(
-        "fmha_sm100.decode_q8kv4.jit_get_fmha_fwd_sparse_variant");
+        MSA_Q8KV4_CALLBACK_PREFIX ".jit_get_fmha_fwd_sparse_variant");
     auto fn = jit_fn((int64_t)topk, split_kv, (int64_t)device, (int64_t)gqa_ratio,
                      (int64_t)block_scale_shift)
                   .cast<tvm::ffi::Function>();

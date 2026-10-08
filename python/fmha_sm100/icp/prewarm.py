@@ -17,6 +17,8 @@ require a matching export or a CUDA-device production call as described below:
             objects of one production-form call (needs a CUDA device, or
             ``ICP_NVFP4_AOT_IMPORT`` = the aot dir of such a run for the same
             keyed sources; see ``attention/nvfp4_prefill/_prewarm.py``)
+    q8kv4   main decode's host extension, plan and both GQA16/shift3 forward
+            Recipes, their source records and the cached QMUL4 capability
 
 and writes ``<root>/sm_<arch>/PREWARM-MANIFEST.json``: the MSA commit,
 per-component source digests and per-file hashes, the toolchain, and every
@@ -102,7 +104,8 @@ def environment() -> dict:
     keys = ("TORCH_EXTENSIONS_DIR", "ICP_CACHE_ROOT", "CUDA_HOME", "CC", "CXX",
             "ICP_KERNEL_LINEINFO", "GPU_TRACE", "SM_TIMING", "FMHA_GMEM_CHECK",
             "MM_SPARSE_ATTN_AOT_CACHE", "MM_SPARSE_ATTN_AOT_DISABLE",
-            "MINIMAX_KVFP4_FP8_PAIR_DEQUANT")
+            "MINIMAX_KVFP4_FP8_PAIR_DEQUANT", "CUDACXX", "CUTLASS_ROOT", "CUTLASS_PATH",
+            "FMHA_SM100_DECODE_Q8KV4_ARCH", "FMHA_SM100_DECODE_Q8KV4_DISABLE_QMUL4")
     if os.environ.get("TORCH_EXTENSIONS_DIR") is None:
         # torch's default build directory depends on these when no path is set.
         keys += ("HOME", "XDG_CACHE_HOME")
@@ -177,8 +180,43 @@ def _build_nvfp4(arch: str) -> list[dict]:
     return [_artifact("nvfp4", name, path) for name, path in _prewarm.build(arch)]
 
 
+def _build_q8kv4(arch: str) -> list[dict]:
+    from ..decode_q8kv4 import _build_utils, interface, jit  # noqa: PLC0415
+
+    variable = _build_utils.FMHA_SM100_DECODE_Q8KV4_ARCH
+    previous = os.environ.get(variable)
+    os.environ[variable] = arch
+    jit._target_arch.cache_clear()
+    try:
+        if jit._target_arch() != arch:
+            raise RuntimeError("Q8KV4 prewarm architecture differs from requested target")
+        interface._get_cpp()
+        recipes = jit.icp_prewarm_recipes(arch)
+        jit.get_plan_fn()
+        for split in (False, True):
+            jit.gen_jit_spec(split_kv=split, gqa_ratio=16, block_scale_shift=3).build()
+        out = [_artifact("q8kv4", "cpp_ext", interface.cpp_extension_path())]
+        for name, recipe in recipes.items():
+            path = recipe.lookup()
+            if path is None:
+                raise RuntimeError(f"Q8KV4 prewarm did not publish {name}")
+            out.append(_artifact("q8kv4", name, path))
+            out.append(_artifact("q8kv4", name + ".entry.json", recipe.dir / "entry.json"))
+        namespace = recipes["plan"].namespace
+        out.append(_artifact("q8kv4", "namespace.json", namespace.path / "manifest.json"))
+        out.append(_artifact("q8kv4", "qmul4.result", _build_utils.qmul4_result_path(
+            arch, probe_root=jit._cache_root() / "capability_probes")))
+        return out
+    finally:
+        if previous is None:
+            os.environ.pop(variable, None)
+        else:
+            os.environ[variable] = previous
+        jit._target_arch.cache_clear()
+
+
 BUILDERS = {"icp": _build_icp, "fmha": _build_fmha,
-            "decode": _build_decode, "nvfp4": _build_nvfp4}
+            "decode": _build_decode, "nvfp4": _build_nvfp4, "q8kv4": _build_q8kv4}
 
 
 def build(arch: str, *, components=_cache.COMPONENTS, commit: str | None = None,
@@ -200,7 +238,7 @@ def build(arch: str, *, components=_cache.COMPONENTS, commit: str | None = None,
     inventories = {}
     for component in components:
         print(f"[fmha_sm100.icp.prewarm] {component} for sm_{arch} ...", flush=True)
-        if component in ("icp", "decode", "nvfp4"):
+        if component in ("icp", "decode", "nvfp4", "q8kv4"):
             built = BUILDERS[component](arch)
         else:
             built = BUILDERS[component]()
@@ -267,6 +305,10 @@ def _required_artifact_names(component: str) -> set[str] | None:
         from .scorer.decode import icp_decode_score as d  # noqa: PLC0415
 
         return {d.aot_function_name(*profile) for profile in d.AOT_PROFILES}
+    if component == "q8kv4":
+        names = {"plan", "forward_gqa16_shift3", "forward_split_gqa16_shift3"}
+        return names | {name + ".entry.json" for name in names} | {
+            "cpp_ext", "namespace.json", "qmul4.result"}
     # Writer names contain a torch/flag fingerprint and NVFP4 AOT names depend
     # on runtime compile arguments. Their complete build inventory is recorded.
     return None
@@ -274,6 +316,27 @@ def _required_artifact_names(component: str) -> set[str] | None:
 
 def _native_extension_path(item: dict, arch: str) -> pathlib.Path | None:
     """Resolve host-side cache paths without compiling or loading native code."""
+    if item["component"] == "q8kv4":
+        from ..decode_q8kv4 import _build_utils, interface, jit  # noqa: PLC0415
+
+        name = item["name"]
+        if name == "cpp_ext":
+            return interface.cpp_extension_path()
+        if name == "qmul4.result":
+            return _build_utils.qmul4_result_path(
+                arch, probe_root=jit._cache_root() / "capability_probes")
+        recipes = jit.icp_prewarm_recipes(arch, read_only=True)
+        if name == "namespace.json":
+            return recipes["plan"].namespace.path / "manifest.json"
+        recipe = recipes.get(name.removesuffix(".entry.json"))
+        if recipe is None:
+            raise ValueError(f"q8kv4: unknown prewarm artifact {name}")
+        if name.endswith(".entry.json"):
+            return recipe.dir / "entry.json"
+        path = recipe.lookup()
+        if path is None:
+            raise RuntimeError(f"q8kv4:{name}: no current dev JIT source record; it will JIT")
+        return path
     if item["component"] == "fmha":
         from .scorer.prefill import jit  # noqa: PLC0415
 

@@ -30,10 +30,11 @@ _SIDE_SCALE_BYTES = _HEAD_KV * _BLK * (_HEAD_DIM // 16)
 _SIDE_BYTES = _SIDE_DATA_BYTES + _SIDE_SCALE_BYTES
 _INDEX_BYTES = (_BLK // 2) * _HEAD_DIM
 _COMPOUND_PAGE_BYTES = 2 * _SIDE_BYTES + _INDEX_BYTES
+PREWARM_LAYOUTS = ("v13", "public")
 
 
-def _compound_cache_views(storage):
-    """The admitted TP2/P128 ABI: [K data|K SF|V data|V SF|index] per page.
+def _compound_cache_views(storage, layout="v13"):
+    """The admitted TP2/P128 compound pages, with historical or public slots.
 
     Transfer the backing storage before creating target-device views; copying
     each non-dense view independently would discard the compound page stride.
@@ -44,6 +45,19 @@ def _compound_cache_views(storage):
             or storage.shape[1] != _COMPOUND_PAGE_BYTES or not storage.is_contiguous()):
         raise ValueError("prewarm storage must be dense uint8 [pages,45056]")
     pages = storage.shape[0]
+    if layout == "public":
+        from ....nvfp4_kv import nvfp4_head_slot_views
+
+        slot_bytes = _BLK * (_HEAD_DIM // 2 + _HEAD_DIM // 16)
+        slots = storage.as_strided(
+            (pages, 2 * _HEAD_KV, _BLK, 72),
+            (_COMPOUND_PAGE_BYTES, slot_bytes, 72, 1),
+            storage.storage_offset(),
+        )
+        return dict(zip(("k", "k_sf", "v", "v_sf"),
+                        nvfp4_head_slot_views(slots[:, 0::2], slots[:, 1::2])))
+    if layout != "v13":
+        raise ValueError(f"unknown compound prewarm layout: {layout!r}")
     views = {}
     for name, offset, width in (
         ("k", 0, _HEAD_DIM // 2),
@@ -59,7 +73,7 @@ def _compound_cache_views(storage):
     return views
 
 
-def required_aot_keys(arch):
+def required_aot_keys(arch, *, layouts=PREWARM_LAYOUTS):
     """Exact serving keys, using the same tuple builders as the dev loaders.
 
     This is host-only: Q/output lengths are dynamic, while TP2 head geometry,
@@ -75,20 +89,25 @@ def required_aot_keys(arch):
 
     sm = int(_cache.normalize_arch(arch).removesuffix("a"))
     capability = (sm // 10, sm % 10)
-    views = _compound_cache_views(torch.empty((1, _COMPOUND_PAGE_BYTES), dtype=torch.uint8))
     keys = []
-    for q_dtype, qhead_per_kv, topk in PREWARM_VARIANTS:
-        keys.append(_nvfp4_forward_key(
-            "vllm", _HEAD_KV, views["k"], views["v"], views["k_sf"], views["v_sf"],
-            _HEAD_DIM, _BLK, qhead_per_kv, getattr(torch, q_dtype), torch.bfloat16,
-            True, True, True, _BLK, object(), False,
-            os.environ.get("MINIMAX_KVFP4_FP8_PAIR_DEQUANT", "1") != "0", False, False,
-        ))
-        keys.append(_combine_key(
-            capability, 3 if capability == (10, 7) else 2, _HEAD_DIM, 128, 64,
-            topk, _get_cutlass_dtype(torch.bfloat16), _get_cutlass_dtype(torch.bfloat16),
-            True, False, True, False, True, False, True, 0,
-        ))
+    for layout in layouts:
+        views = _compound_cache_views(
+            torch.empty((1, _COMPOUND_PAGE_BYTES), dtype=torch.uint8), layout)
+        has_global_scales = layout == "public"
+        for q_dtype, qhead_per_kv, topk in PREWARM_VARIANTS:
+            keys.append(_nvfp4_forward_key(
+                "vllm", _HEAD_KV, views["k"], views["v"], views["k_sf"], views["v_sf"],
+                _HEAD_DIM, _BLK, qhead_per_kv, getattr(torch, q_dtype), torch.bfloat16,
+                True, True, True, _BLK, object(), False,
+                os.environ.get("MINIMAX_KVFP4_FP8_PAIR_DEQUANT", "1") != "0",
+                has_global_scales, False,
+            ))
+            keys.append(_combine_key(
+                capability, 3 if capability == (10, 7) else 2, _HEAD_DIM, 128, 64,
+                topk, _get_cutlass_dtype(torch.bfloat16), _get_cutlass_dtype(torch.bfloat16),
+                True, False, True, False, True, has_global_scales, True,
+                3 if has_global_scales and capability != (10, 7) else 0,
+            ))
     return tuple(dict.fromkeys(keys))
 
 
@@ -102,9 +121,10 @@ def required_aot_entries(arch):
 
 def production_call(q_dtype="bfloat16", qhead_per_kv=16, topk=16, *,
                     head_kv=2, q_lens=(200, 64), k_lens=(2000, 600), seed=0,
-                    device="cuda"):
-    """vLLM v13's call shape: transposed q2k view, total_k=0, schedule from the
-    CSR builder, no global scales, a caller-owned ``out``. Returns
+                    device="cuda", layout="v13"):
+    """Serving call: transposed q2k, total_k=0, CSR schedule, caller-owned out.
+
+    The public layout includes calibrated K/V tensor scales; v13 omits them. Returns
     ``(out, inputs)``; K/V bytes are random with unit block scales."""
     import torch  # noqa: PLC0415
 
@@ -135,7 +155,7 @@ def production_call(q_dtype="bfloat16", qhead_per_kv=16, topk=16, *,
     q = torch.randn((total_q, heads, dim), generator=g).to(dtype)
     storage = torch.randint(0, 256, (num_pages, _COMPOUND_PAGE_BYTES), generator=g,
                             dtype=torch.uint8)
-    cpu_views = _compound_cache_views(storage)
+    cpu_views = _compound_cache_views(storage, layout)
     cpu_views["k_sf"].fill_(0x38)
     cpu_views["v_sf"].fill_(0x38)
     cu_q = torch.tensor([0, *torch.tensor(q_lens).cumsum(0).tolist()], dtype=torch.int32)
@@ -144,14 +164,19 @@ def production_call(q_dtype="bfloat16", qhead_per_kv=16, topk=16, *,
     inputs = {name: t.to(device) for name, t in dict(
         q=q, q2k=q2k, page_table=table,
         cu_seqlens_q=cu_q, cu_seqlens_k=cu_k, seq_lens=seq).items()}
-    inputs.update(_compound_cache_views(storage.to(device)))
+    inputs.update(_compound_cache_views(storage.to(device), layout))
+    inputs["k_global_scale"] = (
+        torch.tensor([0.75], dtype=torch.float32, device=device) if layout == "public" else None)
+    inputs["v_global_scale"] = (
+        torch.tensor([1.25], dtype=torch.float32, device=device) if layout == "public" else None)
     rowptr, qidx, schedule = build_k2q_csr(
         inputs["q2k"].transpose(0, 1), inputs["cu_seqlens_q"], inputs["cu_seqlens_k"],
         _BLK, total_k=0, max_seqlen_k=max(k_lens), max_seqlen_q=max(q_lens),
         total_rows=sum(pages), qhead_per_kv=qhead_per_kv, return_schedule=True)
     out = torch.empty((total_q, heads, dim), dtype=torch.bfloat16, device=device)
     sparse_atten_nvfp4_kv_func(
-        inputs["q"], inputs["k"], inputs["v"], inputs["k_sf"], inputs["v_sf"], None, None,
+        inputs["q"], inputs["k"], inputs["v"], inputs["k_sf"], inputs["v_sf"],
+        inputs["k_global_scale"], inputs["v_global_scale"],
         rowptr, qidx, topK=topk, blk_kv=_BLK, causal=True, softmax_scale=dim ** -0.5,
         cu_seqlens_q=inputs["cu_seqlens_q"], cu_seqlens_k=inputs["cu_seqlens_k"],
         max_seqlen_q=max(q_lens), max_seqlen_k=max(k_lens),
@@ -230,8 +255,9 @@ def build(arch: str) -> list[tuple[str, pathlib.Path]]:
     import torch  # noqa: PLC0415
 
     if torch.cuda.is_available():
-        for variant in PREWARM_VARIANTS:
-            production_call(*variant)
+        for layout in PREWARM_LAYOUTS:
+            for variant in PREWARM_VARIANTS:
+                production_call(*variant, layout=layout)
         torch.cuda.synchronize()
     else:
         source = os.environ.get(IMPORT_ENV)

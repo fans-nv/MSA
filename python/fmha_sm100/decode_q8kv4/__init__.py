@@ -80,17 +80,17 @@ try:
         return get_reduction_module(None if device is None else int(device)).reduction
 
     tvm_ffi.register_global_func(
-        "fmha_sm100.decode_q8kv4.jit_get_fmha_fwd_sparse_variant",
+        f"{__name__}.native_v2.jit_get_fmha_fwd_sparse_variant",
         _jit_get_fmha_fwd_sparse_variant,
         override=True,
     )
     tvm_ffi.register_global_func(
-        "fmha_sm100.decode_q8kv4.jit_get_plan",
+        f"{__name__}.native_v2.jit_get_plan",
         _jit_get_plan,
         override=True,
     )
     tvm_ffi.register_global_func(
-        "fmha_sm100.decode_q8kv4.jit_get_reduction",
+        f"{__name__}.native_v2.jit_get_reduction",
         _jit_get_reduction,
         override=True,
     )

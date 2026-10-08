@@ -54,6 +54,9 @@ def root(tmp_path, monkeypatch):
         ("fmha", "_jit_cache.py"),
         ("decode", "icp/scorer/decode/_icp_decode_score_kernel.py"),
         ("nvfp4", "cute/src/sm100/fwd/atten_fwd_nvfp4_kv.py"),
+        ("nvfp4", "icp/attention/nvfp4_prefill/_prewarm.py"),
+        ("q8kv4", "decode_q8kv4/interface.py"),
+        ("q8kv4", "decode_q8kv4/csrc/api/decode_attention_api.cpp"),
     ],
 )
 def test_a_source_edit_moves_only_its_components_directory(
@@ -64,7 +67,10 @@ def test_a_source_edit_moves_only_its_components_directory(
         f.write("\n// edit\n" if not edit.endswith(".py") else "\n# edit\n")
     after = {c: _cache.component_dir(c, "107a") for c in _cache.COMPONENTS}
     assert before[component] != after[component]
-    assert {c for c in _cache.COMPONENTS if before[c] != after[c]} == {component}
+    expected = {component}
+    if edit == "_jit_cache.py":
+        expected.add("q8kv4")
+    assert {c for c in _cache.COMPONENTS if before[c] != after[c]} == expected
 
 
 def test_arch_is_in_the_key_and_normalised(root):
@@ -455,7 +461,7 @@ def test_nvfp4_export_without_source_metadata_is_not_a_cache_hit(tmp_path, monke
 
 
 def _captured_production_call(
-    monkeypatch, *, compact=False, capability=(10, 7), q_dtype="bfloat16"
+    monkeypatch, *, compact=False, capability=(10, 7), q_dtype="bfloat16", layout="v13"
 ):
     """Run real public forward/combine host paths; substitute only native leaves."""
     from fmha_sm100.cute import interface
@@ -509,7 +515,7 @@ def _captured_production_call(
         patch.setitem(nvfp4_prefill.__dict__, "build_k2q_csr", csr)
         patch.setitem(nvfp4_prefill.__dict__, "sparse_atten_nvfp4_kv_func", attend)
         _, inputs = _prewarm.production_call(
-            q_dtype, q_lens=(2, 1), k_lens=(256, 128), device="cpu"
+            q_dtype, q_lens=(2, 1), k_lens=(256, 128), device="cpu", layout=layout
         )
     return calls, inputs
 
@@ -519,7 +525,7 @@ def test_production_fixture_matches_compound_abi_and_actual_loader_keys(monkeypa
 
     calls, inputs = _captured_production_call(monkeypatch)
     assert len(calls) == 2
-    assert {key for key, _ in calls} == set(required_aot_keys("107a"))
+    assert {key for key, _ in calls} == set(required_aot_keys("107a", layouts=("v13",)))
     expected = {"k": (0, 64), "k_sf": (16384, 8), "v": (18432, 64), "v_sf": (34816, 8)}
     storage_pointer = inputs["k"].untyped_storage().data_ptr()
     for name, (offset, width) in expected.items():
@@ -536,6 +542,42 @@ def test_production_fixture_matches_compound_abi_and_actual_loader_keys(monkeypa
         assert calls[0][1][index] is inputs[name]
     assert calls[0][1][4:6] == (None, None)
     assert calls[1][0][1:3] == ((10, 7), 3)
+
+
+@pytest.mark.parametrize("capability", [(10, 0), (10, 3), (10, 7)])
+def test_public_production_profile_uses_head_slots_and_calibrated_scales(monkeypatch, capability):
+    from fmha_sm100.icp.attention.nvfp4_prefill._prewarm import required_aot_keys
+
+    calls, inputs = _captured_production_call(monkeypatch, layout="public", capability=capability)
+    assert len(calls) == 2
+    assert {key for key, _ in calls} == set(required_aot_keys(capability, layouts=("public",)))
+    pointer = inputs["k"].untyped_storage().data_ptr()
+    for name, offset, width in (("k", 0, 64), ("k_sf", 8192, 8),
+                                ("v", 9216, 64), ("v_sf", 17408, 8)):
+        tensor = inputs[name]
+        assert tensor.shape == (6, 2, 128, width)
+        assert tensor.stride() == (45056, 18432, width, 1)
+        assert tensor.storage_offset() == offset
+        assert tensor.untyped_storage().data_ptr() == pointer
+    # Actual launch arguments: K calibration in forward; V only in combine.
+    assert calls[0][1][4].data_ptr() == inputs["k_global_scale"].data_ptr()
+    assert calls[0][1][5] is None
+    assert any(isinstance(arg, torch.Tensor)
+               and arg.data_ptr() == inputs["v_global_scale"].data_ptr()
+               for arg in calls[1][1])
+    assert calls[1][0][1:3] == (capability, 3 if capability == (10, 7) else 2)
+
+
+def test_historical_aot_export_does_not_admit_public_layout(tmp_path, monkeypatch):
+    from fmha_sm100.icp.attention.nvfp4_prefill._prewarm import _import_aot_objects
+
+    calls, _ = _captured_production_call(monkeypatch)
+    source = tmp_path / "source/sm_107a/nvfp4-digest/aot/v2/toolchain"
+    target = tmp_path / "target/sm_107a/nvfp4-digest/aot/v2/toolchain"
+    _aot_export_fixture(source, monkeypatch, keys=[key for key, _ in calls])
+    with pytest.raises(SystemExit, match="missing required production AOT keys"):
+        _import_aot_objects(source, target)
+    assert not target.exists()
 
 
 @pytest.mark.parametrize("variant", ["compact", "sm100", "fp8_q", "dequant"])
