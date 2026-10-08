@@ -11,10 +11,10 @@
 namespace py = pybind11;
 using namespace fmha_sm100::decode_q8kv4;
 
-PYBIND11_MODULE(_fmha_sm100_decode_q8kv4_cpp, module) {
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, module) {
   module.doc() = "SM100 Q8KV4 paged sparse decode attention backend";
 
-  py::class_<PlanInfo, std::unique_ptr<PlanInfo>>(module, "_PlanHandle");
+  py::class_<PlanInfo, std::unique_ptr<PlanInfo>>(module, "_PlanHandle", py::module_local());
 
   module.def("plan_decode", &make_decode_plan, py::arg("qo_segment_lens"),
              py::arg("kv_segment_lens"), py::arg("num_qo_heads"), py::arg("num_kv_heads"),

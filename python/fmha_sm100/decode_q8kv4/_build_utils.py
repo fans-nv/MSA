@@ -237,6 +237,29 @@ def build_lock(cache_dir: Path):
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
+def qmul4_result_path(arch: str, *, probe_root: Path) -> Path:
+    """Resolve the existing capability cache without compiling a probe."""
+    nvcc = cuda_home() / "bin/nvcc"
+    probe_key = hashlib.sha256()
+    probe_key.update(str(nvcc.resolve()).encode())
+    probe_key.update(str(cuda_version()).encode())
+    probe_key.update(arch.encode())
+    probe_key.update(QMUL4_PROBE_SOURCE.encode())
+    return probe_root / probe_key.hexdigest()[:16] / "qmul4.result"
+
+
+def cached_qmul4_support(arch: str, *, probe_root: Path) -> bool:
+    """Read the selected toolchain's verdict; a missing or invalid record is an error."""
+    path = qmul4_result_path(arch, probe_root=probe_root)
+    try:
+        result = path.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise RuntimeError(f"Missing Q8KV4 capability record: {path}") from exc
+    if result not in ("supported", "unsupported"):
+        raise RuntimeError(f"Invalid Q8KV4 capability record: {path}")
+    return result == "supported"
+
+
 def supports_qmul4(arch: str, *, probe_root: Path) -> bool:
     """Return whether the selected NVCC accepts the public QMUL4 PTX form for ``arch``.
 
@@ -245,12 +268,7 @@ def supports_qmul4(arch: str, *, probe_root: Path) -> bool:
     """
 
     nvcc = cuda_home() / "bin/nvcc"
-    probe_key = hashlib.sha256()
-    probe_key.update(str(nvcc.resolve()).encode())
-    probe_key.update(str(cuda_version()).encode())
-    probe_key.update(arch.encode())
-    probe_key.update(QMUL4_PROBE_SOURCE.encode())
-    probe_dir = probe_root / probe_key.hexdigest()[:16]
+    probe_dir = qmul4_result_path(arch, probe_root=probe_root).parent
     with build_lock(probe_dir):
         return _probe_qmul4(nvcc, arch, probe_dir)
 
@@ -260,6 +278,9 @@ def _probe_qmul4(nvcc: Path, arch: str, probe_dir: Path) -> bool:
     if result_path.is_file():
         return result_path.read_text(encoding="utf-8").strip() == "supported"
 
+    from ..icp import _jit_guard
+
+    _jit_guard.on_compile("q8kv4", "qmul4_probe", arch=arch, where=str(probe_dir))
     probe_dir.mkdir(parents=True, exist_ok=True)
     source_path = probe_dir / "qmul4_probe.cu"
     object_path = probe_dir / f"qmul4_probe.{os.getpid()}.o"

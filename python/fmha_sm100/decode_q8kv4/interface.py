@@ -5,19 +5,27 @@
 
 from __future__ import annotations
 
+import hashlib
+import importlib.util
 import logging
 import math
 import os
+import shlex
+import shutil
+import subprocess
+import sys
+import sysconfig
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 import torch
 
-logger = logging.getLogger(__name__)
-
-from ._build_utils import cuda_home
+from ._build_utils import build_lock, cuda_home, cuda_version
 from .jit import MAX_BLOCK_SCALE_SHIFT as _MAX_BLOCK_SCALE_SHIFT
 from .jit import MAX_TOPK as _MAX_TOPK
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "BatchDecodeWithPagedKVCacheWrapper",
@@ -154,10 +162,116 @@ def _select_num_kv_splits(
     return selected
 
 
+def _cpp_toolchain_identity() -> tuple:
+    """Fingerprint the resolved host compiler and CUDA toolkit without compiling."""
+    command = shlex.split(os.environ.get("CXX", "c++"))
+    if not command or (compiler := shutil.which(command[0])) is None:
+        raise RuntimeError(f"Cannot resolve Q8KV4 host compiler: {command}")
+    version = subprocess.run(
+        [compiler, *command[1:], "--version"],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=10,
+    )
+    executables = [Path(compiler).resolve()]
+    # Preserve ordinary CXX launcher support (for example 'ccache g++').
+    executables.extend(
+        Path(found).resolve()
+        for arg in command[1:]
+        if not arg.startswith("-") and (found := shutil.which(arg))
+    )
+    toolkit = cuda_home()
+    executables.append((toolkit / "bin/nvcc").resolve())
+    hashes = tuple(
+        (str(path), hashlib.sha256(path.read_bytes()).hexdigest())
+        for path in executables
+    )
+    return (
+        tuple(command),
+        hashes,
+        version.stdout,
+        version.stderr,
+        str(toolkit),
+        cuda_version(),
+    )
+
+
+def cpp_extension_name() -> str:
+    """Separate host modules by source, Python ABI and callback ownership."""
+    import tvm_ffi
+
+    root = Path(__file__).resolve().parent
+    digest = hashlib.sha256()
+    for path in sorted((root / "csrc/api").glob("*")):
+        if path.is_file():
+            digest.update(path.name.encode() + b"\0" + path.read_bytes())
+    for name in ("interface.py", "__init__.py", "_build_utils.py"):
+        digest.update((root / name).read_bytes())
+    identity = (
+        __package__,
+        torch.__version__,
+        torch.version.cuda,
+        getattr(tvm_ffi, "__version__", None),
+        sysconfig.get_config_var("SOABI"),
+        _cpp_toolchain_identity(),
+    )
+    digest.update(repr(identity).encode())
+    return f"_fmha_sm100_decode_q8kv4_cpp_{digest.hexdigest()[:16]}"
+
+
+def cpp_extension_path() -> Path:
+    """Resolve the actual host-library path without creating a build directory."""
+    from torch.utils.cpp_extension import get_default_build_root
+
+    root = os.environ.get("TORCH_EXTENSIONS_DIR")
+    if root is None:
+        accelerator = (
+            f"rocm{torch.version.hip.replace('.', '')}"
+            if torch.version.hip
+            else f"cu{torch.version.cuda.replace('.', '')}"
+            if torch.version.cuda
+            else "cpu"
+        )
+        python = f"py{sys.version_info.major}{sys.version_info.minor}{getattr(sys, 'abiflags', '')}"
+        root = os.path.join(get_default_build_root(), f"{python}_{accelerator}")
+    name = cpp_extension_name()
+    return Path(root).expanduser() / name / f"{name}.so"
+
+
+def _cpp_compile_flags() -> list[str]:
+    return [
+        "-std=c++20",
+        "-O2",
+        f'-DMSA_Q8KV4_CALLBACK_PREFIX=\\"{__package__}.native_v2\\"',
+        f'-DMSA_Q8KV4_PYTHON_PACKAGE=\\"{__package__}\\"',
+    ]
+
+
 def _jit_compile_cpp_backend():
-    """JIT-compile the C++ backend using torch.utils.cpp_extension.load()."""
+    """Serialize first-use build and cache loading across ranks."""
+    path = cpp_extension_path()
+    with build_lock(path.parent):
+        return _load_or_build_cpp_backend(path)
+
+
+def _load_or_build_cpp_backend(path: Path):
+    """Load a completed host library or build it while holding its directory lock."""
     import tvm_ffi
     from torch.utils.cpp_extension import load
+
+    from ..icp import _jit_guard
+
+    name = path.stem
+    if path.is_file():
+        spec = importlib.util.spec_from_file_location(name, path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Cannot load Q8KV4 host extension: {path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    _jit_guard.on_compile("q8kv4", name, where=str(path.parent))
+    path.parent.mkdir(parents=True, exist_ok=True)
 
     pkg_dir = os.path.dirname(os.path.abspath(__file__))
     csrc_dir = os.path.join(pkg_dir, "csrc")
@@ -171,7 +285,7 @@ def _jit_compile_cpp_backend():
 
     started_at = time.time()
     cpp = load(
-        name="_fmha_sm100_decode_q8kv4_cpp",
+        name=name,
         sources=[
             os.path.join(csrc_dir, "api", "decode_attention_api.cpp"),
             os.path.join(csrc_dir, "api", "decode_attention_binding.cpp"),
@@ -182,7 +296,8 @@ def _jit_compile_cpp_backend():
             "-ltvm_ffi",
             f"-Wl,-rpath,{os.path.join(tvm_ffi_dir, 'lib')}",
         ],
-        extra_cflags=["-std=c++20", "-O2"],
+        extra_cflags=_cpp_compile_flags(),
+        build_directory=str(path.parent),
         verbose=True,
     )
     logger.info(
@@ -244,10 +359,13 @@ def _prepare_decode_plan(
     topk: int,
     num_kv_splits: int | None = None,
     usable_sm_count: int | None = None,
+    split_mode: str | None = None,
 ):
     """Prepare the opaque reusable schedule used by the public wrapper."""
     from . import jit
 
+    if split_mode not in (None, "legacy", "streamk"):
+        raise ValueError("split_mode must be None, 'legacy', or 'streamk'")
     batch_size, q_len_per_req = _normalize_decode_shape(batch_size, q_len_per_req)
 
     device_idx = _device_index(device)
@@ -276,7 +394,7 @@ def _prepare_decode_plan(
         usable_sm_count=sm_count,
         device=device_idx,
         topk=topk,
-        split_mode=(
+        split_mode=split_mode if split_mode is not None else (
             _split_mode(
                 num_q_heads // num_kv_heads,
                 batch_size * q_len_per_req * num_kv_heads,
@@ -367,6 +485,7 @@ def plan_decode(
     num_kv_splits: int | None = None,
     usable_sm_count: int | None = None,
     block_scale_shift: int = 0,
+    split_mode: str | None = None,
 ) -> DecodePlan:
     """Build the reusable schedule outside CUDA Graph capture.
 
@@ -374,6 +493,11 @@ def plan_decode(
     query tokens each, the head layout, and the TopK width (1..64). Lengths, page tables and
     TopK lists are run-time inputs of :func:`run_decode`, so one plan serves every layer of a
     step.
+
+    ``split_mode`` optionally selects the direct (``"legacy"``) or persistent
+    (``"streamk"``) schedule independently of ``num_kv_splits``. None retains
+    automatic selection when splits are unspecified, or the direct schedule
+    when ``num_kv_splits`` is explicit.
 
     ``block_scale_shift`` names the cache's block-scale convention: the kernel divides every
     E4M3 block scale by ``2 ** block_scale_shift`` before forming ``code * scale`` and folds the
@@ -410,6 +534,7 @@ def plan_decode(
         topk=topk,
         num_kv_splits=num_kv_splits,
         usable_sm_count=usable_sm_count,
+        split_mode=split_mode,
     )
     return DecodePlan(
         backend_plan=backend_plan,

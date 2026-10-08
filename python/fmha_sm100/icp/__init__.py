@@ -16,6 +16,9 @@ __version__ = "0.1.1"
 # Consumers still check those ABIs against the extensions they actually load.
 ICP_INTEGRATION_ABI = 1
 VLLM_INTEGRATION_ABI = ICP_INTEGRATION_ABI
+# Public vLLM head-slot layout, calibrated prefill and isolated Q8KV4 prewarm.
+# Native score/plan/carrier layouts are unchanged.
+PUBLIC_VLLM_ABI = 1
 
 #: Public name -> the submodule that defines it. Resolved on first access, so
 #: importing this package costs no torch import: `_build` answers arch and
@@ -102,6 +105,7 @@ __all__ = [
     "__version__",
     "VLLM_INTEGRATION_ABI",
     "ICP_INTEGRATION_ABI",
+    "PUBLIC_VLLM_ABI",
 ]
 
 

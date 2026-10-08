@@ -16,7 +16,9 @@ K2Q_EXTENSION = "msa_build_k2q_csr"
 
 #: The admitted TP2 compound-page variant: two local KV heads, D128, GQA16,
 #: top-16 of P128 blocks, 45056-byte pages, BF16 query, paged causal KV with
-#: seqused_k and no global scales. ``(q_dtype, qhead_per_kv, topk)``.
+#: seqused_k. Prewarm covers both historical region-major pages without global
+#: scales and public per-head slots with calibrated K/V tensor scales.
+#: ``(q_dtype, qhead_per_kv, topk)``.
 PREWARM_VARIANTS = (("bfloat16", 16, 16),)
 AOT_FAMILIES = ("sparse_forward_sm100_csr_varlen_nvfp4_kv_cache", "combine")
 

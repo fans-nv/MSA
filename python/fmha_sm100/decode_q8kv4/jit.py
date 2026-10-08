@@ -22,6 +22,7 @@ from ._build_utils import cutlass_root as _cutlass_root
 from ._build_utils import cutlass_version as _cutlass_version
 from ._build_utils import require_cuda_version
 from ._build_utils import supports_qmul4
+from ._build_utils import cached_qmul4_support
 from ._build_utils import target_arch as _resolve_target_arch
 
 logger = logging.getLogger(__name__)
@@ -145,14 +146,15 @@ rule nvcc_link
 """
 
 
-def _recipe(name: str, nvcc_flags: str, templates=(), **key) -> _jit_cache.Recipe:
+def _recipe(name: str, nvcc_flags: str, templates=(), *, namespace=None,
+            cuda_root=None, **key) -> _jit_cache.Recipe:
     """One library's cache recipe (compiler, flags, build rules, ``key``); the files it compiles
     from are checked per record."""
     return _jit_cache.Recipe(
-        _namespace(),
+        _namespace() if namespace is None else namespace,
         name,
         {
-            "nvcc": str(_cuda_home() / "bin/nvcc"),
+            "nvcc": str((_cuda_home() if cuda_root is None else cuda_root) / "bin/nvcc"),
             "nvcc_flags": nvcc_flags,
             "rules": _NINJA_RULES,
             **key,
@@ -284,7 +286,7 @@ class JitSpec:
             "fixed_q_tokens_per_batch": 0,
         }
 
-    def recipe(self) -> _jit_cache.Recipe:
+    def recipe(self, *, namespace=None, cuda_root=None) -> _jit_cache.Recipe:
         return _recipe(
             self.uri,
             _nvcc_flags(self.dequant_mode, self.target_arch, self.block_scale_shift),
@@ -293,6 +295,8 @@ class JitSpec:
                 _TEMPLATES / "decode_attention_run.cu.jinja",
             ),
             params=self._params,
+            namespace=namespace,
+            cuda_root=cuda_root,
         )
 
     def build(self) -> Path:
@@ -305,6 +309,9 @@ class JitSpec:
         return tvm_ffi.load_module(str(self.build()))
 
     def _build(self, cache_dir: Path) -> Path:
+        from ..icp import _jit_guard
+
+        _jit_guard.on_compile("q8kv4", self.uri, arch=self.target_arch, where=str(cache_dir))
         params = self._params
         inst_template = jinja2.Template(
             (_TEMPLATES / "decode_attention_inst.cu.jinja").read_text()
@@ -418,18 +425,61 @@ def get_fmha_fwd_variant(
     )
 
 
+def _fixed_recipe(
+    component: str, arch: str, dequant_mode: str, *, namespace=None, cuda_root=None
+) -> _jit_cache.Recipe:
+    return _recipe(
+        f"{component}_{dequant_mode}_{arch}",
+        _nvcc_flags(dequant_mode, arch),
+        namespace=namespace,
+        cuda_root=cuda_root,
+    )
+
+
+def icp_prewarm_recipes(
+    arch: str, *, read_only: bool = False
+) -> dict[str, _jit_cache.Recipe]:
+    """The real plan/forward Recipes selected by GQA16, block-shift3 ICP decode."""
+    cuda_root = _cuda_home()
+    namespace = _jit_cache.Namespace(_cache_root(), cuda_root)
+    if read_only:
+        supported = cached_qmul4_support(
+            arch, probe_root=_cache_root() / "capability_probes"
+        )
+    else:
+        supported = _supports_qmul4(arch)
+    mode = _FP16_DEQUANT if _qmul4_disabled() or not supported else _QMUL4_DEQUANT
+    recipes = {
+        "plan": _fixed_recipe(
+            "decode_attention_plan",
+            arch,
+            mode,
+            namespace=namespace,
+            cuda_root=cuda_root,
+        )
+    }
+    for split in (False, True):
+        spec = JitSpec(_SPARSE_VARIANTS[split], split, mode, arch, 16, 3)
+        name = "forward_split_gqa16_shift3" if split else "forward_gqa16_shift3"
+        recipes[name] = spec.recipe(namespace=namespace, cuda_root=cuda_root)
+    return recipes
+
+
 def _build_fixed_module(component: str, source: Path, label: str, arch: str):
     import tvm_ffi
 
     dequant_mode = _dequant_mode(arch)
 
     def build(cache_dir: Path) -> Path:
+        from ..icp import _jit_guard
+
+        _jit_guard.on_compile("q8kv4", component, arch=arch, where=str(cache_dir))
         so_path = cache_dir / f"{component}.so"
         _write_ninja(cache_dir, so_path, [source], dequant_mode, arch)
         _run_ninja(cache_dir, label)
         return so_path
 
-    recipe = _recipe(f"{component}_{dequant_mode}_{arch}", _nvcc_flags(dequant_mode, arch))
+    recipe = _fixed_recipe(component, arch, dequant_mode)
     return tvm_ffi.load_module(str(recipe.build(build)))
 
 

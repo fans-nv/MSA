@@ -18,6 +18,7 @@ Components and their inputs (relative to ``fmha_sm100/``):
     fmha    csrc/**, jit.py, _jit_cache.py, CUTLASS shared FMHA/plan/top-k
     decode  icp/scorer/decode/*.py + DSL version CuTe decode scorer
     nvfp4   cute/**/*.py, *.cu + DSL version    shared sparse attention/CSR
+    q8kv4   decode_q8kv4/**, _jit_cache.py, CUTLASS main decode attention
 
 The NVFP4 CSR extension uses a fingerprinted ``cpp_extension`` directory
 (``TORCH_EXTENSIONS_DIR``). Its effective artifact path is recorded and checked.
@@ -67,6 +68,15 @@ def _component_files(component: str) -> list[pathlib.Path]:
         root = SOURCE_ROOT / "cute"
         files = [p for p in root.rglob("*")
                  if p.suffix in (".py", ".cu") and "__pycache__" not in p.parts]
+        files.extend((PACKAGE / "attention" / "nvfp4_prefill").glob("*.py"))
+    elif component == "q8kv4":
+        root = SOURCE_ROOT / "decode_q8kv4"
+        files = [p for p in root.rglob("*")
+                 if p.suffix in (*_FMHA_SUFFIXES, ".cpp", ".py")
+                 and "__pycache__" not in p.parts]
+        files.append(SOURCE_ROOT / "_jit_cache.py")
+        for relative in ("cutlass/include", "cutlass/tools/util/include"):
+            files.extend(p for p in (SOURCE_ROOT / relative).rglob("*") if p.is_file())
     else:
         raise KeyError(f"unknown cache component {component!r}; known: {COMPONENTS}")
     files = sorted(p for p in files if p.is_file())
@@ -76,7 +86,7 @@ def _component_files(component: str) -> list[pathlib.Path]:
     return files
 
 
-COMPONENTS = ("icp", "fmha", "decode", "nvfp4")
+COMPONENTS = ("icp", "fmha", "decode", "nvfp4", "q8kv4")
 
 
 def _extra_key(component: str) -> str:
