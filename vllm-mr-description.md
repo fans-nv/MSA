@@ -48,11 +48,10 @@ image/backend/UGPU differences. See [README](README.md) for evidence scope.
 
 Open: the ordinary ICP-off whole-model route fails with a CUDA launch error;
 the first failing operation has not yet been localized. Passing standalone
-ordinary MSA tests do not close that gap. Six-pair module/model performance
-validation and observer/JIT admission remain incomplete. The branch is
+ordinary MSA tests do not close that gap. Module timing is in progress with
+some adverse early cells. Six-pair module/model performance validation and
+observer/JIT admission remain incomplete. The branch is
 published for human review, not merge approval.
 
-AI assistance was used. Before opening an upstream PR, the human submitter
-must review every changed line, run the remaining checks, complete the
-repository's duplicate-work checks and PR checklist, and include the final
-model evaluation and performance results. No upstream PR has been opened.
+AI assistance was used. Upstream submission remains pending the listed checks
+and the human review requested by the user. No upstream PR has been opened.

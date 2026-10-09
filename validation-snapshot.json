@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-10-09T08:38:02.784479+00:00",
+  "recorded_at_utc": "2026-10-09T08:45:05.226342+00:00",
   "candidate": {
     "msa": "cd20e206a3373e8d258da8cd403b4b3399b1f714",
     "vllm": "19afac40273aa84c2693ca1083995c4156aca4e2"
@@ -80,7 +80,7 @@
     "receipt_sha256": "1788a598e009a4c18cbeaeb9c107ceef2a681c53c3dadb265a39cac9fa429c34"
   },
   "performance_retention_established": false,
-  "performance_status": "campaign and independent analysis in progress; six pairs and observer/JIT qualification remain required",
+  "performance_status": "module timing in progress with some adverse early cells; full campaign and independent analysis incomplete; six pairs and observer/JIT qualification remain required",
   "ordinary_icp_off_model": "failed CUDA launch; first operation not localized; no production workaround",
   "upstream_merge_ready": false,
   "ai_assistance_used": true

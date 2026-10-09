@@ -89,8 +89,9 @@ failed runs remain recorded separately; corrected controls are labeled
 
 ## Open before merge
 
-The full module and whole-model performance campaigns are still being
-completed and analyzed. Six independent pairs and the declared warmup and
+Module timing is in progress, with some adverse early cells showing slower
+candidate results. The full module and whole-model campaigns and their
+analysis remain incomplete. Six independent pairs and the declared warmup and
 measurement counts remain required. Incomplete runs, clock violations,
 compilation during measurement, and unqualified observer overhead cannot
 support a performance-retention claim. Prefill/mixed and legacy-core coverage
@@ -102,10 +103,9 @@ The error surfaces after ordinary sparse attention and requires a fresh-cache,
 synchronous diagnostic run to identify the first failing operation. No
 production workaround has been applied and no cause is claimed.
 
-Before an upstream PR, the human submitter must review the full diff, complete
-remaining model/performance/compatibility checks, run duplicate-work checks and
-the repository PR checklist, and confirm source-release provenance. No
-upstream PR or MR was opened by this publication.
+Upstream submission remains pending the listed model, performance and
+compatibility checks and the human review requested by the user. No upstream
+PR or MR was opened by this publication.
 
 [MSA MR description](msa-mr-description.md) ·
 [vLLM MR description](vllm-mr-description.md) ·

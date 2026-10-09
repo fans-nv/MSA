@@ -38,10 +38,11 @@ limitations are summarized in [README](README.md).
 Two complete model accuracy pairs produced candidate scores 95.0720% and
 95.6027%, versus historical 95.5269% and 95.9060%. The mean difference was
 −0.3791 percentage points. This does not establish equivalence; the historical
-image is a whole-system reference. Six-pair performance analysis is pending,
-and the companion vLLM ordinary ICP-off model route has an unresolved CUDA
+image is a whole-system reference. Module timing is in progress with some
+adverse early cells; the full six-pair performance analysis remains incomplete.
+The companion vLLM ordinary ICP-off model route has an unresolved CUDA
 failure. This branch is for human review and is not presented as merge-ready.
 
-AI assistance was used. The human submitter must review the code and final
-validation evidence. Duplicate-work checks and upstream submission review
-remain pending; this draft has not been submitted as an upstream PR.
+AI assistance was used. Upstream submission remains pending the listed checks
+and the human review requested by the user. This draft has not been submitted
+as an upstream PR.
