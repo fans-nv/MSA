@@ -520,6 +520,56 @@ def test_long_context_150k_with_1m_capacity(cuda_device, batch_size, rank):
     run_and_check(fixture)
 
 
+@pytest.mark.skipif(
+    os.environ.get("MSA_ICP_LONG_CORRECTNESS") != "1",
+    reason="Set MSA_ICP_LONG_CORRECTNESS=1 for the four-stage reuse regression",
+)
+@pytest.mark.parametrize("rank", [0, 1])
+def test_long_context_four_stage_reuse_eager_and_graph(cuda_device, rank):
+    """Repeated TMA slot reuse must preserve every exact local score cell."""
+    from fmha_sm100.icp.scorer.decode.icp_decode_score import get_icp_decode_scorer
+
+    fixture = make_decode_fixture(
+        query_len=1,
+        batch_size=12,
+        kv_lens=150000,
+        rank=rank,
+        capacity_blocks=8192,
+        split_k=128,
+        device=cuda_device,
+    )
+    scorer = get_icp_decode_scorer(
+        query_len=1,
+        rank=rank,
+        split_k=128,
+        num_stages=4,
+        device=cuda_device,
+        token_begin=0,
+        token_count=12,
+        request_begin=0,
+        request_count=12,
+    )
+    original_q = fixture.full_q.float()
+    expected = {}
+    for sign in (1, -1):
+        fixture.full_q.copy_((sign * original_q).to(torch.float8_e4m3fn))
+        expected[sign] = fixture.reference()
+    scorer(*fixture.inputs)
+    torch.cuda.synchronize()
+    graph = torch.cuda.CUDAGraph()
+    with torch.cuda.graph(graph):
+        scorer(*fixture.inputs)
+    for iteration in range(12):
+        sign = 1 if iteration % 2 == 0 else -1
+        fixture.full_q.copy_((sign * original_q).to(torch.float8_e4m3fn))
+        fixture.poison_outputs()
+        if iteration < 6:
+            scorer(*fixture.inputs)
+        else:
+            graph.replay()
+        assert_outputs(fixture.score_out, fixture.valid_out, expected[sign])
+
+
 @pytest.mark.parametrize("rank", [0, 1])
 def test_one_compile_serves_every_runtime_window(cuda_device, rank):
     """Launch ABI 2: the window is a launch scalar, so windows of one

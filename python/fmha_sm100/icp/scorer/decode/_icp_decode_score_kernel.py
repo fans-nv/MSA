@@ -416,6 +416,9 @@ class IndexDecodeScoreKernel:
                                         rC[None, m, n],
                                     )
 
+                    # Order generic shared-memory reads before a producer
+                    # reuses this slot through the TMA async proxy.
+                    cute.arch.fence_view_async_shared()
                     cute.arch.mbarrier_arrive(tma_empty_mbar + tma_stage)
 
                     k_start = block_id * 128 + self.rank * BLOCK_K + warp_id * 32
