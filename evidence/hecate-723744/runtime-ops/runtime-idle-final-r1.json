@@ -1,0 +1,45 @@
+{
+  "observed_utc": "2026-10-09T09:43:09.456992+00:00",
+  "verification_child_step": "723744.140",
+  "parent_allocation_action": "none",
+  "gpu_compute_apps": {
+    "argv": [
+      "nvidia-smi",
+      "--query-compute-apps=gpu_uuid,pid,process_name,used_memory",
+      "--format=csv,noheader,nounits"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "parent": {
+    "argv": [
+      "scontrol",
+      "show",
+      "job",
+      "723744",
+      "-o"
+    ],
+    "returncode": 0,
+    "stdout": "JobId=723744 JobName=coreai_comparch_inferencex-vLLM-dev-vr200-reservation UserId=fans(2000734438) GroupId=fans(2000734438) MCS_label=N/A Priority=74699 Nice=0 Account=coreai_comparch_inferencex QOS=user-restrictions JobState=RUNNING Reason=None Dependency=(null) Requeue=0 Restarts=0 BatchFlag=0 Reboot=0 ExitCode=0:0 RunTime=04:57:52 TimeLimit=05:00:00 TimeMin=N/A SubmitTime=2026-10-08T21:17:24 EligibleTime=2026-10-08T21:17:24 AccrueTime=2026-10-08T21:17:24 StartTime=2026-10-08T21:45:17 EndTime=2026-10-09T02:45:19 Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-10-08T21:45:17 Scheduler=Backfill Partition=batch-xdr AllocNode:Sid=login-hecate03:948931 ReqNodeList=(null) ExcNodeList=(null) NodeList=hecate[0010-0011] BatchHost=hecate0010 NumNodes=2 NumCPUs=704 NumTasks=2 CPUs/Task=1 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=2,mem=5640000M,node=2,billing=2 AllocTRES=cpu=704,mem=2700000M,node=2,billing=2 Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=1 MinMemoryNode=0 MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=(null) SubmitLine=salloc --account=coreai_comparch_inferencex --partition=batch-spx,batch-xdr --nodes=2 --time=05:00:00 --job-name=coreai_comparch_inferencex-vLLM-dev-vr200-reservation --no-shell WorkDir=/home/fans\n",
+    "stderr": ""
+  },
+  "steps": {
+    "argv": [
+      "squeue",
+      "--steps",
+      "-h",
+      "-j",
+      "723744",
+      "-o",
+      "%i|%N"
+    ],
+    "returncode": 0,
+    "stdout": "723744.140|hecate0011\n723744.extern|hecate[0010-0011]\n",
+    "stderr": ""
+  },
+  "owned_model_processes": [],
+  "parent_running": true,
+  "gpu_idle": true,
+  "finished_utc": "2026-10-09T09:43:09.558533+00:00"
+}

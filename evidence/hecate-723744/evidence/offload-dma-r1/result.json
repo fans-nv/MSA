@@ -1,0 +1,72 @@
+{
+  "purpose": "correctness",
+  "timing_performed": false,
+  "scope": "real production CPU offload worker/DMA, independent compound-page fixture",
+  "model_offload_observed": false,
+  "disk_offload_observed": false,
+  "allocation_id": "723744",
+  "gpu_uuid": "GPU-1a0b2bb9-aa8a-5fe4-9708-905fb4077ba0",
+  "script_sha256": "dd5f37637d07eeea7162f7605203d36ea2b8e80e37cfe8c9c444a8f70fc98bad",
+  "binding_sha256": "0dc7542cd1bf2730874e44aad68ca4dbaf5e000333f71034120e798133e97feb",
+  "passed": true,
+  "gpu": "NVIDIA Graphics Device",
+  "sources": {
+    "worker": {
+      "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-721392/sources/vllm-candidate/vllm/v1/simple_kv_offload/worker.py",
+      "sha256": "3f4668e57982a37412af6de917a4d6ced3dc2331e964020b53384dd1f61a146a"
+    },
+    "backend": {
+      "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-721392/sources/vllm-candidate/vllm/v1/simple_kv_offload/copy_backend.py",
+      "sha256": "3fb51c456f6b401530e9eefc1f612c3153de542bc17395d14e103f611aacad14"
+    },
+    "placement": {
+      "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-721392/sources/vllm-candidate/vllm/v1/kv_cache_interface.py",
+      "sha256": "448178b7f8e8581f8ed30f832f7dd1c659b20266afad02c9477efb15638f444b"
+    }
+  },
+  "registered_host_regions": 3,
+  "gpu_regions": {
+    "compound.layer.0": {
+      "byte_offset": 32,
+      "shape": [
+        5,
+        45056
+      ],
+      "block_stride_bytes": 45056
+    },
+    "compound.layer.1": {
+      "byte_offset": 225312,
+      "shape": [
+        5,
+        45056
+      ],
+      "block_stride_bytes": 45056
+    },
+    "compound.layer.2": {
+      "byte_offset": 450592,
+      "shape": [
+        5,
+        45056
+      ],
+      "block_stride_bytes": 45056
+    }
+  },
+  "store_full_compound_bytes_equal": true,
+  "load_full_compound_bytes_equal": true,
+  "main_payload_and_index_bytes_checked": {
+    "main_bytes_per_page": 36864,
+    "index_bytes_per_page": 8192,
+    "total_bytes_each_direction": 675840
+  },
+  "shutdown_queued_submissions": 256,
+  "shutdown_published_events": 0,
+  "shutdown_burst_stores": 256,
+  "shutdown_drained_and_unregistered": true,
+  "shutdown_idempotent": true,
+  "rejected_after_shutdown": [
+    "register",
+    "bind",
+    "backend_copy"
+  ],
+  "outer_guards_unchanged": true
+}

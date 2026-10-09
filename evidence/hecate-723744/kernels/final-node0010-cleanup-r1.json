@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "observed_at_utc": "2026-10-09T09:42:48.383677+00:00",
+  "allocation_id": "723744",
+  "node": "hecate0010",
+  "query": "all GPUs: nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_gpu_memory --format=csv,noheader",
+  "ssh_command": "ssh fans-mfa@login-hecate bash /lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/kernels/check-node0010-cleanup-r1.sh",
+  "script_sha256": "45abbd5a378cb2c39d4f5cffbe8dd8f0391307d478c7435267ea20634f17519b",
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "",
+  "gpu_compute_processes": 0,
+  "parent_allocation_action": "none",
+  "parent_state_after_query": "RUNNING"
+}

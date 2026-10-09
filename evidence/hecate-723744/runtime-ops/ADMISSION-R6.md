@@ -1,0 +1,25 @@
+Runtime evidence as of 2026-10-09 09:15 UTC: both required H/B_fixed GSM8K accuracy pairs and one R_fixed/B_fixed model decode sentinel pair are complete. Performance acceptance remains false.
+
+The model pair retained the exact frozen ISL 65,536 / OSL 1,024, C8/C12/C16 protocol: 2C warmups and 10C measured requests per cell, rate infinity, drained cohorts, and one fresh server per arm on hecate0011 GPU 0/1. Each arm completed all 432 requests (72 warmup and 360 measured), including all 30 measured cohorts. Independent comparison verified every paired input/payload identity, every expected output token count and all request completion records. There were no request errors or preemptions. Both arms recorded continuous 4752 MHz telemetry and successful child-process and clock cleanup.
+
+| Concurrency | R whole-request output tok/s | B whole-request output tok/s | B versus R |
+|---|---:|---:|---:|
+| 8 | 739.19 | 741.33 | +0.29% |
+| 12 | 798.55 | 796.23 | −0.29% |
+| 16 | 833.26 | 825.60 | −0.92% |
+
+These measurements include prefill and request tails. They describe one collected pair, with unqualified observer overhead and five independent repetitions still missing. They do not establish retained performance.
+
+All 30 original scheduler windows in each arm failed the strict full-cohort check at their terminal boundary. Client windows passed the duration/token thresholds, but the last one or two overlapping CPU envelopes contained fewer than C requests. The frozen analyzer therefore emitted no qualified pure-decode rate. A separately named post-hoc diagnostic bounds the end at the first terminal reduced-batch schedule, retaining all cohorts and rechecking all thresholds. Its aggregate B-versus-R rates are +0.43%, −0.95% and −2.30%. These use CPU scheduling envelopes and client arrivals, not actual GPU execution boundaries, and cannot replace the failed primary metric. Exact tables, qualification failures and source hashes are in [model-decode-one-pair-r1/REPORT.md](../analysis/model-decode-one-pair-r1/REPORT.md) and its [result.json](../analysis/model-decode-one-pair-r1/result.json).
+
+The actual TP workers enabled verbose JIT monitoring in both arms. Independent timestamp audits found no monitored event overlapping any of the three measured populations per arm. This evidence covers only instrumented APIs; it does not prove universal compiler absence. The strict MSA cache guard and the JIT audit have separate scopes.
+
+Both measured arms use the existing Rubin base image and the same minimal corrections: model-local dense FP8 configuration while retaining global/sparse NVFP4, and the four-stage scorer empty-slot fence. B_fixed uses vLLM `19afac40273aa84c2693ca1083995c4156aca4e2` / MSA `cd20e206a3373e8d258da8cd403b4b3399b1f714`; R_fixed uses vLLM `dda98ad2fbd6c6485114e82617c784cac26f36d3` / MSA `fa64b032b459b6df8b345836694f6a7401ffec22`. All original failures and unfixed sources remain preserved. R and B retained their original per-arm native binaries and explicitly serialized access to mutable FlashInfer caches.
+
+The original B packet was rejected before launch when its finite deadline no longer fit. A separate, reviewed B fallback changed only its run paths and operational drain to 09:35:19 UTC; the engine flags, source identities, client timeouts, cleanup reserve and request counts stayed unchanged. Original R and fallback B are paired by the same frozen round-one input files. B cleanup was reaped with exit 0, and the exact owned cache marker was released only after node-idle verification at 09:05:42 UTC. Allocation 723744 was preserved.
+
+The two required GSM8K pairs remain complete: H 95.5269% / 95.9060%, B_fixed 95.0720% / 95.6027%. Both candidate boots exceed the predeclared 95% target; mean B-minus-H difference is −0.37908 percentage points. Independent scoring preserves all 1,319 scored examples per boot and both paired disagreement sets. It does not establish equivalence. See [accuracy-two-pairs-r1/result.json](../analysis/accuracy-two-pairs-r1/result.json). The H comparison retains disclosed historical image/UGPU/backend differences.
+
+The remaining whole-model matrix is explicit in the comparison JSON: all 30 primary H/B cells have 0/6 collected pairs; three R_fixed/B_fixed decode sentinel cells have 1/6 collected pairs and 0 accepted pairs; the two prefill/mixed sentinel cells have 0/6. Observer-overhead qualification and a prospective resolution of the common-window boundary issue remain required before accepting a decode result. No repetitions or request counts were silently reduced.
+
+Runtime gaps also remain for ordinary-indexer asynchronous compatibility, actual model CPU offload/reload, prefix/COW/cancellation/recycle, full 512/516/1024 model guards, actual target Q1–Q3 Eagle widths and long-duration model coverage. The ordinary path has a new finite fresh-cache synchronous diagnostic prepared and technically reviewed; it has no outcome yet in this report. Standalone DMA success does not claim model-offload coverage. Kernel module timing and CUPTI evidence are separate lanes maintained by the kernel agent/root.

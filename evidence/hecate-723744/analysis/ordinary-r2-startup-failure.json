@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "status": "incomplete_before_model_startup",
+  "packet_sha256": "a5bc7a31f3fdd05a292c197c6367cb494e81c2c4289d811f63ee06d152488b6e",
+  "root_cause_scope": "Campaign private TMPDIR produces an overlong local IPC socket pathname; no ordinary CUDA kernel or request was reached",
+  "first_reporting_exception": "zmq.error.ZMQError: ipc path \"/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/caches/tmp/78ef30bf-b768-4f22-aa48-597a16222f62\" is longer than 107 characters (sizeof(sockaddr_un.sun_path)). zmq.IPC_PATH_MAX_LEN constant can be used to check addr length (if it is defined). (addr='ipc:///lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/caches/tmp/78ef30bf-b768-4f22-aa48-597a16222f62')",
+  "private_tmpdir": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/caches/tmp",
+  "constructed_ipc_filename_bytes": 181,
+  "ipc_path_limit_bytes": 107,
+  "existing_source_configuration_fix": "Set VLLM_RPC_BASE_PATH=/tmp in a new packet; preserve all private compiler cache roots and TMPDIR",
+  "source_evidence": {
+    "vllm/envs.py": 725,
+    "vllm/utils/network_utils.py": 175
+  },
+  "completed_requests": 0,
+  "required_requests": 10,
+  "original_asynchronous_failure_resolved": false,
+  "synchronous_compatibility_pass": false,
+  "boot_error": "RuntimeError: server exited during startup: 1",
+  "cleanup_errors": [],
+  "clock_wrapper_status": "failed",
+  "workload_returncode": 1,
+  "clock_checks": [
+    {
+      "gpu_uuid": "GPU-62d40090-1a4f-5991-9943-d0aa397e5c1c",
+      "samples": 179,
+      "max_gap_seconds": 0.201717667,
+      "all_at_requested_mhz": true,
+      "passed": true
+    },
+    {
+      "gpu_uuid": "GPU-ad293147-5ff4-531d-aa81-bea85212b2c5",
+      "samples": 179,
+      "max_gap_seconds": 0.202316116,
+      "all_at_requested_mhz": true,
+      "passed": true
+    }
+  ],
+  "clock_resets": [
+    {
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/nvidia-smi",
+        "-rmc",
+        "-i",
+        "1"
+      ],
+      "returncode": 0,
+      "stdout": "All done.\n",
+      "stderr": "",
+      "finished_utc": "2026-10-09T09:20:04.301271+00:00"
+    },
+    {
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/nvidia-smi",
+        "-rmc",
+        "-i",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout": "All done.\n",
+      "stderr": "",
+      "finished_utc": "2026-10-09T09:20:04.635776+00:00"
+    }
+  ],
+  "workload_started_utc": "2026-10-09T09:19:27.854549+00:00",
+  "finished_utc": "2026-10-09T09:20:04.635956+00:00",
+  "cache_inventory": {
+    "status": "complete",
+    "sha256": "1cdc76b3a84ce62c692343e8ae6b6a4e57507a9c868f7933ab384cf76ade811d"
+  },
+  "files": {
+    "runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/packet/execution.json": "a5bc7a31f3fdd05a292c197c6367cb494e81c2c4289d811f63ee06d152488b6e",
+    "runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/results/server.log": "d7de2c0831df885c88068d292b2020d194454d74cc7d5586edbd95ac1a7a6c3e",
+    "runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/results/boot.json": "47a2ce59f449602ea2bb852e0d908707588e14647779766157de76b440a8881c",
+    "runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/diagnostic-outcome.json": "b01fd7fdb21c45d36a737334eb7e76ea317092ef26631cc62b9d235a8198e37b",
+    "runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/cache-after.json": "1cdc76b3a84ce62c692343e8ae6b6a4e57507a9c868f7933ab384cf76ade811d",
+    "runtime-runs/B_fixed-default-nospec-eager-blocking-private-r2/clocks/result.json": "43a363341b3b33ca0b07bc6dfe47f81223514ea3c87b2d6c1f3a50f0678e6837"
+  },
+  "parent_allocation_action": "none",
+  "retry_launched": false
+}

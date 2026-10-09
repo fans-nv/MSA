@@ -1,0 +1,176 @@
+{
+  "status": "passed",
+  "scope": "same-engine autotune-ON whole-model correctness, loaded producer/nativewriter/indexer and lifecycle admission",
+  "performance_policy_correctness_admitted": true,
+  "performance_admitted": false,
+  "observer_overhead_qualified": false,
+  "full_validation_complete": false,
+  "engine_flags_match_performance_after_removing_worker_extension": true,
+  "removed_diagnostic_arguments": [
+    "--worker-extension-cls",
+    "worker_probe.ICPValidationWorkerExtension"
+  ],
+  "diagnostic_env_removed_for_performance": [
+    "VLLM_GPU_SYNC_CHECK=error",
+    "VLLM_SERVER_DEV_MODE=1",
+    "ICP_RUNTIME_LIFECYCLE_TRACE=1",
+    "ICP_LIFECYCLE_EVIDENCE_DIR"
+  ],
+  "request_scope": "11exact32-output-token requests atC2/C8/C1, ISL2048..16385 plus actualprefill1; no full long-context performance claim",
+  "runtime_checks": {
+    "finite_boot": {
+      "status": "passed",
+      "error": null,
+      "client_results": [
+        {
+          "case_id": "correctness-small-c2",
+          "exit_code": 0
+        },
+        {
+          "case_id": "correctness-boundaries-c8",
+          "exit_code": 0
+        },
+        {
+          "case_id": "correctness-prefill1-c1",
+          "exit_code": 0
+        }
+      ]
+    },
+    "exact_token_protocol": {
+      "status": "passed",
+      "cases": [
+        {
+          "id": "correctness-small-c2",
+          "expected": 2,
+          "actual": 2
+        },
+        {
+          "id": "correctness-boundaries-c8",
+          "expected": 8,
+          "actual": 8
+        },
+        {
+          "id": "correctness-prefill1-c1",
+          "expected": 1,
+          "actual": 1
+        }
+      ],
+      "request_errors": {}
+    },
+    "scheduler_evidence": {
+      "status": "passed",
+      "steps": 48,
+      "errors": [],
+      "graph_modes": {
+        "unavailable": 0,
+        "NONE": 1,
+        "FULL": 2
+      },
+      "total_preemptions": 0
+    },
+    "executed_route": {
+      "status": "passed",
+      "eager_requested": false,
+      "pure_decode_steps": 35,
+      "prefill_steps": 13,
+      "full_decode_steps": 35,
+      "full_prefill_steps": 0
+    },
+    "whole_model_one_token_prefill_observed": {
+      "status": "passed",
+      "steps": 1,
+      "meaning": "One actual scheduler prefill row, independent of graph padding"
+    },
+    "whole_model_mixed_steps_observed": {
+      "status": "passed",
+      "steps": 9
+    },
+    "real_eagle3_acceptance": {
+      "status": "passed",
+      "drafted_tokens": 354,
+      "accepted_tokens": 267,
+      "observed_decode_widths": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 118
+      },
+      "all_query_widths_observed": false
+    },
+    "actual_cache_and_reader_aliases": {
+      "status": "passed",
+      "snapshot_rank_counts": [
+        2,
+        2
+      ]
+    },
+    "cache_storage_stable_across_requests": {
+      "status": "passed",
+      "layer_rank_count": 114
+    },
+    "profile_release_rebind": {
+      "status": "passed",
+      "scope": "Actual FULL startup profile, temporary release, final bind, no retained profiling tensor objects"
+    },
+    "final_model_close": {
+      "status": "passed",
+      "files": [
+        "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/lifecycle-evidence/worker-926545.json",
+        "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/lifecycle-evidence/worker-926787.json"
+      ],
+      "scope": "One model lifetime per TP rank; not coexisting-model or repeated-close coverage"
+    },
+    "loaded_producer_and_indexer": {
+      "status": "passed",
+      "completed": [
+        {
+          "id": "loaded-module-decode-b8-q4-2048-full",
+          "result": "producer-indexer-0.json"
+        },
+        {
+          "id": "loaded-module-small-mixed-d8q4-p1q1",
+          "result": "producer-indexer-1.json"
+        }
+      ],
+      "scope": "Exact independent oracle, first/later real projections, native writer and indexer; independent fixture cache"
+    },
+    "sync_check_configured_and_completed": {
+      "status": "passed",
+      "scope": "Production with_gpu_sync_check regions, not every CUDA operation in the process"
+    },
+    "actual_mapped_native_artifacts": {
+      "status": "passed",
+      "rank_file_counts": [
+        21,
+        21
+      ],
+      "source": "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/loaded-artifacts-workers.json",
+      "scope": "Worker-owned maps and source hashes after request drain; driver-owned GPU modules are outside this evidence"
+    }
+  },
+  "sources": {
+    "vllm": "dda98ad2fbd6c6485114e82617c784cac26f36d3",
+    "msa": "fa64b032b459b6df8b345836694f6a7401ffec22",
+    "image": "5bdfa010c240579625c4e21ffdb95e41132cd18ae2b1223d717b3eb06b92f0d3"
+  },
+  "evidence_files": {
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/packet/execution.json": "ed899942156ccc01d994124d0f19c6c82ae0b821a4d0c9161a959a237038c203",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/boot.json": "f5ad6d16d34e72f9966573d271574819a9a60cd85b43bbcd221cc314cec67e85",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/clocks/result.json": "13be2564e89b48ca7ed4e634485609faafa9f9d495c826ce3138e49fd1b6c330",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/admission-r1.json": "31fcc8494d4c44cd526d095afdaa2eec0d3cb7303506351e352767699b7ed108",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/cache-before.json": "b6bcdc6fc0cb8250f684b539f1e549cc18bbd9665165c9b39a55b18155883999",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/cache-after.json": "4dd5ecaa048da729d4253898932a1eae4f87cea0a7c7ce62532b5bf0a197edcd",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/loaded-artifacts-workers.json": "dceda1f412389a7250989bc13f8212862502b034e3dd7b91005daf763a9cfb0e",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/producer-indexer-0.json": "441b323efc3515369ab317723d16d9c26b174f1a5745dd6036b563ae27ed8683",
+    "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/producer-indexer-1.json": "d8a6522af24d91070d83300581f83881b9555c412a1689e84798d64c4d79b9f8"
+  },
+  "generic_admission_semantics": "admission-r1 intentionally reports performance_policy_admitted:false for all generic correctness boots; this separate receipt performs explicit autotune policy/engine configuration and runtime evidence comparison",
+  "still_pending": [
+    "pairedmodelperformance",
+    "observeroverheadqualification",
+    "fullsixpairedrounds",
+    "fullprefill/mixedmatrix",
+    "ordinary-indexercompatibility",
+    "modeloffload/reload/prefixCOW/cancellation"
+  ]
+}

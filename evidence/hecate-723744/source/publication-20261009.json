@@ -1,0 +1,80 @@
+{
+  "recorded_at_utc": "2026-10-09T08:38:02.784479+00:00",
+  "action": "author-requested publication for human review",
+  "repositories": {
+    "MSA": {
+      "base": "968061ab16cb14991a5c7d4c0e8eabf531be0dcf",
+      "candidate": "cd20e206a3373e8d258da8cd403b4b3399b1f714",
+      "base_ref": "refs/heads/review/icp-base-20261009",
+      "candidate_ref": "refs/heads/review/icp-consolidation-20261009",
+      "github": {
+        "repository": "fans-nv/MSA",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://github.com/fans-nv/MSA/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009",
+        "verified_refs": {
+          "refs/heads/review/icp-base-20261009": "968061ab16cb14991a5c7d4c0e8eabf531be0dcf",
+          "refs/heads/review/icp-consolidation-20261009": "cd20e206a3373e8d258da8cd403b4b3399b1f714",
+          "refs/heads/review/icp-review-notes-20261009": "1235abd7d4635914d0146b1c9e140264b5593673"
+        },
+        "review_notes_url": "https://github.com/fans-nv/MSA/blob/1235abd7d4635914d0146b1c9e140264b5593673/README.md"
+      },
+      "gitlab": {
+        "repository": "fans/MSA",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://gitlab-master.nvidia.com/fans/MSA/-/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009",
+        "verified_refs": {
+          "refs/heads/review/icp-base-20261009": "968061ab16cb14991a5c7d4c0e8eabf531be0dcf",
+          "refs/heads/review/icp-consolidation-20261009": "cd20e206a3373e8d258da8cd403b4b3399b1f714",
+          "refs/heads/review/icp-review-notes-20261009": "1235abd7d4635914d0146b1c9e140264b5593673"
+        },
+        "review_notes_url": "https://gitlab-master.nvidia.com/fans/MSA/-/blob/1235abd7d4635914d0146b1c9e140264b5593673/README.md"
+      }
+    },
+    "vllm": {
+      "base": "ab905a885dfbfc60a2c02286cc9c608c93884de3",
+      "candidate": "19afac40273aa84c2693ca1083995c4156aca4e2",
+      "base_ref": "refs/heads/review/icp-base-20261009",
+      "candidate_ref": "refs/heads/review/icp-consolidation-20261009",
+      "github": {
+        "repository": "fans-nv/vllm",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://github.com/fans-nv/vllm/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009",
+        "verified_refs": {
+          "refs/heads/review/icp-base-20261009": "ab905a885dfbfc60a2c02286cc9c608c93884de3",
+          "refs/heads/review/icp-consolidation-20261009": "19afac40273aa84c2693ca1083995c4156aca4e2",
+          "refs/heads/review/icp-review-notes-20261009": "1235abd7d4635914d0146b1c9e140264b5593673"
+        },
+        "review_notes_url": "https://github.com/fans-nv/vllm/blob/1235abd7d4635914d0146b1c9e140264b5593673/README.md"
+      },
+      "gitlab": {
+        "repository": "fans/vllm",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://gitlab-master.nvidia.com/fans/vllm/-/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009",
+        "verified_refs": {
+          "refs/heads/review/icp-base-20261009": "ab905a885dfbfc60a2c02286cc9c608c93884de3",
+          "refs/heads/review/icp-consolidation-20261009": "19afac40273aa84c2693ca1083995c4156aca4e2",
+          "refs/heads/review/icp-review-notes-20261009": "1235abd7d4635914d0146b1c9e140264b5593673"
+        },
+        "review_notes_url": "https://gitlab-master.nvidia.com/fans/vllm/-/blob/1235abd7d4635914d0146b1c9e140264b5593673/README.md"
+      }
+    }
+  },
+  "source_worktrees_clean": true,
+  "source_commits_changed_for_publication": false,
+  "existing_refs_preserved": true,
+  "force_push_used": false,
+  "default_branches_changed": false,
+  "upstream_pr_opened": false,
+  "gitlab_vllm_history_repair": {
+    "initial_failure": "shallow update not allowed",
+    "resolution": "targeted upstream ancestry fetches for ab905a885 via --deepen=512 and --deepen=8192; atomic push accepted and exact refs verified",
+    "blanket_unshallow": false,
+    "manual_shallow_file_edit": false
+  },
+  "review_notes_ref": "refs/heads/review/icp-review-notes-20261009",
+  "validation_snapshot_sha256": "563b5a507dc16256e7171f844fd0812517113de743f5ca7e44ff71d120ad1316",
+  "remote_refs_verified_at_utc": "2026-10-09T08:46:07.421956+00:00",
+  "review_notes_commit": "1235abd7d4635914d0146b1c9e140264b5593673",
+  "review_notes_status": "pushed_and_ls_remote_verified_all_four_destinations",
+  "review_notes_update": "Removed unattributed mandatory submission gates; explicitly records adverse early performance cells and ongoing validation"
+}

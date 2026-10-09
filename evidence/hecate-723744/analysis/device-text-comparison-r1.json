@@ -1,0 +1,63 @@
+{
+  "input_sha256": "392482662a9366c81081ff17a430cd1cbb51f5d143ef2aa075995cbf075eda64",
+  "normalization": "Only the eight-hex-digit anonymous namespace ID in section names is normalized; payload bytes are not modified. Canonicalization must be one-to-one within each artifact.",
+  "scope": "Embedded GPU ELF text-section byte identity; not a latency equivalence proof. Global data/string metadata differences are retained.",
+  "rows": [
+    {
+      "name": "icp_fused.so",
+      "device_text_section_count": 5,
+      "all_device_text_sections_present_and_identical": true,
+      "remaining_changed_sections": [
+        ".nv.global.init",
+        ".nv.merc.nv.global.init",
+        ".strtab"
+      ]
+    },
+    {
+      "name": "icp_k2.so",
+      "device_text_section_count": 4,
+      "all_device_text_sections_present_and_identical": true,
+      "remaining_changed_sections": [
+        ".shstrtab",
+        ".strtab"
+      ]
+    },
+    {
+      "name": "icp_k5.so",
+      "device_text_section_count": 9,
+      "all_device_text_sections_present_and_identical": true,
+      "remaining_changed_sections": [
+        ".shstrtab",
+        ".strtab"
+      ]
+    },
+    {
+      "name": "icp_k5t.so",
+      "device_text_section_count": 3,
+      "all_device_text_sections_present_and_identical": true,
+      "remaining_changed_sections": [
+        ".shstrtab",
+        ".strtab"
+      ]
+    },
+    {
+      "name": "icp_pack.so",
+      "device_text_section_count": 1,
+      "all_device_text_sections_present_and_identical": true,
+      "remaining_changed_sections": [
+        ".shstrtab",
+        ".strtab"
+      ]
+    },
+    {
+      "name": "icp_select.so",
+      "device_text_section_count": 36,
+      "all_device_text_sections_present_and_identical": true,
+      "remaining_changed_sections": [
+        ".nv.global.init",
+        ".nv.merc.nv.global.init",
+        ".strtab"
+      ]
+    }
+  ]
+}

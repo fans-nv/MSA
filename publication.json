@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-10-09T08:38:02.784479+00:00",
+  "recorded_at_utc": "2026-10-09T09:51:39.494602+00:00",
   "action": "author-requested publication for human review",
   "repositories": {
     "MSA": {
@@ -48,5 +48,6 @@
     "manual_shallow_file_edit": false
   },
   "review_notes_ref": "refs/heads/review/icp-review-notes-20261009",
-  "validation_snapshot_sha256": "563b5a507dc16256e7171f844fd0812517113de743f5ca7e44ff71d120ad1316"
+  "validation_snapshot_sha256": "c793025ea880e8a498d2fa4d88f5ccef461de8429a0f647949710336c28cb850",
+  "evidence_manifest_sha256": "34ab9edd1cd5ba892afe4d0d87db0339a4c4133bb5554c83e0c327ef2f05387c"
 }

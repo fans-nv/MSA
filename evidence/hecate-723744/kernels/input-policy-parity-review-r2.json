@@ -1,0 +1,135 @@
+{
+  "status": "source_and_recorded_configuration_parity_passed",
+  "adapter_sha256": "d1532744cf905952e5b6258f9057816f27866b86a6d9f7ec58c10485412d56dd",
+  "rounds": [
+    {
+      "paired_round": 0,
+      "equal_packet_fields": [
+        "engine_kwargs",
+        "cases",
+        "case_ids",
+        "boundaries",
+        "modes",
+        "warmup",
+        "samples",
+        "calls_per_sample",
+        "timing_amendment",
+        "cpu_metadata_protocol",
+        "cpu_resources",
+        "image_sha256",
+        "node",
+        "gpu_uuids",
+        "matrix_sha256",
+        "unset_environment"
+      ],
+      "environment_flags_equal_after_only_arm_path_normalization": true,
+      "equal_actual_descriptors": 216
+    },
+    {
+      "paired_round": 1,
+      "equal_packet_fields": [
+        "engine_kwargs",
+        "cases",
+        "case_ids",
+        "boundaries",
+        "modes",
+        "warmup",
+        "samples",
+        "calls_per_sample",
+        "timing_amendment",
+        "cpu_metadata_protocol",
+        "cpu_resources",
+        "image_sha256",
+        "node",
+        "gpu_uuids",
+        "matrix_sha256",
+        "unset_environment"
+      ],
+      "environment_flags_equal_after_only_arm_path_normalization": true,
+      "equal_actual_descriptors": 216
+    },
+    {
+      "paired_round": 2,
+      "equal_packet_fields": [
+        "engine_kwargs",
+        "cases",
+        "case_ids",
+        "boundaries",
+        "modes",
+        "warmup",
+        "samples",
+        "calls_per_sample",
+        "timing_amendment",
+        "cpu_metadata_protocol",
+        "cpu_resources",
+        "image_sha256",
+        "node",
+        "gpu_uuids",
+        "matrix_sha256",
+        "unset_environment"
+      ],
+      "environment_flags_equal_after_only_arm_path_normalization": true,
+      "equal_actual_descriptors": 216
+    },
+    {
+      "paired_round": 3,
+      "equal_packet_fields": [
+        "engine_kwargs",
+        "cases",
+        "case_ids",
+        "boundaries",
+        "modes",
+        "warmup",
+        "samples",
+        "calls_per_sample",
+        "timing_amendment",
+        "cpu_metadata_protocol",
+        "cpu_resources",
+        "image_sha256",
+        "node",
+        "gpu_uuids",
+        "matrix_sha256",
+        "unset_environment"
+      ],
+      "environment_flags_equal_after_only_arm_path_normalization": true,
+      "equal_actual_descriptors": 216
+    },
+    {
+      "paired_round": 4,
+      "equal_packet_fields": [
+        "engine_kwargs",
+        "cases",
+        "case_ids",
+        "boundaries",
+        "modes",
+        "warmup",
+        "samples",
+        "calls_per_sample",
+        "timing_amendment",
+        "cpu_metadata_protocol",
+        "cpu_resources",
+        "image_sha256",
+        "node",
+        "gpu_uuids",
+        "matrix_sha256",
+        "unset_environment"
+      ],
+      "environment_flags_equal_after_only_arm_path_normalization": true,
+      "equal_actual_descriptors": 216
+    }
+  ],
+  "core_input_construction": {
+    "generator": "Fresh CPU torch.Generator().manual_seed(661550) for every prepare(case)",
+    "pages": "Same randperm of total pages including2 guards; same integerFP8 key bytes[-4,4]; same rank64-row fragment and45,056-byte compound-page stride",
+    "queries": "Same CPU-generator integerFP8 values[-3,3], generated after same key/page sequence",
+    "metadata": "Actual identical production builder; native metadata prime uses negative slots and separate temporary Q outputs, so prepared index-Q/history is preserved",
+    "boundary_isolation": "Fresh adapter.prepare(case) for every boundary/mode; enclosing writes cannot flow into the next core fixture"
+  },
+  "limitations": [
+    "Primary receipts do not store cross-arm input tensor byte digests or GPU allocation addresses. Source/seed/config parity and exact per-arm independent oracle checks establish deterministic construction, not a saved byte-for-byte cross-arm snapshot.",
+    "Loaded producer boundaries run actual checkpoint projections; selected GEMM/autotune tactics and output bytes were not cross-arm hashed by the primary timing harness.",
+    "Different GPU allocation addresses, stream scheduling, host launch skew and peer polling remain possible contributors despite identical device instructions. No attribution is claimed from this source review."
+  ],
+  "warmup_sequence": "The frozen primary harness performs20 uncaptured complete warmup calls, then graph capture and one untimed replay correctness check before100x10 timed graph calls; both arms use the identical sequence. The separate CUPTI diagnostic performs20 selected-mode warmups. Do not describe the primary protocol as20 graph replays.",
+  "primary_measurements_modified": false
+}

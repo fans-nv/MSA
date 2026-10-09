@@ -1,0 +1,84 @@
+{
+  "complete_two_pair_comparison": true,
+  "independent_pairs": 2,
+  "pairs": [
+    {
+      "paired_round": 1,
+      "node": "hecate0011",
+      "gpu_uuids": [
+        "GPU-62d40090-1a4f-5991-9943-d0aa397e5c1c",
+        "GPU-ad293147-5ff4-531d-aa81-bea85212b2c5"
+      ],
+      "H_accuracy_percent": 95.52691432903715,
+      "B_fixed_accuracy_percent": 95.07202426080364,
+      "B_minus_H_percentage_points": -0.45489006823351025,
+      "H_correct_B_wrong": 23,
+      "H_wrong_B_correct": 17,
+      "exact_mcnemar_two_sided_p": 0.42959050784338615,
+      "investigate_loss_over_half_percentage_point": false,
+      "example_text_disagreements": 1291,
+      "evidence": {
+        "H": {
+          "root": "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-H-bound-r2",
+          "packet_sha256": "c06f41113ea7037576a3b55331670a38ca27daec901c88d0132c4c74d9fd4b56",
+          "result_sha256": "520bdde14f950f327f393ca2357598089591fbf07484f21fd1c89543b0a6c085",
+          "speculation": {
+            "num_draft_tokens": 288582.0,
+            "num_accepted_tokens": 241981.0
+          }
+        },
+        "B_fixed": {
+          "root": "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4",
+          "packet_sha256": "ae109f5f39387e6672dc406cc1093c5d294ad448b03414631e19a1aa5e16d5aa",
+          "result_sha256": "cba2dd61ba25f79d44a95a2525bd29fec64fec21dfed0c3abc346c5bc33b6be5",
+          "speculation": {
+            "num_draft_tokens": 290049.0,
+            "num_accepted_tokens": 243594.0
+          }
+        }
+      }
+    },
+    {
+      "paired_round": 2,
+      "node": "hecate0011",
+      "gpu_uuids": [
+        "GPU-62d40090-1a4f-5991-9943-d0aa397e5c1c",
+        "GPU-ad293147-5ff4-531d-aa81-bea85212b2c5"
+      ],
+      "H_accuracy_percent": 95.90598938589841,
+      "B_fixed_accuracy_percent": 95.6027293404094,
+      "B_minus_H_percentage_points": -0.3032600454890068,
+      "H_correct_B_wrong": 19,
+      "H_wrong_B_correct": 15,
+      "exact_mcnemar_two_sided_p": 0.6075913612730801,
+      "investigate_loss_over_half_percentage_point": false,
+      "example_text_disagreements": 1288,
+      "evidence": {
+        "H": {
+          "root": "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r2-H-bounded-r1",
+          "packet_sha256": "15bd8c39167ee8935584ca905b200c1d4b2124100a5658cb87cf5653def9580d",
+          "result_sha256": "3a4294b422b6eca68577d7c3baf2c72389effddd4b6ee15c175b8326e50ea6b1",
+          "speculation": {
+            "num_draft_tokens": 290001.0,
+            "num_accepted_tokens": 243293.0
+          }
+        },
+        "B_fixed": {
+          "root": "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r2-B_fixed-bounded-r1",
+          "packet_sha256": "fbf0fe12f7bd06f489653b8494164fca7b795d09ce84ee12e79ba28d0bd3c889",
+          "result_sha256": "911bd991764203ec4cd6d8e6611b71f681ad1ad7a8ed872066d2ba0bad22efb3",
+          "speculation": {
+            "num_draft_tokens": 288528.0,
+            "num_accepted_tokens": 242688.0
+          }
+        }
+      }
+    }
+  ],
+  "mean_paired_delta_percentage_points": -0.37907505686125853,
+  "all_candidate_boots_meet_95_percent": true,
+  "equivalence_established": false,
+  "uncertainty": "Per-pair exact McNemar p values describe answer disagreements across the same fixed examples. They do not prove equivalence or estimate variation across many independent server boots. Both paired rounds and their deltas remain visible.",
+  "not_performance_evidence": true,
+  "historical_reference_scope": "H/B is a whole-system comparison with image, UGPU and attention-backend differences. Original H long-context scorer correctness is separately unresolved."
+}

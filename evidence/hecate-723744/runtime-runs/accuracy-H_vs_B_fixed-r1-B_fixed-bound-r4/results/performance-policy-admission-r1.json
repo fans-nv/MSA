@@ -1,0 +1,79 @@
+{
+  "status": "passed",
+  "scope": "same-engine autotune-ON completeGSM8K plus post-drain real loaded producer/nativewriter/indexer, cache and lifecycle admission",
+  "performance_policy_correctness_admitted": true,
+  "performance_admitted": false,
+  "observer_overhead_qualified": false,
+  "full_validation_complete": false,
+  "engine_flags_match_performance_after_removing_worker_extension": true,
+  "removed_diagnostic_arguments": [
+    "--worker-extension-cls",
+    "worker_probe.ICPValidationWorkerExtension"
+  ],
+  "diagnostic_differences": [
+    "workerextension and serverdevmode enabled",
+    "lifecycle/cache/artifact probesoutside scoredrequests",
+    "adaptiveEOS-variableaccuracy vs enabledfixedlengthperformance; no throughput claim"
+  ],
+  "actual_requests": {
+    "warmup": 16,
+    "scored": 1319,
+    "correct": 1254,
+    "accuracy_percent": 95.07202426080364,
+    "scored_speculation": {
+      "num_draft_tokens": 290049.0,
+      "num_accepted_tokens": 243594.0
+    }
+  },
+  "actual_routes": {
+    "scheduler_steps": 6416,
+    "FULL_pure_decode_steps": 5217,
+    "prefill_steps": 1199,
+    "FULL_prefill_steps": 0,
+    "mixed_steps": 1197
+  },
+  "cache_layer_rank_owners": 114,
+  "actual_mapped_artifacts_per_rank": [
+    21,
+    21
+  ],
+  "producer_rpc_receipts": [
+    {
+      "id": "loaded-module-decode-b8-q4-2048-full",
+      "result": "producer-indexer-0.json"
+    },
+    {
+      "id": "loaded-module-small-mixed-d8q4-p1q1",
+      "result": "producer-indexer-1.json"
+    }
+  ],
+  "sources": {
+    "vllm": "19afac40273aa84c2693ca1083995c4156aca4e2",
+    "msa": "cd20e206a3373e8d258da8cd403b4b3399b1f714",
+    "image": "5bdfa010c240579625c4e21ffdb95e41132cd18ae2b1223d717b3eb06b92f0d3"
+  },
+  "evidence_files": {
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/packet/execution.json": "ae109f5f39387e6672dc406cc1093c5d294ad448b03414631e19a1aa5e16d5aa",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/boot.json": "7db1491ae462c604be72e6404d754ec0d910664bfc9f5696f1350ec40ea77be6",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/clocks/result.json": "9ad52d505eb398842cb920630068f585db4f9242d373c6fd10410fc93ca8ad55",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/cache-before.json": "d5a2e02886bf606e561a9f6df6f994b23397f7ea37e051f279adcc31240e4e39",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/cache-after.json": "25ea349e0cd4598b2abf46301ef4ff4cc285f1a1a0cde21c60b235d3bdd2b5d3",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/loaded-artifacts-workers.json": "b548e85498f6ac50c4c56989a922cb69ae562f1bfa94d5d34713e09afe0614ee",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/accuracy/result.json": "cba2dd61ba25f79d44a95a2525bd29fec64fec21dfed0c3abc346c5bc33b6be5",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/phase-evidence/scheduler-929543/manifest.json": "542fc302e0ecf7bf6b9e1f9b1731533d48ea490d08ad554d0fba4ca442220f77",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/phase-evidence/scheduler-929543/steps.jsonl": "bb8d8a5db5fbb2e7d98445739c7f6eb350a2c833a70cfb4727e49dbc391a053b",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/lifecycle-evidence/worker-930029.json": "e048c3b66565d4e809d79528c730b433b0653e4f4d647c0f5ec4437c8938427d",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/lifecycle-evidence/worker-929788.json": "ef61c6266777e0c7fd739e6f7c2f659dabf4f13de7f4caff0cd6c87a04f2a7d8",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/producer-indexer-0.json": "6f1812143059abbb9c1d07d51591432efe8c01d70718cb8e8bbe022a22d64dfe",
+    "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/producer-indexer-1.json": "fb63b344a3492939a1d55b232f382cecce935154aafa616a1b368f7d1de46535"
+  },
+  "evidence_checker_sha256": "28d64ab52be2df6ec4a3b567f96497d2cb291f4ec154cf6b43af5f53fe20e711",
+  "remaining": [
+    "observeroverheadqualification",
+    "longcontextmodelperformancephase/batchadmission",
+    "full6pairedrepetitions",
+    "prefill/mixedmodelmatrix",
+    "ordinaryindexercompatibility",
+    "modeloffload/prefix/COW/cancellation"
+  ]
+}

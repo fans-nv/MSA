@@ -1,0 +1,313 @@
+{
+  "recorded_at_utc": "2026-10-09T09:51:39.494602+00:00",
+  "files": {
+    "EXECUTION.md": {
+      "source_artifact": "campaigns/hecate-723744/EXECUTION.md",
+      "published_copy": "evidence/hecate-723744/EXECUTION.md",
+      "source_sha256": "091da9da6358866430bd6e3cf0a775b6a52846f5181c1256cd17bafe53727647",
+      "published_sha256": "091da9da6358866430bd6e3cf0a775b6a52846f5181c1256cd17bafe53727647",
+      "bytes": 23685,
+      "content_rewritten": false
+    },
+    "FOLLOWUP-VALIDATION.md": {
+      "source_artifact": "campaigns/hecate-723744/FOLLOWUP-VALIDATION.md",
+      "published_copy": "evidence/hecate-723744/FOLLOWUP-VALIDATION.md",
+      "source_sha256": "6e65113f497e27a28b51327abf835f4e40c621fedf86c39c6f1a4d321570085a",
+      "published_sha256": "6e65113f497e27a28b51327abf835f4e40c621fedf86c39c6f1a4d321570085a",
+      "bytes": 6484,
+      "content_rewritten": false
+    },
+    "PERFORMANCE-REPORT.md": {
+      "source_artifact": "campaigns/hecate-723744/PERFORMANCE-REPORT.md",
+      "published_copy": "evidence/hecate-723744/PERFORMANCE-REPORT.md",
+      "source_sha256": "f79f3686550bfb7544bc7a1ffbdb9c2399ea627d5d00871970ad9a2373be8b14",
+      "published_sha256": "f79f3686550bfb7544bc7a1ffbdb9c2399ea627d5d00871970ad9a2373be8b14",
+      "bytes": 8246,
+      "content_rewritten": false
+    },
+    "VALIDATION-STATUS.md": {
+      "source_artifact": "campaigns/hecate-723744/VALIDATION-STATUS.md",
+      "published_copy": "evidence/hecate-723744/VALIDATION-STATUS.md",
+      "source_sha256": "bd90519f30ef9e845b50c1bd9fe3f3f3b333f7aafd9962110193716e4ec15507",
+      "published_sha256": "bd90519f30ef9e845b50c1bd9fe3f3f3b333f7aafd9962110193716e4ec15507",
+      "bytes": 7437,
+      "content_rewritten": false
+    },
+    "analysis/accuracy-two-pairs-r1/result.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/accuracy-two-pairs-r1/result.json",
+      "published_copy": "evidence/hecate-723744/analysis/accuracy-two-pairs-r1/result.json",
+      "source_sha256": "1788a598e009a4c18cbeaeb9c107ceef2a681c53c3dadb265a39cac9fa429c34",
+      "published_sha256": "1788a598e009a4c18cbeaeb9c107ceef2a681c53c3dadb265a39cac9fa429c34",
+      "bytes": 3688,
+      "content_rewritten": false
+    },
+    "analysis/cupti-rank-skew-r1/REPORT.md": {
+      "source_artifact": "campaigns/hecate-723744/analysis/cupti-rank-skew-r1/REPORT.md",
+      "published_copy": "evidence/hecate-723744/analysis/cupti-rank-skew-r1/REPORT.md",
+      "source_sha256": "b23dab966aa8ee96ccbf0167f09d860be7f84bb49399be1de5b674985279def6",
+      "published_sha256": "b23dab966aa8ee96ccbf0167f09d860be7f84bb49399be1de5b674985279def6",
+      "bytes": 2499,
+      "content_rewritten": false
+    },
+    "analysis/cupti-rank-skew-r1/result.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/cupti-rank-skew-r1/result.json",
+      "published_copy": "evidence/hecate-723744/analysis/cupti-rank-skew-r1/result.json",
+      "source_sha256": "a05c0c0335b4a37f6ceb8fc5dff9a010ba4835e92ec37c98bc4d83145e1e08ae",
+      "published_sha256": "a05c0c0335b4a37f6ceb8fc5dff9a010ba4835e92ec37c98bc4d83145e1e08ae",
+      "bytes": 534277,
+      "content_rewritten": false
+    },
+    "analysis/cupti-stages-independent-review-r2.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/cupti-stages-independent-review-r2.json",
+      "published_copy": "evidence/hecate-723744/analysis/cupti-stages-independent-review-r2.json",
+      "source_sha256": "a42d2dc9781fafbebecad54801074a65b33cf4e37a439db0696bfe8c5721d3de",
+      "published_sha256": "a42d2dc9781fafbebecad54801074a65b33cf4e37a439db0696bfe8c5721d3de",
+      "bytes": 82868,
+      "content_rewritten": false
+    },
+    "analysis/device-text-comparison-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/device-text-comparison-r1.json",
+      "published_copy": "evidence/hecate-723744/analysis/device-text-comparison-r1.json",
+      "source_sha256": "8374b1f9c6a1f63e03242b6e1dca37a0c240624ec34a7f5626d5ba48e4ea4bcd",
+      "published_sha256": "8374b1f9c6a1f63e03242b6e1dca37a0c240624ec34a7f5626d5ba48e4ea4bcd",
+      "bytes": 1886,
+      "content_rewritten": false
+    },
+    "analysis/model-B-r1-jit-audit.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/model-B-r1-jit-audit.json",
+      "published_copy": "evidence/hecate-723744/analysis/model-B-r1-jit-audit.json",
+      "source_sha256": "dd62416e2fedb88ea92353a61c56969c50a353e9a60c25e3d3161b00660662b1",
+      "published_sha256": "dd62416e2fedb88ea92353a61c56969c50a353e9a60c25e3d3161b00660662b1",
+      "bytes": 19310,
+      "content_rewritten": false
+    },
+    "analysis/model-R-r1-jit-audit.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/model-R-r1-jit-audit.json",
+      "published_copy": "evidence/hecate-723744/analysis/model-R-r1-jit-audit.json",
+      "source_sha256": "b40c4adc0a535fa1a9a69c983cae628fc2f6604650b7603ed80b0f19cc513f9e",
+      "published_sha256": "b40c4adc0a535fa1a9a69c983cae628fc2f6604650b7603ed80b0f19cc513f9e",
+      "bytes": 19200,
+      "content_rewritten": false
+    },
+    "analysis/model-decode-one-pair-r1/REPORT.md": {
+      "source_artifact": "campaigns/hecate-723744/analysis/model-decode-one-pair-r1/REPORT.md",
+      "published_copy": "evidence/hecate-723744/analysis/model-decode-one-pair-r1/REPORT.md",
+      "source_sha256": "1b822a9ffc9344dd5e97926a9d68e8fa24edac8bd22c3f32c31e46182061d8e6",
+      "published_sha256": "1b822a9ffc9344dd5e97926a9d68e8fa24edac8bd22c3f32c31e46182061d8e6",
+      "bytes": 2536,
+      "content_rewritten": false
+    },
+    "analysis/model-decode-one-pair-r1/result.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/model-decode-one-pair-r1/result.json",
+      "published_copy": "evidence/hecate-723744/analysis/model-decode-one-pair-r1/result.json",
+      "source_sha256": "be2aafaeeb82b287f02e9630efe18be8a6cbbaae8b49b100a1404de63986c0d7",
+      "published_sha256": "be2aafaeeb82b287f02e9630efe18be8a6cbbaae8b49b100a1404de63986c0d7",
+      "bytes": 29923,
+      "content_rewritten": false
+    },
+    "analysis/module-core-five-pairs-64k.png": {
+      "source_artifact": "campaigns/hecate-723744/analysis/module-core-five-pairs-64k.png",
+      "published_copy": "evidence/hecate-723744/analysis/module-core-five-pairs-64k.png",
+      "source_sha256": "34de82749b58a02c8ce2e072269ec99a4e190d0a5c27400d5b8d54fbf13cd648",
+      "published_sha256": "34de82749b58a02c8ce2e072269ec99a4e190d0a5c27400d5b8d54fbf13cd648",
+      "bytes": 211324,
+      "content_rewritten": false
+    },
+    "analysis/module-core-five-pairs-64k.svg": {
+      "source_artifact": "campaigns/hecate-723744/analysis/module-core-five-pairs-64k.svg",
+      "published_copy": "evidence/hecate-723744/analysis/module-core-five-pairs-64k.svg",
+      "source_sha256": "5288f6a039414736504d7bf7865a5f815450d692998d20361efa69e3ac4e5fa3",
+      "published_sha256": "5288f6a039414736504d7bf7865a5f815450d692998d20361efa69e3ac4e5fa3",
+      "bytes": 106760,
+      "content_rewritten": false
+    },
+    "analysis/ordinary-r2-startup-failure.json": {
+      "source_artifact": "campaigns/hecate-723744/analysis/ordinary-r2-startup-failure.json",
+      "published_copy": "evidence/hecate-723744/analysis/ordinary-r2-startup-failure.json",
+      "source_sha256": "ad83b53ac570523c98b5cb5fe3e40d7cf48684afc87ce76e883130ed7c37369f",
+      "published_sha256": "ad83b53ac570523c98b5cb5fe3e40d7cf48684afc87ce76e883130ed7c37369f",
+      "bytes": 3910,
+      "content_rewritten": false
+    },
+    "evidence/offload-dma-r1/result.json": {
+      "source_artifact": "campaigns/hecate-723744/evidence/offload-dma-r1/result.json",
+      "published_copy": "evidence/hecate-723744/evidence/offload-dma-r1/result.json",
+      "source_sha256": "7781689a5f7cc81d0f29252b74cb481d2dfa2d7fe74f2e1602e77dc598178aaf",
+      "published_sha256": "7781689a5f7cc81d0f29252b74cb481d2dfa2d7fe74f2e1602e77dc598178aaf",
+      "bytes": 2349,
+      "content_rewritten": false
+    },
+    "kernels/CORE-CUPTI-K-R-B-COMPARISON.md": {
+      "source_artifact": "campaigns/hecate-723744/kernels/CORE-CUPTI-K-R-B-COMPARISON.md",
+      "published_copy": "evidence/hecate-723744/kernels/CORE-CUPTI-K-R-B-COMPARISON.md",
+      "source_sha256": "ce84f868c036d4716e544650f903be8642da25e3886f11ccf141b1dcaeb12b1a",
+      "published_sha256": "ce84f868c036d4716e544650f903be8642da25e3886f11ccf141b1dcaeb12b1a",
+      "bytes": 2950,
+      "content_rewritten": false
+    },
+    "kernels/DECODE-FIVE-PAIR-OBSERVATIONS.md": {
+      "source_artifact": "campaigns/hecate-723744/kernels/DECODE-FIVE-PAIR-OBSERVATIONS.md",
+      "published_copy": "evidence/hecate-723744/kernels/DECODE-FIVE-PAIR-OBSERVATIONS.md",
+      "source_sha256": "01737d3cd9346136428f3d2eb64788e421943a7f596114b7eb613010e768878b",
+      "published_sha256": "01737d3cd9346136428f3d2eb64788e421943a7f596114b7eb613010e768878b",
+      "bytes": 2165,
+      "content_rewritten": false
+    },
+    "kernels/DECODE-TAIL-DIAGNOSTICS.md": {
+      "source_artifact": "campaigns/hecate-723744/kernels/DECODE-TAIL-DIAGNOSTICS.md",
+      "published_copy": "evidence/hecate-723744/kernels/DECODE-TAIL-DIAGNOSTICS.md",
+      "source_sha256": "0f1f035a26245e6ad2c2ae8d128c1a1be6f502a35a5e12cc52e8555a45ffaa73",
+      "published_sha256": "0f1f035a26245e6ad2c2ae8d128c1a1be6f502a35a5e12cc52e8555a45ffaa73",
+      "bytes": 1109,
+      "content_rewritten": false
+    },
+    "kernels/KERNEL-VALIDATION-RESULTS.md": {
+      "source_artifact": "campaigns/hecate-723744/kernels/KERNEL-VALIDATION-RESULTS.md",
+      "published_copy": "evidence/hecate-723744/kernels/KERNEL-VALIDATION-RESULTS.md",
+      "source_sha256": "fdc3e55c43f10a40e2328423338eb373dd5b2450f366b6aba2ec7454f0ef13d2",
+      "published_sha256": "fdc3e55c43f10a40e2328423338eb373dd5b2450f366b6aba2ec7454f0ef13d2",
+      "bytes": 8751,
+      "content_rewritten": false
+    },
+    "kernels/SCORER-FIX-AMENDMENT.md": {
+      "source_artifact": "campaigns/hecate-723744/kernels/SCORER-FIX-AMENDMENT.md",
+      "published_copy": "evidence/hecate-723744/kernels/SCORER-FIX-AMENDMENT.md",
+      "source_sha256": "fa449d1f8fcabfeb66aa30c0206f3667e9de3e1f3a51a4d9d3104152fa63b47f",
+      "published_sha256": "fa449d1f8fcabfeb66aa30c0206f3667e9de3e1f3a51a4d9d3104152fa63b47f",
+      "bytes": 2568,
+      "content_rewritten": false
+    },
+    "kernels/core-cupti-K-R-B-comparison-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/core-cupti-K-R-B-comparison-r1.json",
+      "published_copy": "evidence/hecate-723744/kernels/core-cupti-K-R-B-comparison-r1.json",
+      "source_sha256": "ddb64d7119c9cd8c3e131f973d57c83458ee8953a1adca564826a7a4a588fe91",
+      "published_sha256": "ddb64d7119c9cd8c3e131f973d57c83458ee8953a1adca564826a7a4a588fe91",
+      "bytes": 61198,
+      "content_rewritten": false
+    },
+    "kernels/coverage-integrity-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/coverage-integrity-r1.json",
+      "published_copy": "evidence/hecate-723744/kernels/coverage-integrity-r1.json",
+      "source_sha256": "c6d33303f0e4fe051dbbe58bb6563d62c81c35c4d2f57c050ddb7ef9374dce91",
+      "published_sha256": "c6d33303f0e4fe051dbbe58bb6563d62c81c35c4d2f57c050ddb7ef9374dce91",
+      "bytes": 1945,
+      "content_rewritten": false
+    },
+    "kernels/decode-analysis-after-pair4.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/decode-analysis-after-pair4.json",
+      "published_copy": "evidence/hecate-723744/kernels/decode-analysis-after-pair4.json",
+      "source_sha256": "2008f1bc2f94b69f44cb78f2e35b30d25b76b967c947e8081c308de3ee36f0e5",
+      "published_sha256": "2008f1bc2f94b69f44cb78f2e35b30d25b76b967c947e8081c308de3ee36f0e5",
+      "bytes": 2275987,
+      "content_rewritten": false
+    },
+    "kernels/decode-five-pair-observations.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/decode-five-pair-observations.json",
+      "published_copy": "evidence/hecate-723744/kernels/decode-five-pair-observations.json",
+      "source_sha256": "397d3e2ccb8ed579bd6210987bc35a39e2077b9de18894adcd646587fe1ea42b",
+      "published_sha256": "397d3e2ccb8ed579bd6210987bc35a39e2077b9de18894adcd646587fe1ea42b",
+      "bytes": 312889,
+      "content_rewritten": false
+    },
+    "kernels/final-node0010-cleanup-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/final-node0010-cleanup-r1.json",
+      "published_copy": "evidence/hecate-723744/kernels/final-node0010-cleanup-r1.json",
+      "source_sha256": "27f6f2adf19d908f42e38497b7d4b40c742255aadca7684e8a3590915b766c9f",
+      "published_sha256": "27f6f2adf19d908f42e38497b7d4b40c742255aadca7684e8a3590915b766c9f",
+      "bytes": 662,
+      "content_rewritten": false
+    },
+    "kernels/five-pair-clock-integrity-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/five-pair-clock-integrity-r1.json",
+      "published_copy": "evidence/hecate-723744/kernels/five-pair-clock-integrity-r1.json",
+      "source_sha256": "216fe92f25cb35fade7c4a3205ef0ba5d121ef9830ef7565a9394cd2b9f4abc2",
+      "published_sha256": "216fe92f25cb35fade7c4a3205ef0ba5d121ef9830ef7565a9394cd2b9f4abc2",
+      "bytes": 8578,
+      "content_rewritten": false
+    },
+    "kernels/input-policy-parity-review-r2.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/input-policy-parity-review-r2.json",
+      "published_copy": "evidence/hecate-723744/kernels/input-policy-parity-review-r2.json",
+      "source_sha256": "53951e18cb473469878f5f658def4d2806a52e27d7412a795b316ac153777855",
+      "published_sha256": "53951e18cb473469878f5f658def4d2806a52e27d7412a795b316ac153777855",
+      "bytes": 4701,
+      "content_rewritten": false
+    },
+    "kernels/report-snapshot-r2.json": {
+      "source_artifact": "campaigns/hecate-723744/kernels/report-snapshot-r2.json",
+      "published_copy": "evidence/hecate-723744/kernels/report-snapshot-r2.json",
+      "source_sha256": "735b44e9b5faecd8f43d85536dc6bf7106167450c75fe9decb9ddf0b993441f3",
+      "published_sha256": "735b44e9b5faecd8f43d85536dc6bf7106167450c75fe9decb9ddf0b993441f3",
+      "bytes": 1733,
+      "content_rewritten": false
+    },
+    "ops/allocation-final-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/ops/allocation-final-r1.json",
+      "published_copy": "evidence/hecate-723744/ops/allocation-final-r1.json",
+      "source_sha256": "80c63f8995cae8d42b0b6455de2fa641effb7449befec14eb269ca122c787b9e",
+      "published_sha256": "80c63f8995cae8d42b0b6455de2fa641effb7449befec14eb269ca122c787b9e",
+      "bytes": 798,
+      "content_rewritten": false
+    },
+    "runtime-ops/ADMISSION-R6.md": {
+      "source_artifact": "campaigns/hecate-723744/runtime-ops/ADMISSION-R6.md",
+      "published_copy": "evidence/hecate-723744/runtime-ops/ADMISSION-R6.md",
+      "source_sha256": "a0b4a666ae88b542df6d33c2a02c5a34412285328dcd93eb8706f23adfc94a23",
+      "published_sha256": "a0b4a666ae88b542df6d33c2a02c5a34412285328dcd93eb8706f23adfc94a23",
+      "bytes": 5124,
+      "content_rewritten": false
+    },
+    "runtime-ops/RUNTIME-RESULTS-INDEX.md": {
+      "source_artifact": "campaigns/hecate-723744/runtime-ops/RUNTIME-RESULTS-INDEX.md",
+      "published_copy": "evidence/hecate-723744/runtime-ops/RUNTIME-RESULTS-INDEX.md",
+      "source_sha256": "9806e3ba9fb8bd451e16c8d433bdbb4f65921a2bb8cc39d7665f4695209041fc",
+      "published_sha256": "9806e3ba9fb8bd451e16c8d433bdbb4f65921a2bb8cc39d7665f4695209041fc",
+      "bytes": 5389,
+      "content_rewritten": false
+    },
+    "runtime-ops/runtime-idle-final-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/runtime-ops/runtime-idle-final-r1.json",
+      "published_copy": "evidence/hecate-723744/runtime-ops/runtime-idle-final-r1.json",
+      "source_sha256": "5bd451616ce5ba3b5a764b526461bcdaffce8d191f3c1c2a2ea1ee96b7f2ac19",
+      "published_sha256": "5bd451616ce5ba3b5a764b526461bcdaffce8d191f3c1c2a2ea1ee96b7f2ac19",
+      "bytes": 2275,
+      "content_rewritten": false
+    },
+    "runtime-runs/R_fixed-eagle3-performance-policy-r2/results/performance-policy-admission-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/performance-policy-admission-r1.json",
+      "published_copy": "evidence/hecate-723744/runtime-runs/R_fixed-eagle3-performance-policy-r2/results/performance-policy-admission-r1.json",
+      "source_sha256": "7d5f564267b6c07484c8bbbbb04fafc3e4476d1cb3ccf8b5dfd5e69b3299e762",
+      "published_sha256": "7d5f564267b6c07484c8bbbbb04fafc3e4476d1cb3ccf8b5dfd5e69b3299e762",
+      "bytes": 6855,
+      "content_rewritten": false
+    },
+    "runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/performance-policy-admission-r1.json": {
+      "source_artifact": "campaigns/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/performance-policy-admission-r1.json",
+      "published_copy": "evidence/hecate-723744/runtime-runs/accuracy-H_vs_B_fixed-r1-B_fixed-bound-r4/results/performance-policy-admission-r1.json",
+      "source_sha256": "72f648c46a4aea8d676fe9fd58d5830833fe0520a2050e36009118469d3692ff",
+      "published_sha256": "72f648c46a4aea8d676fe9fd58d5830833fe0520a2050e36009118469d3692ff",
+      "bytes": 4501,
+      "content_rewritten": false
+    },
+    "source/publication-20261009.json": {
+      "source_artifact": "campaigns/hecate-723744/source/publication-20261009.json",
+      "published_copy": "evidence/hecate-723744/source/publication-20261009.json",
+      "source_sha256": "2b734258f35b22045d4723cc96f0f62fc7a1b53a848258d564c1fad65b5cb956",
+      "published_sha256": "2b734258f35b22045d4723cc96f0f62fc7a1b53a848258d564c1fad65b5cb956",
+      "bytes": 4581,
+      "content_rewritten": false
+    },
+    "../../plans/hecate-721392/PERFORMANCE-MATRIX.json": {
+      "source_artifact": "plans/hecate-721392/PERFORMANCE-MATRIX.json",
+      "published_copy": "plans/hecate-721392/PERFORMANCE-MATRIX.json",
+      "source_sha256": "d26c56a6502d8544adf112b64d4c90e2f399d845f436415d6ace4c03d68f1844",
+      "published_sha256": "d26c56a6502d8544adf112b64d4c90e2f399d845f436415d6ace4c03d68f1844",
+      "bytes": 125773,
+      "content_rewritten": false
+    }
+  },
+  "copied_files": 38,
+  "link_rewrites": 0,
+  "scope": "Compact reports, analyses, plot and integrity receipts. Large raw traces, request logs and binary caches remain in the original campaign; their identities are retained in these receipts.",
+  "source_heads_unchanged": true
+}

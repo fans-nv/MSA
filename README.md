@@ -1,8 +1,10 @@
 # ICP consolidation: human review, 2026-10-09
 
-These are the corrected source revisions under active validation. Publishing
-them enables human review; it does not assert merge readiness or retained
-performance. Earlier review branches remain unchanged. AI assistance was used.
+The corrected sources and final Hecate validation evidence are published for
+human review. **Performance retention and merge readiness are not established.**
+Five of six module pairs completed with persistent slowdowns; the model decode
+windows failed qualification. Earlier source refs remain unchanged. AI assistance
+was used.
 
 | Repository | Pinned upstream base | Review head |
 | --- | --- | --- |
@@ -51,29 +53,76 @@ binding and offload; keep graph metadata and plans bound to the current cache;
 and drain/release owned transport resources during profiling, rebinding and
 shutdown. Model-specific index-Q/K projection replication is explicit.
 
-## Validation status
+## Completed validation and its limits
 
-Fresh native vLLM core, MoE, FlashAttention and supporting targets were built
-against the unchanged Rubin CUDA 13.5/Torch/FlashInfer environment. MSA and
-vLLM source/import/native hashes were recorded per arm. No old vLLM native
-binary was substituted for a candidate build.
+Fresh native core, MoE, FlashAttention and supporting targets were built against
+the unchanged Rubin CUDA 13.5/Torch/FlashInfer environment. Source, import and
+native hashes were bound per arm; no old vLLM native binary was substituted.
+Corrected controls are explicitly named `K_fixed`, `R_fixed` and `B_fixed`.
 
-- Corrected full-indexer decode correctness passed all 36 C8/C12/C16 shapes,
-  eager and changed-query graph execution, on both ranks.
-- Writer-to-reader integration passed 34 numerical/layout cases, including
-  nonuniform scores and changed TopK. Real two-rank transport passed.
-- Actual loaded first/later-layer producer admission compared signed eager
-  query bytes, complete touched compound pages and exact TopK against graph
-  replays. Corrected reference and candidate passed all four cases.
-- Ordinary public MSA versus pinned dev produced bitwise-equal inputs and
-  five outputs from separate fresh caches; all five CPU FP32 reference checks
-  passed the unchanged 0.9999 threshold. A NaN-producing GPU reference failure
-  is preserved and is not counted as a passing test.
-- ICP-on model boot, cache ownership/lifecycle, producer RPC and Eagle3
-  routing checks passed. Autotune policy admission passed separately.
-- Two complete GSM8K accuracy pairs were independently rescored. Each boot
-  used 16 warmups and all 1,319 scored examples, C16, zero-shot adaptive chat,
-  temperature 0, top-p 1, and at most 512 generated tokens.
+- Candidate correctness passed all 60 primary core cases: 36 decode and 24
+  prefill/mixed, plus all 18 guards with clean process finalization. Decode
+  includes exact TopK and changed-query graph replay on both TP ranks.
+- R_fixed passed all 60 core cases. Its 18 guards passed every numerical check,
+  but the process hit its 600-second limit during distributed shutdown; the
+  numerical pass and operational timeout remain separate.
+- Native writer checks, 34 writer-reader composition cases, two-rank transport,
+  compound-page DMA/canary checks, and loaded first/later-layer signed-input
+  producer/graph admission passed. These do not establish complete model
+  offload/reload, prefix/COW/cancellation/reuse or soak coverage.
+- Ordinary canonical MSA and pinned upstream dev produced bitwise-equal tested
+  outputs from separate fresh builds, with all five independent CPU FP32 oracle
+  checks passing. The original GPU-SDPA reference NaNs remain recorded.
+- ICP-on model routes, Eagle3 routing, cache ownership/lifecycle and serving
+  policy admission passed. The ordinary ICP-off model failure remains open.
+
+The [kernel report](evidence/hecate-723744/kernels/KERNEL-VALIDATION-RESULTS.md)
+and [final validation status](evidence/hecate-723744/VALIDATION-STATUS.md)
+bind case identities, source revisions and limitations.
+
+## Measured performance
+
+Five of six required R_fixed/B_fixed module pairs completed all 216 cells per
+arm: 36 decode shapes × three boundaries × eager/graph, at C8/C12/C16 and
+varied history lengths. Every sample and outlier is retained. Each cell uses
+100 samples of ten complete calls, taking the slower rank per call before
+arithmetic averaging. All ten arms passed continuous 4752 MHz memory-clock
+telemetry and owned-lock cleanup.
+
+At C16/Q1/64K, core graph latency was **31.75 → 36.11 µs (+13.7%)**, slower in
+all five pairs. C12/Q1/150K later-layer producer plus indexer graph was
+**39.91 → 46.51 µs (+16.5%)**, also slower in every pair. The six-pair decision
+is incomplete. Primary warmup used 20 uncaptured calls and one graph validation
+replay, not 20 graph replay warmups; this qualification remains explicit.
+
+![Five retained module pairs at 64K](evidence/hecate-723744/analysis/module-core-five-pairs-64k.png)
+
+Separate K/R/B CUPTI diagnostics completed 144 traces and 4,320 constituent
+GPU kernels over 12 shapes, eager/graph, both ranks. Scoring, fused
+selection/publication and merge/polling overlap through PDL; their durations
+cannot be summed as serial latency. Large 150K outliers align with increased
+rank-arrival skew, without establishing a cause or pure spin time. Communication
+was same-node NVLink/symmetric-memory publication. No standalone bandwidth or
+inter-node NIC latency/bandwidth was measured.
+
+The whole-model sentinel completed one R/B pair at ISL65536/OSL1024,
+C8/C12/C16, TP2/ICP2 and real Eagle3 k=3: 72 warmup plus 360 measured requests
+per arm, zero request errors or preemptions. Descriptive whole-request output
+throughput changed +0.29%, −0.29% and −0.92%. **All original pure-decode
+scheduler windows failed**, leaving 1/6 collected pairs and zero accepted
+pairs. A separately labeled post-hoc boundary diagnostic does not replace the
+frozen metric. Observer overhead is unqualified. K/B primary module timing,
+prefill/mixed timing and all 30 H/B primary model cells remain unmeasured.
+
+See the [complete performance report](evidence/hecate-723744/PERFORMANCE-REPORT.md),
+[model sentinel report](evidence/hecate-723744/analysis/model-decode-one-pair-r1/REPORT.md)
+and [rank-skew analysis](evidence/hecate-723744/analysis/cupti-rank-skew-r1/REPORT.md).
+
+## Accuracy
+
+Two complete GSM8K pairs used 16 disjoint warmups and all 1,319 scored examples
+per fresh boot, C16, zero-shot adaptive chat, temperature 0, top-p 1 and at
+most 512 generated tokens. Independent rescoring retained the complete results.
 
 | Paired round | Historical image | Corrected candidate | Candidate − historical |
 | --- | ---: | ---: | ---: |
@@ -81,32 +130,36 @@ binary was substituted for a candidate build.
 | 2 | 1265/1319 (95.9060%) | 1261/1319 (95.6027%) | −0.3033 percentage points |
 
 Mean paired difference: **−0.3791 percentage points**. Both candidate boots
-exceeded 95%. These two pairs do not establish accuracy equivalence. The
-historical arm has a different image, attention backend and UGPU policy, so
-this is a whole-system comparison. Original scorer defects and original
-failed runs remain recorded separately; corrected controls are labeled
-`R_fixed`, `B_fixed` and `K_fixed`.
+exceeded 95%; two pairs do not establish equivalence. H has a different image,
+attention backend and UGPU policy, so this is a whole-system comparison.
+[Accuracy receipt](evidence/hecate-723744/analysis/accuracy-two-pairs-r1/result.json).
 
 ## Open before merge
 
-Module timing is in progress, with some adverse early cells showing slower
-candidate results. The full module and whole-model campaigns and their
-analysis remain incomplete. Six independent pairs and the declared warmup and
-measurement counts remain required. Incomplete runs, clock violations,
-compilation during measurement, and unqualified observer overhead cannot
-support a performance-retention claim. Prefill/mixed and legacy-core coverage
-must be reported separately from completed decode coverage.
+The ordinary **ICP-off whole-model route remains failing** with a CUDA launch
+error; its first failing GPU operation is not localized. The fresh-cache,
+synchronous r2 diagnostic failed before model startup because its private
+TMPDIR made a Unix IPC socket path too long. Supported `VLLM_RPC_BASE_PATH=/tmp`
+was identified, but no final r3 retry packet was authored or launched. This
+harness failure adds no kernel evidence and no production workaround was applied.
 
-The ordinary **ICP-off whole-model path remains failing** with a CUDA launch
-error. This is separate from the passing standalone ordinary MSA comparison.
-The error surfaces after ordinary sparse attention and requires a fresh-cache,
-synchronous diagnostic run to identify the first failing operation. No
-production workaround has been applied and no cause is claimed.
+Remaining work includes ordinary-route compatibility, a complete and qualified
+repeated performance protocol addressing warmup/window issues and persistent
+slowdowns, K/B and prefill/mixed timing, clean R guard finalization, and broader
+model lifecycle coverage. Six accepted model pairs remain required; the failed
+first pair cannot count toward that acceptance. The
+[follow-up plan](evidence/hecate-723744/FOLLOWUP-VALIDATION.md) records the
+proposed complete protocol; it has not been executed.
 
-Upstream submission remains pending the listed model, performance and
-compatibility checks and the human review requested by the user. No upstream
-PR or MR was opened by this publication.
+All GPU work drained before allocation723744 naturally expired at 09:45:25 UTC.
+Final checks found both nodes idle. Agents did not cancel, requeue or release
+the allocation. The [execution record](evidence/hecate-723744/EXECUTION.md)
+preserves actual commands, timeouts, cleanup and failed attempts.
+
+Upstream submission remains pending the listed compatibility/performance checks
+and the human review requested by the user. No upstream PR/MR was opened.
 
 [MSA MR description](msa-mr-description.md) ·
 [vLLM MR description](vllm-mr-description.md) ·
-[Evidence snapshot](validation-snapshot.json)
+[Evidence snapshot](validation-snapshot.json) ·
+[Copied artifact hashes](evidence/hecate-723744/MANIFEST.json)

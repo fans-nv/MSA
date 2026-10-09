@@ -1,0 +1,160 @@
+{
+  "scope": "vLLM-monitored JIT APIs only; no blanket claim about all compiler activity",
+  "event_semantics": "CuTeDSL records cute.compile entry, which can include persistent-cache loading; Triton records its post-compile hook. Log timestamps are not measured compilation durations.",
+  "analysis_script_sha256": "c94bfabe1f34f21a38a2662a2c45ce62d3270529bc28c2962552b1a25b40b8b0",
+  "timezone": "America/Los_Angeles",
+  "clock_mapping": {
+    "offset_min_ns": 1791332077506849311,
+    "offset_max_ns": 1791332077506878172,
+    "monotonic_min_ns": 202554770293726,
+    "monotonic_max_ns": 203410335605698,
+    "year": 2026
+  },
+  "timestamp_uncertainty": "full logged second, observed clock-offset range, plus 1s each side",
+  "verbose_monitor_confirmed": true,
+  "monitor_activations": {
+    "1": {
+      "begin_ns": 202837493121828,
+      "end_ns": 202840493150689,
+      "log_local": "2026-10-09T01:35:16-07:00",
+      "rank": 1,
+      "line": 765,
+      "text": "(Worker_TP1 pid=939614) INFO 10-09 01:35:16 [jit_monitor.py:84] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn."
+    },
+    "0": {
+      "begin_ns": 202837493121828,
+      "end_ns": 202840493150689,
+      "log_local": "2026-10-09T01:35:16-07:00",
+      "rank": 0,
+      "line": 766,
+      "text": "(Worker_TP0 pid=939374) INFO 10-09 01:35:16 [jit_monitor.py:84] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn."
+    }
+  },
+  "all_monitored_jit_events": [
+    {
+      "begin_ns": 202843493121828,
+      "end_ns": 202846493150689,
+      "log_local": "2026-10-09T01:35:22-07:00",
+      "rank": 1,
+      "line": 816,
+      "text": "(Worker_TP1 pid=939614) WARNING 10-09 01:35:22 [jit_monitor.py:137] Triton kernel JIT compilation during inference: _compute_local_logits_stats_kernel (constexprs={BLOCK_SIZE=8192, HAS_DRAFT_LOGITS=False, draft_logits_ptr=None}; signature={BLOCK_SIZE='constexpr', HAS_DRAFT_LOGITS='constexpr', draft_local_max_ptr='*fp32', draft_local_max_stride='i32', draft_local_sumexp_ptr='*fp32', draft_local_sumexp_stride='i32', draft_logits_ptr='constexpr', draft_logits_stride_0='i32', draft_logits_stride_1='i32', expanded_idx_mapping_ptr='*i32', expanded_local_pos_ptr='*i32', num_speculative_steps='i32', target_local_argmax_ptr='*i64', target_local_argmax_stride='i32', target_local_max_ptr='*fp32', target_local_max_stride='i32', target_local_sumexp_ptr='*fp32', target_local_sumexp_stride='i32', target_logits_ptr='*bf16', target_logits_stride='i32', temp_ptr='*fp32', vocab_size='i32'}; extra_compile_info={configs=[{(0,): [['tt.divisibility', 16]], (1,): [], (2,): [['tt.divisibility', 16]], (3,): [], (4,): [['tt.divisibility', 16..., device=1, enable_fp_fusion=True, extern_libs=(('libdevice', '/usr/local/lib/python3.12/dist-packages/triton/backends/nvidia/lib/libdevice.10.bc'),), is_warmup=False, launch_cooperative_grid=False, num_ctas=1, num_stages=3, num_warps=4, specialization_data='{\"name\": \"vllm.v1.worker.gpu.spec_decode.rejection_sampler_utils._compute_local_logits_stats_kernel\", \"signature\": {...}; key=\"[('*i64', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ...). This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202843493121828,
+      "end_ns": 202846493150689,
+      "log_local": "2026-10-09T01:35:22-07:00",
+      "rank": 0,
+      "line": 817,
+      "text": "(Worker_TP0 pid=939374) WARNING 10-09 01:35:22 [jit_monitor.py:137] Triton kernel JIT compilation during inference: _compute_local_logits_stats_kernel (constexprs={BLOCK_SIZE=8192, HAS_DRAFT_LOGITS=False, draft_logits_ptr=None}; signature={BLOCK_SIZE='constexpr', HAS_DRAFT_LOGITS='constexpr', draft_local_max_ptr='*fp32', draft_local_max_stride='i32', draft_local_sumexp_ptr='*fp32', draft_local_sumexp_stride='i32', draft_logits_ptr='constexpr', draft_logits_stride_0='i32', draft_logits_stride_1='i32', expanded_idx_mapping_ptr='*i32', expanded_local_pos_ptr='*i32', num_speculative_steps='i32', target_local_argmax_ptr='*i64', target_local_argmax_stride='i32', target_local_max_ptr='*fp32', target_local_max_stride='i32', target_local_sumexp_ptr='*fp32', target_local_sumexp_stride='i32', target_logits_ptr='*bf16', target_logits_stride='i32', temp_ptr='*fp32', vocab_size='i32'}; extra_compile_info={configs=[{(0,): [['tt.divisibility', 16]], (1,): [], (2,): [['tt.divisibility', 16]], (3,): [], (4,): [['tt.divisibility', 16..., device=0, enable_fp_fusion=True, extern_libs=(('libdevice', '/usr/local/lib/python3.12/dist-packages/triton/backends/nvidia/lib/libdevice.10.bc'),), is_warmup=False, launch_cooperative_grid=False, num_ctas=1, num_stages=3, num_warps=4, specialization_data='{\"name\": \"vllm.v1.worker.gpu.spec_decode.rejection_sampler_utils._compute_local_logits_stats_kernel\", \"signature\": {...}; key=\"[('*i64', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ...). This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202843493121828,
+      "end_ns": 202846493150689,
+      "log_local": "2026-10-09T01:35:22-07:00",
+      "rank": 1,
+      "line": 818,
+      "text": "(Worker_TP1 pid=939614) WARNING 10-09 01:35:22 [jit_monitor.py:137] Triton kernel JIT compilation during inference: _rejection_kernel (constexprs={HAS_DRAFT_LOGITS=False, PADDED_VOCAB_NUM_BLOCKS=32, SYNTHETIC_MODE=False, USE_BLOCK_VERIFICATION=False, cumulative_log_p_ptr=None, draft_logits_ptr=None, local_residual_mass_ptr=None, synthetic_conditional_rates_ptr=None}; signature={HAS_DRAFT_LOGITS='constexpr', PADDED_VOCAB_NUM_BLOCKS='constexpr', SYNTHETIC_MODE='constexpr', USE_BLOCK_VERIFICATION='constexpr', cu_num_logits_ptr='*i32', cumulative_log_p_ptr='constexpr', draft_local_max_ptr='*fp32', draft_local_max_stride='i32', draft_local_sumexp_ptr='*fp32', draft_local_sumexp_stride='i32', draft_logits_ptr='constexpr', draft_logits_stride_0='i32', draft_logits_stride_1='i32', draft_rejected_logsumexp_ptr='*fp32', draft_sampled_ptr='*i32', idx_mapping_ptr='*i32', local_residual_mass_ptr='constexpr', local_residual_mass_stride='i32', pos_ptr='*i64', rejected_steps_ptr='*i32', sampled_ptr='*i64', sampled_stride='i32', seed_ptr='*i64', synthetic_conditional_rates_ptr='constexpr', target_local_argmax_ptr='*i64', target_local_argmax_stride='i32', target_local_max_ptr='*fp32', target_local_max_stride='i32', target_local_sumexp_ptr='*fp32', target_local_sumexp_stride='i32', target_logits_ptr='*bf16', target_logits_stride='i32', target_rejected_logsumexp_ptr='*fp32', temp_ptr='*fp32', vocab_num_blocks='i32'}; extra_compile_info={configs=[{(0,): [['tt.divisibility', 16]], (1,): [], (2,): [['tt.divisibility', 16]], (3,): [['tt.divisibility', 16]], (4,): ..., device=1, enable_fp_fusion=True, extern_libs=(('libdevice', '/usr/local/lib/python3.12/dist-packages/triton/backends/nvidia/lib/libdevice.10.bc'),), is_warmup=False, launch_cooperative_grid=False, num_ctas=1, num_stages=3, num_warps=1, specialization_data='{\"name\": \"vllm.v1.worker.gpu.spec_decode.rejection_sampler_utils._rejection_kernel\", \"signature\": {\"sampled_ptr\": \"*...}; key=\"[('*i64', 'D'), ('i32', ''), ('*i32', 'D'), ('*fp32', 'D'), ('*fp32', 'D'), ('*bf16', 'D'), ('i32', 'D'), ('*i64', '...). This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202843493121828,
+      "end_ns": 202846493150689,
+      "log_local": "2026-10-09T01:35:22-07:00",
+      "rank": 0,
+      "line": 819,
+      "text": "(Worker_TP0 pid=939374) WARNING 10-09 01:35:22 [jit_monitor.py:137] Triton kernel JIT compilation during inference: _rejection_kernel (constexprs={HAS_DRAFT_LOGITS=False, PADDED_VOCAB_NUM_BLOCKS=32, SYNTHETIC_MODE=False, USE_BLOCK_VERIFICATION=False, cumulative_log_p_ptr=None, draft_logits_ptr=None, local_residual_mass_ptr=None, synthetic_conditional_rates_ptr=None}; signature={HAS_DRAFT_LOGITS='constexpr', PADDED_VOCAB_NUM_BLOCKS='constexpr', SYNTHETIC_MODE='constexpr', USE_BLOCK_VERIFICATION='constexpr', cu_num_logits_ptr='*i32', cumulative_log_p_ptr='constexpr', draft_local_max_ptr='*fp32', draft_local_max_stride='i32', draft_local_sumexp_ptr='*fp32', draft_local_sumexp_stride='i32', draft_logits_ptr='constexpr', draft_logits_stride_0='i32', draft_logits_stride_1='i32', draft_rejected_logsumexp_ptr='*fp32', draft_sampled_ptr='*i32', idx_mapping_ptr='*i32', local_residual_mass_ptr='constexpr', local_residual_mass_stride='i32', pos_ptr='*i64', rejected_steps_ptr='*i32', sampled_ptr='*i64', sampled_stride='i32', seed_ptr='*i64', synthetic_conditional_rates_ptr='constexpr', target_local_argmax_ptr='*i64', target_local_argmax_stride='i32', target_local_max_ptr='*fp32', target_local_max_stride='i32', target_local_sumexp_ptr='*fp32', target_local_sumexp_stride='i32', target_logits_ptr='*bf16', target_logits_stride='i32', target_rejected_logsumexp_ptr='*fp32', temp_ptr='*fp32', vocab_num_blocks='i32'}; extra_compile_info={configs=[{(0,): [['tt.divisibility', 16]], (1,): [], (2,): [['tt.divisibility', 16]], (3,): [['tt.divisibility', 16]], (4,): ..., device=0, enable_fp_fusion=True, extern_libs=(('libdevice', '/usr/local/lib/python3.12/dist-packages/triton/backends/nvidia/lib/libdevice.10.bc'),), is_warmup=False, launch_cooperative_grid=False, num_ctas=1, num_stages=3, num_warps=1, specialization_data='{\"name\": \"vllm.v1.worker.gpu.spec_decode.rejection_sampler_utils._rejection_kernel\", \"signature\": {\"sampled_ptr\": \"*...}; key=\"[('*i64', 'D'), ('i32', ''), ('*i32', 'D'), ('*fp32', 'D'), ('*fp32', 'D'), ('*bf16', 'D'), ('i32', 'D'), ('*i64', '...). This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202843493121828,
+      "end_ns": 202846493150689,
+      "log_local": "2026-10-09T01:35:22-07:00",
+      "rank": 1,
+      "line": 820,
+      "text": "(Worker_TP1 pid=939614) WARNING 10-09 01:35:22 [jit_monitor.py:137] Triton kernel JIT compilation during inference: _resample_kernel (constexprs={BLOCK_SIZE=1024, CONTEXT_WIDTH=1, DEDUPLICATE_CONTEXTS=False, HAS_DRAFT_LOGITS=False, USE_BLOCK_VERIFICATION=False, USE_FP64=False, WATERMARK=False, contexts_ptr=None, cumulative_log_p_ptr=None, draft_logits_ptr=None, watermarking_ptr=None, watermarking_skip_mask_ptr=None}; signature={BLOCK_SIZE='constexpr', CONTEXT_WIDTH='constexpr', DEDUPLICATE_CONTEXTS='constexpr', HAS_DRAFT_LOGITS='constexpr', USE_BLOCK_VERIFICATION='constexpr', USE_FP64='constexpr', WATERMARK='constexpr', contexts_ptr='constexpr', contexts_stride='i32', cu_num_logits_ptr='*i32', cumulative_log_p_ptr='constexpr', draft_logits_ptr='constexpr', draft_logits_stride_0='i32', draft_logits_stride_1='i32', draft_rejected_logsumexp_ptr='*fp32', draft_sampled_ptr='*i32', expanded_idx_mapping_ptr='*i32', pos_ptr='*i64', rejected_step_ptr='*i32', resampled_local_argmax_ptr='*i64', resampled_local_argmax_stride='i32', resampled_local_max_ptr='*fp32', resampled_local_max_stride='i32', seed_ptr='*i64', target_logits_ptr='*bf16', target_logits_stride='i32', target_rejected_logsumexp_ptr='*fp32', temp_ptr='*fp32', vocab_size='i32', watermark_key_0='i32', watermark_key_1='i32', watermarking_ptr='constexpr', watermarking_skip_mask_ptr='constexpr'}; extra_compile_info={configs=[{(0,): [['tt.divisibility', 16]], (1,): [], (2,): [['tt.divisibility', 16]], (3,): [], (4,): [['tt.divisibility', 16..., device=1, enable_fp_fusion=True, extern_libs=(('libdevice', '/usr/local/lib/python3.12/dist-packages/triton/backends/nvidia/lib/libdevice.10.bc'),), is_warmup=False, launch_cooperative_grid=False, num_ctas=1, num_stages=3, num_warps=4, specialization_data='{\"name\": \"vllm.v1.worker.gpu.spec_decode.rejection_sampler_utils._resample_kernel\", \"signature\": {\"resampled_local_a...}; key=\"[('*i64', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ('*bf16', 'D'), ('i32', 'D'), ('*fp32', 'D'), ('constexpr'...). This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202843493121828,
+      "end_ns": 202846493150689,
+      "log_local": "2026-10-09T01:35:22-07:00",
+      "rank": 0,
+      "line": 821,
+      "text": "(Worker_TP0 pid=939374) WARNING 10-09 01:35:22 [jit_monitor.py:137] Triton kernel JIT compilation during inference: _resample_kernel (constexprs={BLOCK_SIZE=1024, CONTEXT_WIDTH=1, DEDUPLICATE_CONTEXTS=False, HAS_DRAFT_LOGITS=False, USE_BLOCK_VERIFICATION=False, USE_FP64=False, WATERMARK=False, contexts_ptr=None, cumulative_log_p_ptr=None, draft_logits_ptr=None, watermarking_ptr=None, watermarking_skip_mask_ptr=None}; signature={BLOCK_SIZE='constexpr', CONTEXT_WIDTH='constexpr', DEDUPLICATE_CONTEXTS='constexpr', HAS_DRAFT_LOGITS='constexpr', USE_BLOCK_VERIFICATION='constexpr', USE_FP64='constexpr', WATERMARK='constexpr', contexts_ptr='constexpr', contexts_stride='i32', cu_num_logits_ptr='*i32', cumulative_log_p_ptr='constexpr', draft_logits_ptr='constexpr', draft_logits_stride_0='i32', draft_logits_stride_1='i32', draft_rejected_logsumexp_ptr='*fp32', draft_sampled_ptr='*i32', expanded_idx_mapping_ptr='*i32', pos_ptr='*i64', rejected_step_ptr='*i32', resampled_local_argmax_ptr='*i64', resampled_local_argmax_stride='i32', resampled_local_max_ptr='*fp32', resampled_local_max_stride='i32', seed_ptr='*i64', target_logits_ptr='*bf16', target_logits_stride='i32', target_rejected_logsumexp_ptr='*fp32', temp_ptr='*fp32', vocab_size='i32', watermark_key_0='i32', watermark_key_1='i32', watermarking_ptr='constexpr', watermarking_skip_mask_ptr='constexpr'}; extra_compile_info={configs=[{(0,): [['tt.divisibility', 16]], (1,): [], (2,): [['tt.divisibility', 16]], (3,): [], (4,): [['tt.divisibility', 16..., device=0, enable_fp_fusion=True, extern_libs=(('libdevice', '/usr/local/lib/python3.12/dist-packages/triton/backends/nvidia/lib/libdevice.10.bc'),), is_warmup=False, launch_cooperative_grid=False, num_ctas=1, num_stages=3, num_warps=4, specialization_data='{\"name\": \"vllm.v1.worker.gpu.spec_decode.rejection_sampler_utils._resample_kernel\", \"signature\": {\"resampled_local_a...}; key=\"[('*i64', 'D'), ('i32', ''), ('*fp32', 'D'), ('i32', ''), ('*bf16', 'D'), ('i32', 'D'), ('*fp32', 'D'), ('constexpr'...). This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202850493121828,
+      "end_ns": 202853493150689,
+      "log_local": "2026-10-09T01:35:29-07:00",
+      "rank": 1,
+      "line": 822,
+      "text": "(Worker_TP1 pid=939614) WARNING 10-09 01:35:29 [jit_monitor.py:137] CuTeDSL JIT compilation during inference: MXFP8QuantizeSwizzledKernel. This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202850493121828,
+      "end_ns": 202853493150689,
+      "log_local": "2026-10-09T01:35:29-07:00",
+      "rank": 0,
+      "line": 823,
+      "text": "(Worker_TP0 pid=939374) WARNING 10-09 01:35:29 [jit_monitor.py:137] CuTeDSL JIT compilation during inference: MXFP8QuantizeSwizzledKernel. This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202850493121828,
+      "end_ns": 202853493150689,
+      "log_local": "2026-10-09T01:35:29-07:00",
+      "rank": 1,
+      "line": 837,
+      "text": "(Worker_TP1 pid=939614) WARNING 10-09 01:35:29 [jit_monitor.py:137] CuTeDSL JIT compilation during inference: MXFP8QuantizeSwizzledKernel. This causes a latency spike; consider extending warmup to cover this shape/config."
+    },
+    {
+      "begin_ns": 202850493121828,
+      "end_ns": 202853493150689,
+      "log_local": "2026-10-09T01:35:29-07:00",
+      "rank": 0,
+      "line": 838,
+      "text": "(Worker_TP0 pid=939374) WARNING 10-09 01:35:29 [jit_monitor.py:137] CuTeDSL JIT compilation during inference: MXFP8QuantizeSwizzledKernel. This causes a latency spike; consider extending warmup to cover this shape/config."
+    }
+  ],
+  "unaligned_records": [],
+  "evidence_sha256": {
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/packet/execution.json": "02617af0f15b325a3e7117fcdb87d485e71cbe48efa046c43291381fbd5de7c8",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/memory-clock.jsonl": "2b9c608ea14bba7e24e8bcb6e1b67a6b293d82728dec9a571c86fc9ea7f85abd",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/server.log": "07151f570813dca485f90b90ae7461c3515fc2df9c077d400fbff5a4d67c434d",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/boot.json": "db89c01bf3ed11137da874418878c663b19bbd3bfe9d8c96b6791b0ef45dc01e",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/clocks/result.json": "9bbee968bdc4d1b9caed80b963e387d4dcd3fe43e85a71f1fc1c79a1eb0b3ec2",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c12/requests.jsonl": "87b89cf261819fdd0cb0c47f885f329088709d24b1dfc067a4106382290c0c72",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c12/config.json": "a50818574f5f956df15fd89ea8c356997fe97fdcaf2ed81b51b0970f6b833b65",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c16/requests.jsonl": "b488329ffccd64aa0df6b3608ef548c80e47d46d11d15ed7cff23a9286ea08d1",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c16/config.json": "0dcb7ddd7ba443033bf41d7c5e83203bc43618fd5b55ce606c75b8fe20eca1fd",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c8/requests.jsonl": "c6a54f43fcbd72fee4d59d33f82bfbb808cc3e4be80df53951ae1bbd90429c0f",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c8/config.json": "ea5d80837714bcc88e046f3b94196ca2788312e4530efab4ea5600e9acfd1832"
+  },
+  "cells": [
+    {
+      "case": "decode-i65536-o1024-c12",
+      "complete_request_population": true,
+      "begin_ns": 203009332673284,
+      "end_ns": 203163212464054,
+      "no_monitored_jit_overlap_supported": true,
+      "reasons": [],
+      "overlapping_events": []
+    },
+    {
+      "case": "decode-i65536-o1024-c16",
+      "complete_request_population": true,
+      "begin_ns": 203204793130541,
+      "end_ns": 203401419523445,
+      "no_monitored_jit_overlap_supported": true,
+      "reasons": [],
+      "overlapping_events": []
+    },
+    {
+      "case": "decode-i65536-o1024-c8",
+      "complete_request_population": true,
+      "begin_ns": 202866236581814,
+      "end_ns": 202977060135780,
+      "no_monitored_jit_overlap_supported": true,
+      "reasons": [],
+      "overlapping_events": []
+    }
+  ],
+  "performance_qualified": false,
+  "all_measured_cells_clear_of_monitored_jit": true
+}

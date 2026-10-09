@@ -1,0 +1,259 @@
+{
+  "status": "passed",
+  "complete_processes": 10,
+  "complete_pairs": 5,
+  "required_pairs": 6,
+  "performance_retention_qualified": false,
+  "rows": [
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair0-B_fixed",
+      "arm": "B_fixed",
+      "pair": 0,
+      "receipt_sha256": "a1f1bb35e187a66b651d4eb0b9530a1ea002f7b497518e9c8c9bd3d202df6ef4",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 3025,
+          "max_gap_seconds": 0.200439104,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 3025,
+          "max_gap_seconds": 0.201988612,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T07:31:06.175214+00:00",
+      "finished_utc": "2026-10-09T07:41:12.802311+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair0-R_fixed",
+      "arm": "R_fixed",
+      "pair": 0,
+      "receipt_sha256": "4c9e65bd51b44848d727715bb123b05f4a163b8f79206b041f8d4ce35e1e473f",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 3058,
+          "max_gap_seconds": 0.203163685,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 3058,
+          "max_gap_seconds": 0.203181611,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T07:19:33.363084+00:00",
+      "finished_utc": "2026-10-09T07:29:46.723553+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair1-B_fixed",
+      "arm": "B_fixed",
+      "pair": 1,
+      "receipt_sha256": "a4fd11a6407228ff2179a921d9321d54d538d7025312ebd7853c5e1b741782cf",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2991,
+          "max_gap_seconds": 0.206380787,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2991,
+          "max_gap_seconds": 0.206363194,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T07:51:10.776731+00:00",
+      "finished_utc": "2026-10-09T08:01:10.637223+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair1-R_fixed",
+      "arm": "R_fixed",
+      "pair": 1,
+      "receipt_sha256": "3129eae4f81b737512fdaf93bc067820247afdd5a56c9150763a11afe81fa887",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2916,
+          "max_gap_seconds": 0.207792389,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2916,
+          "max_gap_seconds": 0.207803185,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T08:01:30.169672+00:00",
+      "finished_utc": "2026-10-09T08:11:14.903751+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair2-B_fixed-timeout1200",
+      "arm": "B_fixed",
+      "pair": 2,
+      "receipt_sha256": "88163164744cd233ea3a175200c31dfa278326a6491542c69056c1c260869194",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2899,
+          "max_gap_seconds": 0.200376613,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2899,
+          "max_gap_seconds": 0.201330036,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T08:21:31.240982+00:00",
+      "finished_utc": "2026-10-09T08:31:12.666852+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair2-R_fixed-timeout1200",
+      "arm": "R_fixed",
+      "pair": 2,
+      "receipt_sha256": "4c7db0bb07b2e6c81b9aa691dac4d7d0f706cc1be3426fb86257af3d909adfca",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2881,
+          "max_gap_seconds": 0.200556276,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2881,
+          "max_gap_seconds": 0.200591523,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T08:11:34.995611+00:00",
+      "finished_utc": "2026-10-09T08:21:12.833065+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair3-B_fixed-timeout1200",
+      "arm": "B_fixed",
+      "pair": 3,
+      "receipt_sha256": "632aeafb2a9664679c25614da5cdfcf88ea57157106296b779184017c8b5f358",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2868,
+          "max_gap_seconds": 0.202274215,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2868,
+          "max_gap_seconds": 0.202258696,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T08:31:33.048083+00:00",
+      "finished_utc": "2026-10-09T08:41:08.242503+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair3-R_fixed-timeout1200",
+      "arm": "R_fixed",
+      "pair": 3,
+      "receipt_sha256": "82728df9d6d6f4b116a1a3cc3060b64c4c5d1ea5f7bb2a53d205158239f99c7e",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2865,
+          "max_gap_seconds": 0.200374659,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2865,
+          "max_gap_seconds": 0.201659512,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T08:44:52.483410+00:00",
+      "finished_utc": "2026-10-09T08:54:27.142551+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair4-B_fixed-tail1200",
+      "arm": "B_fixed",
+      "pair": 4,
+      "receipt_sha256": "2b03eeb53046ec2d10e7fba1eec994db9782ed790734c097ada1c412fc18d805",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2875,
+          "max_gap_seconds": 0.200573119,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2875,
+          "max_gap_seconds": 0.201190438,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T09:06:38.912596+00:00",
+      "finished_utc": "2026-10-09T09:16:15.501410+00:00"
+    },
+    {
+      "run_tag": "icp-module-r3-decode-R_fixed-B_fixed-pair4-R_fixed-timeout1200",
+      "arm": "R_fixed",
+      "pair": 4,
+      "receipt_sha256": "f9daa2d99b0688b659fc328e43f7e213256fc4d1c053da9c8bec3665b9c6ba01",
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-7ca2e40e-551f-5e94-b2ec-c59c83461a30",
+          "samples": 2877,
+          "max_gap_seconds": 0.203808934,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-11019a61-0245-52ea-84f3-2858b5187c58",
+          "samples": 2877,
+          "max_gap_seconds": 0.203796749,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "successful_resets": 2,
+      "started_utc": "2026-10-09T08:54:45.879853+00:00",
+      "finished_utc": "2026-10-09T09:04:22.874116+00:00"
+    }
+  ]
+}

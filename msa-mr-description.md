@@ -27,22 +27,26 @@ covers both ranks and changed-query graph replay; corrected artifacts have a
 new source key. Original references are retained and corrected controls are
 named explicitly.
 
-Validation completed on the existing Rubin image: all 36 decode module
-shapes at C8/C12/C16 passed eager/graph correctness; 34 writer-to-reader cases
-and real two-rank transport passed; loaded first/later-layer signed-input
-producer/graph admission passed. Separate ordinary MSA and pinned-dev caches
-produced bitwise-equal outputs in five tested variants, each passing an
-independent CPU FP32 oracle at the unchanged threshold. Exact receipts and
-limitations are summarized in [README](README.md).
+Validation on the unchanged Rubin base passed all 60 candidate core cases
+(36 decode, 24 prefill/mixed), all 18 guards with clean finalization,
+writer/reader composition, TP transport and actual loaded-producer graph checks.
+Ordinary MSA and pinned dev produced bitwise-equal tested outputs in five fresh
+cache variants against the independent CPU oracle.
 
-Two complete model accuracy pairs produced candidate scores 95.0720% and
-95.6027%, versus historical 95.5269% and 95.9060%. The mean difference was
-−0.3791 percentage points. This does not establish equivalence; the historical
-image is a whole-system reference. Module timing is in progress with some
-adverse early cells; the full six-pair performance analysis remains incomplete.
-The companion vLLM ordinary ICP-off model route has an unresolved CUDA
-failure. This branch is for human review and is not presented as merge-ready.
+Performance retention is not established: five of six module pairs completed;
+C16/Q1/64K core graph was +13.7% slower and C12/Q1/150K later producer graph
+was +16.5%, each slower in all five pairs. All samples remain. Primary graph
+warmup qualification, K/B and prefill/mixed timing remain open. K/R/B CUPTI
+profiles are diagnostic, with no standalone bandwidth or causal claim.
 
+The companion ordinary ICP-off model route still fails. The synchronous retry
+failed in IPC setup before model execution; no final r3 packet was authored or
+launched. Whole-model decode collected one pair with zero accepted scheduler
+windows. GSM8K's two candidate scores were 95.0720%/95.6027%, with mean paired
+difference −0.3791 percentage points versus H; no equivalence claim.
+
+See [the final review summary](README.md) and
+[performance report](evidence/hecate-723744/PERFORMANCE-REPORT.md).
+This source is published for human review; merge readiness is not established.
 AI assistance was used. Upstream submission remains pending the listed checks
-and the human review requested by the user. This draft has not been submitted
-as an upstream PR.
+and the human review requested by the user; no upstream PR has been opened.

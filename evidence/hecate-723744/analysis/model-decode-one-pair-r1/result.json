@@ -1,0 +1,731 @@
+{
+  "schema": 1,
+  "comparison": "R_fixed_vs_B_fixed",
+  "scope": "One collected matched sentinel pair; request metrics include prefill and tail. Post-hoc scheduler diagnostic is separate from failed primary decode qualification.",
+  "performance_accepted": false,
+  "observer_overhead_qualified": false,
+  "paired_confidence_interval": null,
+  "paired_input_identity_verified": true,
+  "independent_paired_rounds_collected": 1,
+  "independent_paired_rounds_required": 6,
+  "counts_per_arm": {
+    "warmup": 72,
+    "measured": 360,
+    "total": 432,
+    "measured_cohorts": 30
+  },
+  "arms": {
+    "R_fixed": {
+      "tag": "model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose",
+      "source": {
+        "vllm_commit": "dda98ad2fbd6c6485114e82617c784cac26f36d3",
+        "msa_or_icp_commit": "fa64b032b459b6df8b345836694f6a7401ffec22",
+        "container": "/lustre/fsw/coreai_comparch_inferencex/fans/containers/vllm-rubin-arm64-dlfw70213450-vllm0.30.0-m3msa-fe1d6826-fmha2310798p1-fi0.7.0-fix2cubin-ugpuc421845-20260929T0001Z.sqsh",
+        "container_sha256": "5bdfa010c240579625c4e21ffdb95e41132cd18ae2b1223d717b3eb06b92f0d3",
+        "python": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-721392/envs/rubin-base-reference/bin/python",
+        "node": "hecate0011",
+        "gpu_uuids": [
+          "GPU-62d40090-1a4f-5991-9943-d0aa397e5c1c",
+          "GPU-ad293147-5ff4-531d-aa81-bea85212b2c5"
+        ]
+      },
+      "server_command": [
+        "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-721392/envs/rubin-base-reference/bin/python",
+        "-m",
+        "vllm.entrypoints.cli.main",
+        "serve",
+        "/lustre/share/coreai_dlalgo_ci/artifacts/model/nvidia_minimax-m3-nvfp4/hf/hf-9014640_orig",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "18816",
+        "--served-model-name",
+        "m3-icp-723744",
+        "--tensor-parallel-size",
+        "2",
+        "--pipeline-parallel-size",
+        "1",
+        "--data-parallel-size",
+        "1",
+        "--decode-context-parallel-size",
+        "1",
+        "--prefill-context-parallel-size",
+        "1",
+        "--dtype",
+        "bfloat16",
+        "--trust-remote-code",
+        "--language-model-only",
+        "--no-enable-prefix-caching",
+        "--enable-chunked-prefill",
+        "--attention-config",
+        "{\"indexer_kv_dtype\":\"fp8\",\"minimax_m3_msa_indexer_backend\":\"msa_icp\",\"minimax_m3_msa_decode_backend\":\"cutlass\"}",
+        "--compilation-config",
+        "{\"cudagraph_mode\":\"FULL\"}",
+        "--block-size",
+        "128",
+        "--kv-cache-dtype",
+        "nvfp4",
+        "--max-model-len",
+        "262144",
+        "--max-num-seqs",
+        "32",
+        "--max-num-batched-tokens",
+        "8192",
+        "--gpu-memory-utilization",
+        "0.80",
+        "--stream-interval",
+        "1",
+        "--max-cudagraph-capture-size",
+        "512",
+        "--enable-flashinfer-autotune",
+        "--reasoning-parser",
+        "minimax_m3",
+        "--seed",
+        "661550",
+        "--shutdown-timeout",
+        "60",
+        "--cudagraph-metrics",
+        "--speculative-config",
+        "{\"method\":\"eagle3\",\"model\":\"/lustre/share/coreai_dlalgo_ci/artifacts/model/inferact_minimax-m3-eagle3-gqa/hf/hf-9669248_orig\",\"num_speculative_tokens\":3,\"draft_tensor_parallel_size\":2,\"attention_backend\":\"FLASH_ATTN\",\"kv_cache_dtype\":\"fp8\",\"rejection_sample_method\":\"standard\",\"use_local_argmax_reduction\":true}",
+        "--async-scheduling",
+        "--scheduler-cls",
+        "phase_observer.ObservedAsyncScheduler",
+        "--jit-monitor-verbose"
+      ],
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-62d40090-1a4f-5991-9943-d0aa397e5c1c",
+          "samples": 4275,
+          "max_gap_seconds": 0.20104268,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-ad293147-5ff4-531d-aa81-bea85212b2c5",
+          "samples": 4275,
+          "max_gap_seconds": 0.202494793,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "cleanup_complete": true,
+      "jit_scope": "vLLM-monitored JIT APIs only; no blanket claim about all compiler activity",
+      "measured_populations_clear_of_monitored_jit": true,
+      "cells": {
+        "decode-i65536-o1024-c8": {
+          "request_metrics": {
+            "requests": 80,
+            "completed": 80,
+            "seconds_including_tail": 110.823553966,
+            "ttft_ms_p50": 4547.5916985,
+            "ttft_ms_p90": 7895.8604764,
+            "request_tpot_ms_p50": 5.923899600195503,
+            "request_tpot_ms_p90": 8.8613077657869,
+            "input_tokens": 5242880,
+            "output_tokens": 81920,
+            "whole_request_output_tokens_per_second": 739.1930421680265
+          },
+          "original_scheduler_windows_passed": 0,
+          "original_scheduler_windows_total": 10,
+          "preemptions": 0,
+          "drafted_tokens": 77976,
+          "accepted_tokens": 56109,
+          "posthoc_diagnostic": {
+            "diagnostic_client_tokens_per_second": 2739.98582548485,
+            "diagnostic_effective_tpot_ms": 2.919723133452478,
+            "all_ten_diagnostic_windows_pass": true
+          },
+          "dataset": {
+            "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/inputs/R_vs_B-decode-r1/round-1-decode-i65536-o1024-c8.jsonl.gz",
+            "sha256": "e163237e6bc41aef4e2a08f9d17078fb540f41bfc6de30f61aba948fc4fac4db"
+          }
+        },
+        "decode-i65536-o1024-c12": {
+          "request_metrics": {
+            "requests": 120,
+            "completed": 120,
+            "seconds_including_tail": 153.87979077,
+            "ttft_ms_p50": 6533.2922020000005,
+            "ttft_ms_p90": 10956.9243709,
+            "request_tpot_ms_p50": 8.251910519550343,
+            "request_tpot_ms_p90": 12.310038667350929,
+            "input_tokens": 7864320,
+            "output_tokens": 122880,
+            "whole_request_output_tokens_per_second": 798.5454060284333
+          },
+          "original_scheduler_windows_passed": 0,
+          "original_scheduler_windows_total": 10,
+          "preemptions": 0,
+          "drafted_tokens": 117084,
+          "accepted_tokens": 84143,
+          "posthoc_diagnostic": {
+            "diagnostic_client_tokens_per_second": 3575.4631710123713,
+            "diagnostic_effective_tpot_ms": 3.356208531887149,
+            "all_ten_diagnostic_windows_pass": true
+          },
+          "dataset": {
+            "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/inputs/R_vs_B-decode-r1/round-1-decode-i65536-o1024-c12.jsonl.gz",
+            "sha256": "9511533136a066189764cce6298062edb66245cc7219e03b8072df7726a24869"
+          }
+        },
+        "decode-i65536-o1024-c16": {
+          "request_metrics": {
+            "requests": 160,
+            "completed": 160,
+            "seconds_including_tail": 196.626392904,
+            "ttft_ms_p50": 8496.9043765,
+            "ttft_ms_p90": 14871.2513555,
+            "request_tpot_ms_p50": 9.91332936510264,
+            "request_tpot_ms_p90": 15.630522766666665,
+            "input_tokens": 10485760,
+            "output_tokens": 163840,
+            "whole_request_output_tokens_per_second": 833.2553813362813
+          },
+          "original_scheduler_windows_passed": 0,
+          "original_scheduler_windows_total": 10,
+          "preemptions": 0,
+          "drafted_tokens": 153534,
+          "accepted_tokens": 113050,
+          "posthoc_diagnostic": {
+            "diagnostic_client_tokens_per_second": 4347.397769205445,
+            "diagnostic_effective_tpot_ms": 3.680362563861795,
+            "all_ten_diagnostic_windows_pass": true
+          },
+          "dataset": {
+            "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/inputs/R_vs_B-decode-r1/round-1-decode-i65536-o1024-c16.jsonl.gz",
+            "sha256": "4ab005a00f1b791261d8f3488b06df3dbf57d48b9cc04a79709035c134191545"
+          }
+        }
+      }
+    },
+    "B_fixed": {
+      "tag": "model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935",
+      "source": {
+        "vllm_commit": "19afac40273aa84c2693ca1083995c4156aca4e2",
+        "msa_or_icp_commit": "cd20e206a3373e8d258da8cd403b4b3399b1f714",
+        "container": "/lustre/fsw/coreai_comparch_inferencex/fans/containers/vllm-rubin-arm64-dlfw70213450-vllm0.30.0-m3msa-fe1d6826-fmha2310798p1-fi0.7.0-fix2cubin-ugpuc421845-20260929T0001Z.sqsh",
+        "container_sha256": "5bdfa010c240579625c4e21ffdb95e41132cd18ae2b1223d717b3eb06b92f0d3",
+        "python": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-721392/envs/rubin-base-candidate/bin/python",
+        "node": "hecate0011",
+        "gpu_uuids": [
+          "GPU-62d40090-1a4f-5991-9943-d0aa397e5c1c",
+          "GPU-ad293147-5ff4-531d-aa81-bea85212b2c5"
+        ]
+      },
+      "server_command": [
+        "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-721392/envs/rubin-base-candidate/bin/python",
+        "-m",
+        "vllm.entrypoints.cli.main",
+        "serve",
+        "/lustre/share/coreai_dlalgo_ci/artifacts/model/nvidia_minimax-m3-nvfp4/hf/hf-9014640_orig",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "18817",
+        "--served-model-name",
+        "m3-icp-723744",
+        "--tensor-parallel-size",
+        "2",
+        "--pipeline-parallel-size",
+        "1",
+        "--data-parallel-size",
+        "1",
+        "--decode-context-parallel-size",
+        "1",
+        "--prefill-context-parallel-size",
+        "1",
+        "--dtype",
+        "bfloat16",
+        "--trust-remote-code",
+        "--language-model-only",
+        "--no-enable-prefix-caching",
+        "--enable-chunked-prefill",
+        "--attention-config",
+        "{\"indexer_kv_dtype\":\"fp8\",\"minimax_m3_msa_indexer_backend\":\"msa_icp\",\"minimax_m3_msa_decode_backend\":\"cutlass\"}",
+        "--compilation-config",
+        "{\"cudagraph_mode\":\"FULL\"}",
+        "--block-size",
+        "128",
+        "--kv-cache-dtype",
+        "nvfp4",
+        "--max-model-len",
+        "262144",
+        "--max-num-seqs",
+        "32",
+        "--max-num-batched-tokens",
+        "8192",
+        "--gpu-memory-utilization",
+        "0.80",
+        "--stream-interval",
+        "1",
+        "--max-cudagraph-capture-size",
+        "512",
+        "--enable-flashinfer-autotune",
+        "--reasoning-parser",
+        "minimax_m3",
+        "--seed",
+        "661550",
+        "--shutdown-timeout",
+        "60",
+        "--cudagraph-metrics",
+        "--speculative-config",
+        "{\"method\":\"eagle3\",\"model\":\"/lustre/share/coreai_dlalgo_ci/artifacts/model/inferact_minimax-m3-eagle3-gqa/hf/hf-9669248_orig\",\"num_speculative_tokens\":3,\"draft_tensor_parallel_size\":2,\"attention_backend\":\"FLASH_ATTN\",\"kv_cache_dtype\":\"fp8\",\"rejection_sample_method\":\"standard\",\"use_local_argmax_reduction\":true}",
+        "--async-scheduling",
+        "--scheduler-cls",
+        "phase_observer.ObservedAsyncScheduler",
+        "--jit-monitor-verbose"
+      ],
+      "clock_checks": [
+        {
+          "gpu_uuid": "GPU-62d40090-1a4f-5991-9943-d0aa397e5c1c",
+          "samples": 4301,
+          "max_gap_seconds": 0.201683644,
+          "all_at_requested_mhz": true,
+          "passed": true
+        },
+        {
+          "gpu_uuid": "GPU-ad293147-5ff4-531d-aa81-bea85212b2c5",
+          "samples": 4301,
+          "max_gap_seconds": 0.20188849,
+          "all_at_requested_mhz": true,
+          "passed": true
+        }
+      ],
+      "cleanup_complete": true,
+      "jit_scope": "vLLM-monitored JIT APIs only; no blanket claim about all compiler activity",
+      "measured_populations_clear_of_monitored_jit": true,
+      "cells": {
+        "decode-i65536-o1024-c8": {
+          "request_metrics": {
+            "requests": 80,
+            "completed": 80,
+            "seconds_including_tail": 110.503662756,
+            "ttft_ms_p50": 4541.3917624999995,
+            "ttft_ms_p90": 7895.4165339,
+            "request_tpot_ms_p50": 5.926516079178885,
+            "request_tpot_ms_p90": 8.787802056989248,
+            "input_tokens": 5242880,
+            "output_tokens": 81920,
+            "whole_request_output_tokens_per_second": 741.3328930180824
+          },
+          "original_scheduler_windows_passed": 0,
+          "original_scheduler_windows_total": 10,
+          "preemptions": 0,
+          "drafted_tokens": 77871,
+          "accepted_tokens": 56168,
+          "posthoc_diagnostic": {
+            "diagnostic_client_tokens_per_second": 2751.716295588175,
+            "diagnostic_effective_tpot_ms": 2.9072764560890216,
+            "all_ten_diagnostic_windows_pass": true
+          },
+          "dataset": {
+            "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/inputs/R_vs_B-decode-r1/round-1-decode-i65536-o1024-c8.jsonl.gz",
+            "sha256": "e163237e6bc41aef4e2a08f9d17078fb540f41bfc6de30f61aba948fc4fac4db"
+          }
+        },
+        "decode-i65536-o1024-c12": {
+          "request_metrics": {
+            "requests": 120,
+            "completed": 120,
+            "seconds_including_tail": 154.326912898,
+            "ttft_ms_p50": 6528.6088899999995,
+            "ttft_ms_p90": 10962.805167,
+            "request_tpot_ms_p50": 8.055002499511241,
+            "request_tpot_ms_p90": 12.261081389345065,
+            "input_tokens": 7864320,
+            "output_tokens": 122880,
+            "whole_request_output_tokens_per_second": 796.2318282179056
+          },
+          "original_scheduler_windows_passed": 0,
+          "original_scheduler_windows_total": 10,
+          "preemptions": 0,
+          "drafted_tokens": 118578,
+          "accepted_tokens": 83611,
+          "posthoc_diagnostic": {
+            "diagnostic_client_tokens_per_second": 3541.6449267017124,
+            "diagnostic_effective_tpot_ms": 3.3882560923958693,
+            "all_ten_diagnostic_windows_pass": true
+          },
+          "dataset": {
+            "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/inputs/R_vs_B-decode-r1/round-1-decode-i65536-o1024-c12.jsonl.gz",
+            "sha256": "9511533136a066189764cce6298062edb66245cc7219e03b8072df7726a24869"
+          }
+        },
+        "decode-i65536-o1024-c16": {
+          "request_metrics": {
+            "requests": 160,
+            "completed": 160,
+            "seconds_including_tail": 198.450323592,
+            "ttft_ms_p50": 8511.7780785,
+            "ttft_ms_p90": 14922.7626345,
+            "request_tpot_ms_p50": 10.210140089931574,
+            "request_tpot_ms_p90": 15.839716869892472,
+            "input_tokens": 10485760,
+            "output_tokens": 163840,
+            "whole_request_output_tokens_per_second": 825.5970412869852
+          },
+          "original_scheduler_windows_passed": 0,
+          "original_scheduler_windows_total": 10,
+          "preemptions": 0,
+          "drafted_tokens": 156489,
+          "accepted_tokens": 112054,
+          "posthoc_diagnostic": {
+            "diagnostic_client_tokens_per_second": 4247.490720686654,
+            "diagnostic_effective_tpot_ms": 3.766929948092606,
+            "all_ten_diagnostic_windows_pass": true
+          },
+          "dataset": {
+            "path": "/lustre/fsw/coreai_comparch_inferencex/fans/campaigns/icp-public-723744/inputs/R_vs_B-decode-r1/round-1-decode-i65536-o1024-c16.jsonl.gz",
+            "sha256": "4ab005a00f1b791261d8f3488b06df3dbf57d48b9cc04a79709035c134191545"
+          }
+        }
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "id": "decode-i65536-o1024-c8",
+      "concurrency": 8,
+      "request_metrics": {
+        "whole_request_output_tokens_per_second": {
+          "R_fixed": 739.1930421680265,
+          "B_fixed": 741.3328930180824,
+          "B_vs_R_percent": 0.28948471210981097
+        },
+        "ttft_ms_p50": {
+          "R_fixed": 4547.5916985,
+          "B_fixed": 4541.3917624999995,
+          "B_vs_R_percent": -0.13633449111198903
+        },
+        "ttft_ms_p90": {
+          "R_fixed": 7895.8604764,
+          "B_fixed": 7895.4165339,
+          "B_vs_R_percent": -0.005622471437116694
+        },
+        "request_tpot_ms_p50": {
+          "R_fixed": 5.923899600195503,
+          "B_fixed": 5.926516079178885,
+          "B_vs_R_percent": 0.044168185823001416
+        },
+        "request_tpot_ms_p90": {
+          "R_fixed": 8.8613077657869,
+          "B_fixed": 8.787802056989248,
+          "B_vs_R_percent": -0.8295131005544687
+        }
+      },
+      "posthoc_diagnostic": {
+        "diagnostic_client_tokens_per_second": {
+          "R_fixed": 2739.98582548485,
+          "B_fixed": 2751.716295588175,
+          "B_vs_R_percent": 0.42812156158689163
+        },
+        "diagnostic_effective_tpot_ms": {
+          "R_fixed": 2.919723133452478,
+          "B_fixed": 2.9072764560890216,
+          "B_vs_R_percent": -0.4262964943781644
+        }
+      }
+    },
+    {
+      "id": "decode-i65536-o1024-c12",
+      "concurrency": 12,
+      "request_metrics": {
+        "whole_request_output_tokens_per_second": {
+          "R_fixed": 798.5454060284333,
+          "B_fixed": 796.2318282179056,
+          "B_vs_R_percent": -0.28972401482268983
+        },
+        "ttft_ms_p50": {
+          "R_fixed": 6533.2922020000005,
+          "B_fixed": 6528.6088899999995,
+          "B_vs_R_percent": -0.07168379823219162
+        },
+        "ttft_ms_p90": {
+          "R_fixed": 10956.9243709,
+          "B_fixed": 10962.805167,
+          "B_vs_R_percent": 0.0536719603141389
+        },
+        "request_tpot_ms_p50": {
+          "R_fixed": 8.251910519550343,
+          "B_fixed": 8.055002499511241,
+          "B_vs_R_percent": -2.3862112849211026
+        },
+        "request_tpot_ms_p90": {
+          "R_fixed": 12.310038667350929,
+          "B_fixed": 12.261081389345065,
+          "B_vs_R_percent": -0.3977020651909857
+        }
+      },
+      "posthoc_diagnostic": {
+        "diagnostic_client_tokens_per_second": {
+          "R_fixed": 3575.4631710123713,
+          "B_fixed": 3541.6449267017124,
+          "B_vs_R_percent": -0.9458423340739763
+        },
+        "diagnostic_effective_tpot_ms": {
+          "R_fixed": 3.356208531887149,
+          "B_fixed": 3.3882560923958693,
+          "B_vs_R_percent": 0.9548739359976688
+        }
+      }
+    },
+    {
+      "id": "decode-i65536-o1024-c16",
+      "concurrency": 16,
+      "request_metrics": {
+        "whole_request_output_tokens_per_second": {
+          "R_fixed": 833.2553813362813,
+          "B_fixed": 825.5970412869852,
+          "B_vs_R_percent": -0.9190867794954372
+        },
+        "ttft_ms_p50": {
+          "R_fixed": 8496.9043765,
+          "B_fixed": 8511.7780785,
+          "B_vs_R_percent": 0.1750484804929009
+        },
+        "ttft_ms_p90": {
+          "R_fixed": 14871.2513555,
+          "B_fixed": 14922.7626345,
+          "B_vs_R_percent": 0.3463816041341383
+        },
+        "request_tpot_ms_p50": {
+          "R_fixed": 9.91332936510264,
+          "B_fixed": 10.210140089931574,
+          "B_vs_R_percent": 2.994056929791733
+        },
+        "request_tpot_ms_p90": {
+          "R_fixed": 15.630522766666665,
+          "B_fixed": 15.839716869892472,
+          "B_vs_R_percent": 1.3383692045919826
+        }
+      },
+      "posthoc_diagnostic": {
+        "diagnostic_client_tokens_per_second": {
+          "R_fixed": 4347.397769205445,
+          "B_fixed": 4247.490720686654,
+          "B_vs_R_percent": -2.2980885077155233
+        },
+        "diagnostic_effective_tpot_ms": {
+          "R_fixed": 3.680362563861795,
+          "B_fixed": 3.766929948092606,
+          "B_vs_R_percent": 2.3521428318186155
+        }
+      }
+    }
+  ],
+  "remaining_matrix": {
+    "H_vs_B_primary": {
+      "decode-i65536-o1024-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i65536-o1024-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i65536-o1024-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i150000-o1024-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i150000-o1024-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i150000-o1024-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i16384-o1024-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i16384-o1024-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i16384-o1024-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i2048-o4096-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i2048-o4096-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-i2048-o4096-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-ragged-2k-16k-64k-150k-o4096-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-ragged-2k-16k-64k-150k-o4096-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "decode-ragged-2k-16k-64k-150k-o4096-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i16384-o1-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i16384-o1-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i16384-o1-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i65536-o1-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i65536-o1-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i65536-o1-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i150000-o1-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i150000-o1-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "prefill-i150000-o1-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "mix-short-medium-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "mix-short-medium-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "mix-short-medium-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "mix-long-context-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "mix-long-context-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "mix-long-context-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      }
+    },
+    "R_fixed_vs_B_fixed_sentinel": {
+      "decode-i65536-o1024-c8": {
+        "required_pairs": 6,
+        "collected_pairs": 1,
+        "accepted_pairs": 0
+      },
+      "decode-i65536-o1024-c12": {
+        "required_pairs": 6,
+        "collected_pairs": 1,
+        "accepted_pairs": 0
+      },
+      "decode-i65536-o1024-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 1,
+        "accepted_pairs": 0
+      },
+      "prefill-i65536-o1-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      },
+      "mix-long-context-c16": {
+        "required_pairs": 6,
+        "collected_pairs": 0,
+        "accepted_pairs": 0
+      }
+    }
+  },
+  "limitations": [
+    "All 30 original scheduler windows in each arm fail the full-cohort terminal boundary check; no original pure-decode metric is accepted.",
+    "The separate post-hoc boundary rule uses CPU scheduling envelopes and client token arrivals, not GPU execution boundaries.",
+    "Observer overhead is unqualified; five required pairs are missing for the three collected sentinel cells.",
+    "No H/B primary performance population, sentinel prefill population, or sentinel mixed population was collected.",
+    "Verbose JIT logs cover instrumented APIs only, not all compiler activity.",
+    "Both arms include the same scorer fence correction and model-local dense-FP8 restoration; the original unfixed sources are not the measured arms."
+  ],
+  "input_sha256": {
+    "plans/hecate-721392/PERFORMANCE-MATRIX.json": "d26c56a6502d8544adf112b64d4c90e2f399d845f436415d6ace4c03d68f1844",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c8/requests.jsonl": "c6a54f43fcbd72fee4d59d33f82bfbb808cc3e4be80df53951ae1bbd90429c0f",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c12/requests.jsonl": "87b89cf261819fdd0cb0c47f885f329088709d24b1dfc067a4106382290c0c72",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/decode-i65536-o1024-c16/requests.jsonl": "b488329ffccd64aa0df6b3608ef548c80e47d46d11d15ed7cff23a9286ea08d1",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/packet/execution.json": "02617af0f15b325a3e7117fcdb87d485e71cbe48efa046c43291381fbd5de7c8",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/offline-runtime-analysis-r1.json": "23d4aa4b1b7d7e7e1977f36588e91aa676a8dc5f85f461633bae02c3d4831ce7",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/scheduler-aligned-diagnostic-r1.json": "880f84d3ba98eb76aeb3e8649090aea44360cc1c9da7bcc9bab6c4fca170846d",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/clocks/result.json": "9bbee968bdc4d1b9caed80b963e387d4dcd3fe43e85a71f1fc1c79a1eb0b3ec2",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/results/boot.json": "db89c01bf3ed11137da874418878c663b19bbd3bfe9d8c96b6791b0ef45dc01e",
+    "campaigns/hecate-723744/analysis/model-R-r1-jit-audit.json": "b40c4adc0a535fa1a9a69c983cae628fc2f6604650b7603ed80b0f19cc513f9e",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/phase-evidence/scheduler-939121/manifest.json": "53cc1c22aab06f42ba4c8b6cb868d864a9d364f0a44990bc990625493302359a",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-R_fixed-jitverbose/phase-evidence/scheduler-939121/steps.jsonl": "de2bc7d77065f472ce97cfb53027de3f6c1dff77af721fd06aa58562b95bbc66",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/results/decode-i65536-o1024-c8/requests.jsonl": "eb08f7ea01aa0cac0d4d8138f095e396381fccd111f2d40b3dbbb9705c513625",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/results/decode-i65536-o1024-c12/requests.jsonl": "128ab85af9c9d70be11b7b2c1eeeadaee25a77460f3f51dc1e9c2c3eb00f83fb",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/results/decode-i65536-o1024-c16/requests.jsonl": "c70ba300183f7dd6fbebdc3974cae848cdfe17e814c9053d14ec87d49a1c16ea",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/packet/execution.json": "4416aa79d26fe5cc9657ec6fcfec4c2682ea8d7f681f6acaea78194736b5ab54",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/results/offline-runtime-analysis-r1.json": "8837263b5917132aeb07f0cc52aa6d27d5dcc8e5d39b56ed5aa88afa79fa0422",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/results/scheduler-aligned-diagnostic-r1.json": "b07d08dda660b733b75180f33883e40cad2bf70b6b4663f4974f15ab9624a127",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/clocks/result.json": "165d9c6ff5dd91af7157b2f08f0dd382207a191a3bac2eec86122534a506f2fc",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/results/boot.json": "cff9cc385c1770b1b44f71a70902d3cca85db7934f5cde4c7cf4968d2f22b6fc",
+    "campaigns/hecate-723744/analysis/model-B-r1-jit-audit.json": "dd62416e2fedb88ea92353a61c56969c50a353e9a60c25e3d3161b00660662b1",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/phase-evidence/scheduler-943394/manifest.json": "4eff9e4ed7fb3533a27dcb19eee14018254dd7df47338bef22290e2fc665010b",
+    "campaigns/hecate-723744/runtime-runs/model-R_fixed_vs_B_fixed-decode-r1-B_fixed-jitverbose-drain0935/phase-evidence/scheduler-943394/steps.jsonl": "edc46bde634edf6aa81fb436eb771a011ddba45eda455162e295f8b63685d5f5"
+  },
+  "analysis_script_sha256": "843a3df868ef7e19dc3ff0fe3ca6aad72e0504397580ef8567828c9ede006ad7"
+}

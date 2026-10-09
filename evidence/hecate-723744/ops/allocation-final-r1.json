@@ -1,0 +1,11 @@
+{
+  "allocation_id": "723744",
+  "final_state": "TIMEOUT",
+  "scheduler_output": "723744|coreai_comparch_inferencex-vLLM-dev-vr200-reservation|TIMEOUT|2026-10-08T21:45:17|2026-10-09T02:45:25|05:00:08|0:0",
+  "scheduler_time_zone": "America/Los_Angeles",
+  "end_utc": "2026-10-09T09:45:25+00:00",
+  "query": "ssh fans-mfa@login-hecate 'sacct -j 723744 --format=JobID,JobName%30,State,Start,End,Elapsed,ExitCode -X -n -P'",
+  "parent_allocation_action_by_agents": "none",
+  "workload_cleanup": "All owned workload launchers completed/reaped before scheduled parent expiry; both nodes independently verified with zero GPU compute processes at09:42:48 and09:43:09UTC.",
+  "interpretation": "Parent allocation reached its scheduled walltime; it was not released, cancelled or requeued by the agents."
+}

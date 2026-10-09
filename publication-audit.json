@@ -1,0 +1,10 @@
+{
+  "recorded_at_utc": "2026-10-09T09:51:39.494602+00:00",
+  "relative_markdown_links_checked": 80,
+  "broken_links": [],
+  "copied_evidence_files": 38,
+  "all_source_and_published_artifact_hashes_equal": true,
+  "evidence_manifest_sha256": "34ab9edd1cd5ba892afe4d0d87db0339a4c4133bb5554c83e0c327ef2f05387c",
+  "source_heads_unchanged": true,
+  "pending_action": "fast-forward notes ref and verify all four destinations"
+}

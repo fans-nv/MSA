@@ -1,0 +1,21 @@
+{
+  "scope": "Final kernel lane report: B60primary+18guards pass; R18 numericalpass/teardowntimeout;5of6primarypairs incomplete",
+  "created_utc": "2026-10-09T09:43:28.203238+00:00",
+  "supersedes": "report-snapshot-r1.json (preliminary report hashes)",
+  "files": {
+    "kernels/KERNEL-VALIDATION-RESULTS.md": "fdc3e55c43f10a40e2328423338eb373dd5b2450f366b6aba2ec7454f0ef13d2",
+    "kernels/DECODE-FIVE-PAIR-OBSERVATIONS.md": "01737d3cd9346136428f3d2eb64788e421943a7f596114b7eb613010e768878b",
+    "kernels/decode-five-pair-observations.json": "397d3e2ccb8ed579bd6210987bc35a39e2077b9de18894adcd646587fe1ea42b",
+    "kernels/decode-analysis-after-pair4.json": "2008f1bc2f94b69f44cb78f2e35b30d25b76b967c947e8081c308de3ee36f0e5",
+    "kernels/five-pair-clock-integrity-r1.json": "216fe92f25cb35fade7c4a3205ef0ba5d121ef9830ef7565a9394cd2b9f4abc2",
+    "kernels/CORE-CUPTI-K-R-B-COMPARISON.md": "ce84f868c036d4716e544650f903be8642da25e3886f11ccf141b1dcaeb12b1a",
+    "kernels/core-cupti-K-R-B-comparison-r1.json": "ddb64d7119c9cd8c3e131f973d57c83458ee8953a1adca564826a7a4a588fe91",
+    "kernels/coverage-integrity-r1.json": "c6d33303f0e4fe051dbbe58bb6563d62c81c35c4d2f57c050ddb7ef9374dce91",
+    "kernels/input-policy-parity-review-r2.json": "53951e18cb473469878f5f658def4d2806a52e27d7412a795b316ac153777855",
+    "kernels/final-node0010-cleanup-r1.json": "27f6f2adf19d908f42e38497b7d4b40c742255aadca7684e8a3590915b766c9f",
+    "analysis/cupti-stages-independent-review-r2.json": "a42d2dc9781fafbebecad54801074a65b33cf4e37a439db0696bfe8c5721d3de",
+    "analysis/cupti-rank-skew-r1/result.json": "a05c0c0335b4a37f6ceb8fc5dff9a010ba4835e92ec37c98bc4d83145e1e08ae"
+  },
+  "raw_data_modified": false,
+  "parent_allocation_action": "none"
+}

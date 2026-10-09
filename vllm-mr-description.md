@@ -33,25 +33,30 @@ dense NVFP4 on SM107. Sparse attention keeps its original NVFP4 configuration.
 Five focused CPU tests pass, the change was independently reviewed, and the
 patch changes no native compiled input.
 
-Fresh core, MoE, FlashAttention and supporting native modules were built
-against the unchanged Rubin environment; all import origins and artifact
-hashes were bound per arm. No image vLLM native library was reused as a
-candidate build. Corrected ICP module decode correctness, 34 writer/reader
-cases, two-rank transport, actual producer graph snapshots, model cache and
-resource lifecycle, Eagle3 routing and autotune policy admission passed.
+Fresh core, MoE, FlashAttention and supporting native targets were built
+against the unchanged Rubin environment. Candidate correctness passed all 60
+primary indexer cases and 18 guards with clean finalization, native writer and
+34 writer/reader composition cases, TP transport, actual producer graph checks,
+ICP-on model routing, cache/lifecycle and autotune policy admission.
 
-Two complete GSM8K pairs used 16 warmups plus all 1,319 examples per boot,
-C16, zero-shot adaptive chat and a 512-token cap. Historical/candidate scores
-were 95.5269/95.0720% and 95.9060/95.6027%; mean paired difference was
-−0.3791 percentage points. There is no equivalence claim, and H/B includes
-image/backend/UGPU differences. See [README](README.md) for evidence scope.
+Two full GSM8K pairs used 16 warmups plus all 1,319 examples per boot, C16,
+zero-shot adaptive chat and a 512-token cap. Historical/candidate scores were
+95.5269/95.0720% and 95.9060/95.6027%; mean difference −0.3791 percentage points.
+There is no equivalence claim; H/B includes image/backend/UGPU differences.
 
-Open: the ordinary ICP-off whole-model route fails with a CUDA launch error;
-the first failing operation has not yet been localized. Passing standalone
-ordinary MSA tests do not close that gap. Module timing is in progress with
-some adverse early cells. Six-pair module/model performance validation and
-observer/JIT admission remain incomplete. The branch is
-published for human review, not merge approval.
+The ordinary ICP-off model CUDA failure remains unresolved. A fresh-cache
+synchronous diagnostic failed before model startup because its private TMPDIR
+exceeded the Unix IPC path limit. The supported short RPC-path correction was
+identified, but no final retry packet was authored or launched. Passing
+standalone MSA does not close the model compatibility gap.
+
+Performance retention is not established. Five of six module pairs completed
+with persistent slow cells (+13.7% at C16/Q1/64K core graph; +16.5% at
+C12/Q1/150K later producer graph). The model sentinel collected one pair,
+432 requests per arm, but all original pure-decode windows failed qualification
+and zero pairs are accepted. Observer overhead and broader timing remain open.
+See [README](README.md) and the
+[performance report](evidence/hecate-723744/PERFORMANCE-REPORT.md) for exact scope.
 
 AI assistance was used. Upstream submission remains pending the listed checks
 and the human review requested by the user. No upstream PR has been opened.
