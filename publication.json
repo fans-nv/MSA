@@ -1,0 +1,52 @@
+{
+  "recorded_at_utc": "2026-10-09T08:38:02.784479+00:00",
+  "action": "author-requested publication for human review",
+  "repositories": {
+    "MSA": {
+      "base": "968061ab16cb14991a5c7d4c0e8eabf531be0dcf",
+      "candidate": "cd20e206a3373e8d258da8cd403b4b3399b1f714",
+      "base_ref": "refs/heads/review/icp-base-20261009",
+      "candidate_ref": "refs/heads/review/icp-consolidation-20261009",
+      "github": {
+        "repository": "fans-nv/MSA",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://github.com/fans-nv/MSA/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009"
+      },
+      "gitlab": {
+        "repository": "fans/MSA",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://gitlab-master.nvidia.com/fans/MSA/-/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009"
+      }
+    },
+    "vllm": {
+      "base": "ab905a885dfbfc60a2c02286cc9c608c93884de3",
+      "candidate": "19afac40273aa84c2693ca1083995c4156aca4e2",
+      "base_ref": "refs/heads/review/icp-base-20261009",
+      "candidate_ref": "refs/heads/review/icp-consolidation-20261009",
+      "github": {
+        "repository": "fans-nv/vllm",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://github.com/fans-nv/vllm/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009"
+      },
+      "gitlab": {
+        "repository": "fans/vllm",
+        "status": "pushed_and_ls_remote_verified",
+        "compare_url": "https://gitlab-master.nvidia.com/fans/vllm/-/compare/review%2Ficp-base-20261009...review%2Ficp-consolidation-20261009"
+      }
+    }
+  },
+  "source_worktrees_clean": true,
+  "source_commits_changed_for_publication": false,
+  "existing_refs_preserved": true,
+  "force_push_used": false,
+  "default_branches_changed": false,
+  "upstream_pr_opened": false,
+  "gitlab_vllm_history_repair": {
+    "initial_failure": "shallow update not allowed",
+    "resolution": "targeted upstream ancestry fetches for ab905a885 via --deepen=512 and --deepen=8192; atomic push accepted and exact refs verified",
+    "blanket_unshallow": false,
+    "manual_shallow_file_edit": false
+  },
+  "review_notes_ref": "refs/heads/review/icp-review-notes-20261009",
+  "validation_snapshot_sha256": "c3b96c05d385abbb5e160738d9d67ceb57b850e607afc357615556d2985cf9c0"
+}
