@@ -19,6 +19,8 @@ VLLM_INTEGRATION_ABI = ICP_INTEGRATION_ABI
 # Public vLLM head-slot layout, calibrated prefill and isolated Q8KV4 prewarm.
 # Native score/plan/carrier layouts are unchanged.
 PUBLIC_VLLM_ABI = 1
+# Additive: IcpIndexerRuntime, CandidateExchange.for_tp_group, compound_page.
+ICP_INDEXER_RUNTIME_ABI = 1
 
 #: Public name -> the submodule that defines it. Resolved on first access, so
 #: importing this package costs no torch import: `_build` answers arch and
@@ -78,7 +80,7 @@ _LAZY = {
 _SUBMODULES = frozenset({"abi", "candidates", "carrier", "merge",
                          "tiled_exchange",
                          "fused_exchange", "candidate_exchange", "exchange_plan",
-                         "local_indexer", "indexer_runtime"})
+                         "local_indexer", "indexer_runtime", "compound_page"})
 
 __all__ = [
     *sorted(_LAZY),
@@ -91,6 +93,7 @@ __all__ = [
     "VLLM_INTEGRATION_ABI",
     "ICP_INTEGRATION_ABI",
     "PUBLIC_VLLM_ABI",
+    "ICP_INDEXER_RUNTIME_ABI",
 ]
 
 
