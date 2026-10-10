@@ -14,8 +14,7 @@ from typing import Optional, Tuple, Union
 __all__ = [
     "fmha_sm100_plan", "fmha_sm100", "sparse_topk_select", "nvfp4_head_slot_views",
     "_fmha_sm100_plan", "_fmha_sm100",
-    "PlanWorkspace", "PlanWorkspacePool", "PlanWorkspaceError",
-    "icp_plan_workspace_pool",
+    "PlanWorkspaceError",
     "IcpDevicePlanStore", "IcpDevicePlanSlot", "ICP_DEVICE_PLAN_ABI_VERSION",
     "prewarm_icp_scorer",
 ]
@@ -48,20 +47,7 @@ def _reset_np_staging():
     global _np_staging_offset
     _np_staging_offset = 0
 
-def _plan_buf_from_list(data, device, ws=None, tag=None):
-    """Stage a host int list to an int32 device buffer.
-
-    ``ws`` is a caller-owned :class:`PlanWorkspace`.  When it is supplied the
-    destination is that workspace's STABLE region for ``tag``, written in place
-    with no device allocation, and the returned tensor is a prefix VIEW of it --
-    same ``data_ptr()`` on every build, exact ``shape[0] == len(data)`` so every
-    downstream shape guard
-    (``batch_size = qo_segment_lens.shape[0]``, the ``kv_page_indptr`` length
-    check in ``_fmha_sm100``) still reads the real element count.
-
-    When ``ws`` is None the historical per-call ``torch.empty`` is kept, so every
-    caller that has not been migrated behaves exactly as before.
-    """
+def _plan_buf_from_list(data, device):
     global _np_staging, _np_staging_offset
     n = len(data)
     end = _np_staging_offset + n
@@ -70,10 +56,7 @@ def _plan_buf_from_list(data, device, ws=None, tag=None):
         _np_staging_offset = 0
         end = n
     _np_staging[_np_staging_offset:end] = data
-    if ws is None:
-        buf = torch.empty(n, dtype=torch.int32, device=device)
-    else:
-        buf = ws.bind(tag, n, torch.int32, device)
+    buf = torch.empty(n, dtype=torch.int32, device=device)
     buf.copy_(torch.from_numpy(_np_staging[_np_staging_offset:end]), non_blocking=True)
     _np_staging_offset = end
     return buf
@@ -95,18 +78,6 @@ class _BuffTag(IntEnum):
     workspace_o = auto()
 
     sparse_topk_workspace = auto()
-
-    # ---- per-plan int32 metadata staged by `_plan_buf_from_list` ------------
-    # These exist so that every per-plan device buffer has a NAME, which is what
-    # lets a `PlanWorkspace` give each of them its own region.  They are never
-    # used with `_alloc_workspace_buf` (the process-global, tag-keyed cache).
-    plan_qo_segment_offsets = auto()
-    plan_kv_segment_offsets = auto()
-    plan_qo_offset = auto()
-    plan_kv_segment_lens = auto()
-    plan_kv_page_indptr = auto()
-    plan_qo_segment_lens = auto()
-    plan_kv_lens = auto()
 
     Total = auto()
 
@@ -136,59 +107,18 @@ def _get_workspace_buf(tag, device):
     device_id = torch.device(device).index
     return _workspace_cache[device_id][tag]
 
-def _alloc_perplan_buf(tag, size, device, dtype, ws=None):
-    """Storage for ONE per-plan buffer.
-
-    The commented-out body this replaced cached on ``tag`` alone, in a
-    process-global table.  That is exactly the hazard it must not have: the
-    indexer builds one plan per query chunk and every chunk plan of a forward is
-    ALIVE AT THE SAME TIME, so a tag-keyed global cache would hand two live
-    plans the same `packed_work_info` and each would overwrite the other's work
-    list -- silently, with fluent wrong output.  It stays disabled.
-
-    ``ws`` is the supported answer: a caller-owned :class:`PlanWorkspace`, one
-    per concurrently-live plan, whose regions are stable across builds.  Without
-    one the historical per-call allocation is kept.
-    """
-    if ws is not None:
-        return ws.bind(tag, size, dtype, device)
+def _alloc_perplan_buf(tag, size, device, dtype):
+    # global _workspace_cache
+    # device_id = torch.device(device).index
+    # buf = _workspace_cache[-1][device_id][tag]
+    # if buf is not None and buf.shape[0] >= size:
+    #     return buf
     buf = torch.empty(size, dtype=dtype, device=device)
+    # _workspace_cache[-1][device_id][tag] = buf
     return buf
 
-
-# ---------------------------------------------------------------------------
-# Caller-owned plan workspaces
-# ---------------------------------------------------------------------------
-# WHY THIS EXISTS.  Every per-plan buffer above is a fresh `torch.empty` per
-# build.  The indexer rebuilds one plan PER QUERY CHUNK on every forward, so a
-# steady-state step allocates and frees nine device buffers per chunk -- around
-# a megabyte each for `packed_work_info` -- purely to write the same metadata
-# into different addresses.  That is allocator churn on the submission path, and
-# it is the thing this removes.
-#
-# It is NOT a fix for a capture-correctness defect.  Plan builds happen in the
-# metadata builder, which runs before replay rather than inside capture, and the
-# eager prefill route is the one that dominates plan construction today.  What a
-# stable workspace additionally buys is that the plan's device pointers no
-# longer move between builds, so a future profile that does capture a plan's
-# consumers is not exposed to the pointers changing underneath it.
-#
-# The shape required by `refined-icp-design/runtime/MODEL_OWNED_INTEGRATION_
-# BOUNDARY.md` ("bind stable model/package workspace views for each supported
-# profile and update exact device metadata in place"; MSA owns "reusable bounded
-# plans and page metadata") is:
-#
-#   * the CALLER allocates once, at startup, from bounds it already knows;
-#   * plan construction writes IN PLACE into that storage;
-#   * concurrently-live plans get DISJOINT storage, and disjointness is a
-#     property of the construction, not of a calling convention.
-#
-# Nothing here reads a device value, allocates on the submission path, or
-# synchronises: the only per-build work is host integer bookkeeping
-# (`GPU_EXECUTION_NONBLOCKING_REVIEW.md`).
-
 class PlanWorkspaceError(RuntimeError):
-    """A caller-owned plan workspace cannot serve a plan.
+    """An ICP device plan slot cannot serve a plan.
 
     Always raised, never worked around: every condition that reaches it is one
     whose silent alternative is a plan that reads the wrong bytes.
@@ -198,30 +128,8 @@ class PlanWorkspaceError(RuntimeError):
 #: Work-item capacity the planner is handed per unit of split-KV degree.  This
 #: is the literal `_fmha_sm100_plan_impl` has always passed as
 #: `packed_work_info`'s length (and, through `packed_work_info_size`, as the
-#: kernel's own bounds-check extent).  It is named here so a workspace is sized
-#: to EXACTLY the number the planner asks for rather than to a second,
-#: independently-guessed one -- a workspace smaller than the request would be
-#: refused, and a request larger than the kernel's bound would be an OOB write.
+#: kernel's own bounds-check extent).
 _PLAN_MAX_WORK_ITEMS_PER_SPLIT = 131072
-
-#: Byte alignment of every region inside a workspace arena.  256 is the CUDA
-#: allocator's own base alignment, and being a multiple of 8 it keeps every
-#: `uint8 -> int32/int64/float32` retype legal at a non-zero storage offset.
-_PLAN_WS_ALIGN = 256
-
-#: The seven int32 metadata buffers `_plan_buf_from_list` produces per plan, in
-#: build order.  Each holds at most `batch_size + 1` entries (the prefix sums);
-#: the four length/offset vectors hold `batch_size`.
-_PLAN_LIST_TAGS = (
-    _BuffTag.plan_qo_segment_offsets,
-    _BuffTag.plan_kv_segment_offsets,
-    _BuffTag.plan_qo_offset,
-    _BuffTag.plan_kv_segment_lens,
-    _BuffTag.plan_kv_page_indptr,
-    _BuffTag.plan_qo_segment_lens,
-    _BuffTag.plan_kv_lens,
-)
-
 
 def _norm_device(device):
     """One canonical `torch.device`, so region/plan device checks compare equal."""
@@ -233,326 +141,6 @@ def _norm_device(device):
     return device
 
 
-class PlanWorkspace:
-    """Stable device storage for ONE concurrently-live plan.
-
-    Allocate once, at startup, from startup bounds; hand it to
-    ``_fmha_sm100_plan``/``_fmha_sm100_plan_impl`` as ``plan_workspace=``.  Every
-    plan built against it writes into the same bytes: no device allocation on
-    the submission path, and the plan's device pointers do not move between
-    builds.
-
-    One workspace serves ONE plan at a time.  Two plans that must be alive
-    together -- the indexer's per-chunk ICP plans are the motivating case -- need
-    two workspaces; :class:`PlanWorkspacePool` supplies them and proves they do
-    not overlap.  Rebinding a workspace while an earlier plan is still in use is
-    not silently permitted: ``begin_plan`` bumps :attr:`epoch`, the plan records
-    the epoch it was built at, and ``_fmha_sm100`` refuses a plan whose epoch has
-    moved on.
-
-    Parameters
-    ----------
-    device
-        Where the arena lives.  All regions are on this device and a plan built
-        for a different device is refused.
-    max_segments
-        Upper bound on a plan's ``batch_size`` (the number of Q/KV segments).
-        Sizes the seven int32 metadata regions at ``max_segments + 1``.
-    max_kv_splits
-        Largest split-KV degree this workspace admits.  At the default 1 the
-        split-KV regions are not allocated at all, and a plan that asks for them
-        is refused rather than served from nowhere.  ICP is always 1 (split-KV is
-        asserted unsupported in ``_fmha_sm100``).
-    max_total_qo_len, max_num_qo_heads
-        Only needed when ``max_kv_splits > 1``; they size
-        ``num_kv_splits_per_row`` and ``workspace_lse``.
-    num_ctas
-        Length of ``packed_work_range``; the planner uses
-        ``min(usable_SM_count, multi_processor_count)``, so the device's SM count
-        is the bound.  Defaults to the device's SM count, which requires CUDA;
-        pass it explicitly to build a workspace without touching the driver.
-    max_work_items
-        Length of ``packed_work_info`` (and of the split-KV index regions).
-        Defaults to ``_PLAN_MAX_WORK_ITEMS_PER_SPLIT * max_kv_splits``, which is
-        what the planner asks for today.
-    label
-        Free-form name used in error messages.
-    """
-
-    def __init__(self, *, device, max_segments, max_kv_splits=1,
-                 max_total_qo_len=0, max_num_qo_heads=0, num_ctas=None,
-                 max_work_items=None, label=None):
-        if int(max_segments) < 1:
-            raise PlanWorkspaceError(
-                f"max_segments must be >= 1, got {max_segments}")
-        if int(max_kv_splits) < 1:
-            raise PlanWorkspaceError(
-                f"max_kv_splits must be >= 1, got {max_kv_splits}")
-        self.device = _norm_device(device)
-        self.label = label
-        self.max_segments = int(max_segments)
-        self.max_kv_splits = int(max_kv_splits)
-        self.max_total_qo_len = int(max_total_qo_len)
-        self.max_num_qo_heads = int(max_num_qo_heads)
-        self.num_ctas = int(_get_num_cta(self.device) if num_ctas is None
-                            else num_ctas)
-        self.max_work_items = int(
-            _PLAN_MAX_WORK_ITEMS_PER_SPLIT * self.max_kv_splits
-            if max_work_items is None else max_work_items)
-
-        regions = [(tag, torch.int32, self.max_segments + 1)
-                   for tag in _PLAN_LIST_TAGS]
-        regions.append((_BuffTag.packed_work_range, torch.int64, self.num_ctas))
-        regions.append((_BuffTag.packed_work_info, torch.int64,
-                        self.max_work_items))
-        if self.max_kv_splits > 1:
-            if self.max_total_qo_len < 1 or self.max_num_qo_heads < 1:
-                raise PlanWorkspaceError(
-                    "max_kv_splits > 1 needs max_total_qo_len and "
-                    "max_num_qo_heads to size num_kv_splits_per_row and "
-                    f"workspace_lse; got {self.max_total_qo_len} and "
-                    f"{self.max_num_qo_heads}")
-            for tag in (_BuffTag.kv_tile_begin_indices,
-                        _BuffTag.kv_tile_end_indices,
-                        _BuffTag.kv_split_indices):
-                regions.append((tag, torch.int32, self.max_work_items))
-            regions.append((_BuffTag.num_kv_splits_per_row, torch.int32,
-                            self.max_total_qo_len))
-            regions.append((_BuffTag.workspace_lse, torch.float32,
-                            self.max_kv_splits * self.max_total_qo_len
-                            * self.max_num_qo_heads))
-
-        # ---- one arena, carved at explicit byte offsets ---------------------
-        # Disjointness inside a workspace is ARITHMETIC, not an allocator
-        # promise: the offsets are a running sum of aligned region sizes, and
-        # the loop below asserts the carved intervals are ordered, in bounds and
-        # non-overlapping before a single plan can touch them.
-        layout, offset = [], 0
-        for tag, dtype, count in regions:
-            if count < 0:
-                raise PlanWorkspaceError(
-                    f"region {_BuffTag(tag).name} has negative size {count}")
-            nbytes = count * torch.empty(0, dtype=dtype).element_size()
-            layout.append((tag, dtype, count, offset, nbytes))
-            offset += -(-nbytes // _PLAN_WS_ALIGN) * _PLAN_WS_ALIGN
-        self._arena = torch.empty(max(offset, _PLAN_WS_ALIGN),
-                                  dtype=torch.uint8, device=self.device)
-        self._regions = {}
-        prev_end = 0
-        for tag, dtype, count, off, nbytes in layout:
-            if off < prev_end or off + nbytes > self._arena.numel():
-                raise PlanWorkspaceError(
-                    f"internal layout error at {_BuffTag(tag).name}: "
-                    f"[{off}, {off + nbytes}) vs prev_end={prev_end}, "
-                    f"arena={self._arena.numel()}")
-            prev_end = off + nbytes
-            self._regions[int(tag)] = (
-                self._arena[off:off + nbytes].view(dtype) if nbytes
-                else torch.empty(0, dtype=dtype, device=self.device))
-        self._epoch = 0
-        self._bound = set()
-
-    # -- identity -----------------------------------------------------------
-    @property
-    def epoch(self):
-        """Bumped by every :meth:`begin_plan`; a plan records the value it saw."""
-        return self._epoch
-
-    def arena_span(self):
-        """``(first_byte, last_byte_exclusive)`` of this workspace's storage."""
-        base = self._arena.data_ptr()
-        return (base, base + self._arena.numel())
-
-    def nbytes(self):
-        return self._arena.numel()
-
-    def region(self, tag):
-        """The full stable region for ``tag``, or None if not sized for it."""
-        return self._regions.get(int(tag))
-
-    # -- per-build protocol -------------------------------------------------
-    def begin_plan(self):
-        """Open a new plan build; returns the epoch it must be validated at."""
-        self._epoch += 1
-        self._bound.clear()
-        return self._epoch
-
-    def bind(self, tag, size, dtype, device=None):
-        """The stable region for ``tag``, viewed as exactly ``size`` elements."""
-        if tag is None:
-            raise PlanWorkspaceError(
-                "a plan buffer reached a workspace without a tag; every "
-                "per-plan buffer must name its own region")
-        key = int(tag)
-        region = self._regions.get(key)
-        name = _BuffTag(key).name
-        if region is None:
-            raise PlanWorkspaceError(
-                f"{self}: not sized for {name}.  This workspace admits "
-                f"max_kv_splits={self.max_kv_splits}; a plan needing "
-                "split-KV storage must be given a workspace built with the "
-                "matching max_kv_splits / max_total_qo_len / max_num_qo_heads.")
-        if region.dtype != dtype:
-            raise PlanWorkspaceError(
-                f"{self}: {name} is {region.dtype}, plan asked for {dtype}")
-        if device is not None and _norm_device(device) != self.device:
-            raise PlanWorkspaceError(
-                f"{self}: lives on {self.device}, plan is building on "
-                f"{_norm_device(device)}")
-        if size > region.shape[0]:
-            raise PlanWorkspaceError(
-                f"{self}: {name} needs {size} elements, workspace holds "
-                f"{region.shape[0]}.  Raise the bound this workspace was sized "
-                "from (max_segments / max_kv_splits / max_work_items); the "
-                "plan is NOT truncated to fit.")
-        if key in self._bound:
-            raise PlanWorkspaceError(
-                f"{self}: {name} bound twice in one plan build -- the second "
-                "binding would alias the first.  Each per-plan buffer owns one "
-                "region; this is a planner bug, not a capacity problem.")
-        self._bound.add(key)
-        return region[:size]
-
-    def __repr__(self):
-        tail = f" {self.label!r}" if self.label else ""
-        return (f"<PlanWorkspace{tail} device={self.device} "
-                f"max_segments={self.max_segments} "
-                f"max_kv_splits={self.max_kv_splits} "
-                f"max_work_items={self.max_work_items} "
-                f"bytes={self._arena.numel()}>")
-
-    __str__ = __repr__
-
-
-class PlanWorkspacePool:
-    """A fixed number of :class:`PlanWorkspace` slots that do not overlap.
-
-    ``num_slots`` bounds how many plans may be alive at once.  Slot ``i`` is a
-    separate workspace with a separate arena, and the constructor VERIFIES that
-    the arenas are pairwise disjoint rather than assuming it -- one sort and one
-    scan over ``num_slots`` host integers, at startup.
-
-    Asking for a slot outside ``[0, num_slots)`` raises: wrapping a chunk index
-    modulo the pool size is the one way two live plans could still share storage,
-    so it is refused instead of silently aliasing.
-    """
-
-    def __init__(self, num_slots, **workspace_kwargs):
-        num_slots = int(num_slots)
-        if num_slots < 1:
-            raise PlanWorkspaceError(f"num_slots must be >= 1, got {num_slots}")
-        label = workspace_kwargs.pop("label", "pool")
-        self._slots = [PlanWorkspace(label=f"{label}[{i}]", **workspace_kwargs)
-                       for i in range(num_slots)]
-        spans = sorted(s.arena_span() for s in self._slots)
-        for (a0, a1), (b0, b1) in zip(spans, spans[1:]):
-            if a1 > b0:
-                raise PlanWorkspaceError(
-                    f"plan workspace arenas overlap: [{a0}, {a1}) and "
-                    f"[{b0}, {b1}).  Two live plans would corrupt each other.")
-
-    def __len__(self):
-        return len(self._slots)
-
-    def __iter__(self):
-        return iter(self._slots)
-
-    def slot(self, index):
-        """Slot ``index``; raises rather than wrapping."""
-        index = int(index)
-        if not 0 <= index < len(self._slots):
-            raise PlanWorkspaceError(
-                f"plan workspace slot {index} is outside [0, "
-                f"{len(self._slots)}).  Size the pool from the bound on "
-                "concurrently-live plans; do not reuse a slot that a live plan "
-                "still owns.")
-        return self._slots[index]
-
-    __getitem__ = slot
-
-    def nbytes(self):
-        return sum(s.nbytes() for s in self._slots)
-
-
-def _assert_plan_workspace_current(plan_info):
-    """The plan's storage must still BE the plan's.
-
-    A plan built into a caller-owned :class:`PlanWorkspace` records that
-    workspace's epoch.  If the workspace has since been rebound -- a second plan
-    built on the same slot while this one was still alive -- then every device
-    buffer this plan names now holds the OTHER plan's metadata.  That is the
-    exact silent corruption a tag-keyed shared cache would have produced, so it
-    is refused here rather than executed.
-
-    One host integer compare on a dict the caller already owns: no device read,
-    no synchronization, nothing that can interrupt GPU submission
-    (``GPU_EXECUTION_NONBLOCKING_REVIEW.md``).  Plans built without a workspace
-    carry ``None`` and skip it entirely.
-    """
-    ws = plan_info.get("_plan_workspace")
-    if ws is None:
-        return
-    built_at = plan_info.get("_plan_workspace_epoch")
-    if built_at != ws.epoch:
-        raise PlanWorkspaceError(
-            f"this plan was built at {ws} epoch {built_at}, but the workspace "
-            f"is now at epoch {ws.epoch}: its buffers were rebound by a later "
-            "plan and no longer hold this plan's metadata.  Give each "
-            "concurrently-live plan its own workspace slot.")
-
-
-def icp_plan_workspace_pool(*, device, max_num_seqs, max_num_batched_tokens,
-                            query_chunk_tokens=128, num_ctas=None):
-    """A pool sized for the indexer's per-chunk ICP plans, from startup bounds.
-
-    Capacity comes only from constants the caller has at startup:
-
-    ``num_slots``
-        ``ceil(max_num_batched_tokens / query_chunk_tokens)`` -- the chunk loop
-        walks ``range(0, num_tokens, query_chunk_tokens)`` with
-        ``num_tokens <= max_num_batched_tokens``, and every chunk's plan is alive
-        until the forward ends.  Pass the PADDED token capacity here if the
-        caller rounds ``max_num_batched_tokens`` up (the indexer aligns it to
-        ``QCAPACITY_ALIGNMENT``), because that padded value is what its own
-        ``num_tokens <= cap`` assert admits.
-    ``max_segments``
-        ``min(max_num_seqs, query_chunk_tokens)`` -- a chunk's plan has one
-        segment per request whose query range intersects the chunk, each such
-        request contributes at least one of the chunk's ``<= query_chunk_tokens``
-        tokens, and there are never more than ``max_num_seqs`` requests.
-    ``max_kv_splits = 1``
-        ``_fmha_sm100`` asserts ICP x split-KV unsupported, and the indexer
-        passes ``num_kv_splits=1``.  The split-KV regions are therefore not
-        allocated, and a split-KV plan built against this pool is REFUSED.
-
-    ``max_model_len``, the 128-token block size and the ICP degree W are
-    deliberately absent: they size the page table, the score wave and
-    ``max_k_tiles``, all of which the caller already owns, and none of them
-    reaches a buffer allocated here.  Taking them would suggest this pool grows
-    with context length, which it does not.
-    """
-    if int(query_chunk_tokens) < 1:
-        raise PlanWorkspaceError(
-            f"query_chunk_tokens must be >= 1, got {query_chunk_tokens}")
-    if int(max_num_seqs) < 1 or int(max_num_batched_tokens) < 1:
-        raise PlanWorkspaceError(
-            f"max_num_seqs={max_num_seqs} and "
-            f"max_num_batched_tokens={max_num_batched_tokens} must both be >= 1")
-    num_slots = -(-int(max_num_batched_tokens) // int(query_chunk_tokens))
-    return PlanWorkspacePool(
-        num_slots,
-        device=device,
-        max_segments=min(int(max_num_seqs), int(query_chunk_tokens)),
-        max_kv_splits=1,
-        num_ctas=num_ctas,
-        label="icp-plan",
-    )
-
-# ---------------------------------------------------------------------------
-# Device-derived ICP prefill plans (ICP_DEVICE_PLAN_ABI 1)
-# ---------------------------------------------------------------------------
-#: Must equal the fused writer's ``ICP_DEVICE_PLAN_ABI``; the writer wrapper
-#: refuses a store whose version differs.
 ICP_DEVICE_PLAN_ABI_VERSION = 3
 
 #: Row order of ``IcpDevicePlanStore.segments`` (the writer's plan CTAs use it).
@@ -1279,7 +867,6 @@ def _make_plan_info(
     kv_page_indptr_local_last=None,
     block_table=None, block_table_row_stride=0, block_table_row_begin=0,
     index_rank=0, index_world_size=1, index_rows_per_rank=0,
-    plan_workspace=None, plan_workspace_epoch=None
 ):
     # ws = _workspace_cache_per_plan.pop()
     # print("pop")
@@ -1349,14 +936,6 @@ def _make_plan_info(
         "index_rank": index_rank,
         "index_world_size": index_world_size,
         "index_rows_per_rank": index_rows_per_rank,
-        # The caller-owned workspace this plan's device buffers live in, and the
-        # epoch it was built at.  None when the plan owns freshly allocated
-        # buffers (the unmigrated path).  `_fmha_sm100` compares the epoch
-        # against the workspace's current one, so a plan whose storage has since
-        # been rebound to a newer plan FAILS instead of reading the newer plan's
-        # metadata.  It is a host int compare: no device read, no sync.
-        "_plan_workspace": plan_workspace,
-        "_plan_workspace_epoch": plan_workspace_epoch,
         "MM-SA-Nv":False
     })
 
@@ -1603,21 +1182,10 @@ def _fmha_sm100_plan_impl(
     icp_block_table: Optional[torch.Tensor] = None,
     icp_block_table_row_stride: int = 0,
     icp_block_table_row_begin: int = 0,
-    plan_workspace: Optional["PlanWorkspace"] = None,
     device_plan: Optional["IcpDevicePlanSlot"] = None,
 ):
     device = torch.cuda.current_device() if device is None else device
     _reset_np_staging()
-
-    # Open the build BEFORE any buffer is bound: `begin_plan` is what makes the
-    # workspace's previous plan detectably stale and clears the one-region-per-
-    # buffer check.  `_ws` is threaded to every per-plan allocation below; the
-    # process-global `_alloc_workspace_buf` buffers (cutlass workspace,
-    # plan_cost, workspace_o) are deliberately NOT routed here -- they are
-    # already stable-pointer by construction and are execution scratch rather
-    # than plan metadata.
-    _ws = plan_workspace
-    _ws_epoch = None if _ws is None else _ws.begin_plan()
 
     # ---- refined-icp-v1: THE DIRECT COMPOUND-PAGE TABLE ---------------------------
     # An ADDED plan mode selected by the presence of the table, checked here once so
@@ -1724,16 +1292,6 @@ def _fmha_sm100_plan_impl(
 
     if kv_block_num > 0 and (sparse_kernel_mode == 'prefill' or (sparse_kernel_mode == 'auto' and max_qo_len_orig > _prefill_qlen_threshold(True))):
         # print("Nv-Prefill")
-        if _ws is not None:
-            # Refused, not ignored.  `sparse_fmha_plan` is a different planner
-            # with its own buffers; accepting a workspace here and dropping it
-            # would leave the caller believing its plan pointers are stable when
-            # they are not -- the same silent class the workspace exists to end.
-            raise PlanWorkspaceError(
-                "plan_workspace is not supported on the sparse-prefill route "
-                "(`MM-SA-Nv`): that plan is built by `sparse_fmha_plan`, which "
-                "does not allocate from this workspace.  Omit plan_workspace "
-                "for this route rather than assuming its buffers are stable.")
         if icp_direct_table:
             # `sparse_fmha_plan` is a DIFFERENT planner with a different page
             # directory (`kv_block_indexes`), and `sparse_fmha` raises on ICP
@@ -1847,12 +1405,9 @@ def _fmha_sm100_plan_impl(
     if not causal:
         qo_offset_list = [max_kv_len] * len(kv_lens)
 
-    qo_segment_offsets = _plan_buf_from_list(
-        qo_offsets, device, _ws, _BuffTag.plan_qo_segment_offsets)
-    kv_segment_offsets = _plan_buf_from_list(
-        kv_offsets, device, _ws, _BuffTag.plan_kv_segment_offsets)
-    qo_offset = _plan_buf_from_list(
-        qo_offset_list, device, _ws, _BuffTag.plan_qo_offset)
+    qo_segment_offsets = _plan_buf_from_list(qo_offsets, device)
+    kv_segment_offsets = _plan_buf_from_list(kv_offsets, device)
+    qo_offset = _plan_buf_from_list(qo_offset_list, device)
     # ---- refined-icp-v1: THIS BUFFER IS THE LIVE BOUND, AND IT MAY BE TIGHTENED ---
     # The direct-table entry makes the DEVICE contents of this buffer the sole
     # authority for the fragment bound, and the caller is expected to overwrite them
@@ -1886,11 +1441,8 @@ def _fmha_sm100_plan_impl(
     # exactly as the bound/exact split works for query positions.  Leaving the stale
     # offsets in place shifts the causal origin; there is no device-free way to detect
     # it here, so it is a stated precondition of the direct-table entry.
-    kv_segment_lens = _plan_buf_from_list(
-        kv_lens, device, _ws, _BuffTag.plan_kv_segment_lens)
-    kv_page_indptr = _plan_buf_from_list(
-        kv_page_indptr_list, device, _ws, _BuffTag.plan_kv_page_indptr
-    ) if kv_page_indptr_list is not None else None
+    kv_segment_lens = _plan_buf_from_list(kv_lens, device)
+    kv_page_indptr = _plan_buf_from_list(kv_page_indptr_list, device) if kv_page_indptr_list is not None else None
     # Same quantity as `kv_page_indptr[-1]` -- `_plan_buf_from_list` is an
     # element-wise int32 copy of exactly this list -- but read on the HOST,
     # before the list is staged to the device.  Sourcing the guard's scalar
@@ -1967,21 +1519,19 @@ def _fmha_sm100_plan_impl(
 
             max_work_items = _PLAN_MAX_WORK_ITEMS_PER_SPLIT * max_kv_splits
             
-            packed_work_range = _alloc_perplan_buf(_BuffTag.packed_work_range, num_ctas, device, torch.int64, _ws)
-            packed_work_info = _alloc_perplan_buf(_BuffTag.packed_work_info, max_work_items, device, torch.int64, _ws)
-            kv_tile_begin_indices = _alloc_perplan_buf(_BuffTag.kv_tile_begin_indices, max_work_items, device, torch.int32, _ws)
-            kv_tile_end_indices = _alloc_perplan_buf(_BuffTag.kv_tile_end_indices, max_work_items, device, torch.int32, _ws)
-            kv_split_indices = _alloc_perplan_buf(_BuffTag.kv_split_indices, max_work_items, device, torch.int32, _ws)
-            num_kv_splits_per_row = _alloc_perplan_buf(_BuffTag.num_kv_splits_per_row, total_qo_len, device, torch.int32, _ws)
+            packed_work_range = _alloc_perplan_buf(_BuffTag.packed_work_range, num_ctas, device, torch.int64)
+            packed_work_info = _alloc_perplan_buf(_BuffTag.packed_work_info, max_work_items, device, torch.int64)
+            kv_tile_begin_indices = _alloc_perplan_buf(_BuffTag.kv_tile_begin_indices, max_work_items, device, torch.int32)
+            kv_tile_end_indices = _alloc_perplan_buf(_BuffTag.kv_tile_end_indices, max_work_items, device, torch.int32)
+            kv_split_indices = _alloc_perplan_buf(_BuffTag.kv_split_indices, max_work_items, device, torch.int32)
+            num_kv_splits_per_row = _alloc_perplan_buf(_BuffTag.num_kv_splits_per_row, total_qo_len, device, torch.int32)
             plan_cost = _alloc_workspace_buf(_BuffTag.plan_cost, 2, device, dtype=torch.float32)
 
             lse_total_size = max_kv_splits * total_qo_len * num_qo_heads
-            workspace_lse = _alloc_perplan_buf(_BuffTag.workspace_lse, lse_total_size, device, torch.float32, _ws)
+            workspace_lse = _alloc_perplan_buf(_BuffTag.workspace_lse, lse_total_size, device, torch.float32)
 
-            qo_segment_lens_gpu = _plan_buf_from_list(
-                qo_lens, device, _ws, _BuffTag.plan_qo_segment_lens)
-            plan_kv_lens_gpu = _plan_buf_from_list(
-                plan_kv_lens_list, device, _ws, _BuffTag.plan_kv_lens)
+            qo_segment_lens_gpu = _plan_buf_from_list(qo_lens, device)
+            plan_kv_lens_gpu = _plan_buf_from_list(plan_kv_lens_list, device)
             _call_plan(qo_segment_offsets,
                 qo_segment_lens_gpu, plan_kv_lens_gpu,
                 packed_work_range, packed_work_info,
@@ -2018,8 +1568,7 @@ def _fmha_sm100_plan_impl(
                 pack_factor=pack_factor, orig_num_qo_heads=orig_num_qo_heads,
                 qo_len_uniform=qo_len_uniform, cute_workspace_buffer=cute_workspace_buffer,
                 kv_page_indptr_local_last=kv_page_indptr_local_last,
-                **_icp_direct_fields,
-                plan_workspace=_ws, plan_workspace_epoch=_ws_epoch)
+                **_icp_direct_fields)
 
         num_kv_splits = 1
     elif num_kv_splits < 1:
@@ -2027,18 +1576,18 @@ def _fmha_sm100_plan_impl(
     elif qo_tile_size == 256:
         num_kv_splits = 1
 
-    packed_work_range = _alloc_perplan_buf(_BuffTag.packed_work_range, num_ctas, device, torch.int64, _ws)
+    packed_work_range = _alloc_perplan_buf(_BuffTag.packed_work_range, num_ctas, device, torch.int64)
     max_work_items = _PLAN_MAX_WORK_ITEMS_PER_SPLIT * max(num_kv_splits, 1)
-    packed_work_info = _alloc_perplan_buf(_BuffTag.packed_work_info, max_work_items, device, torch.int64, _ws)
+    packed_work_info = _alloc_perplan_buf(_BuffTag.packed_work_info, max_work_items, device, torch.int64)
     if num_kv_splits > 1:
-        kv_tile_begin_indices = _alloc_perplan_buf(_BuffTag.kv_tile_begin_indices, max_work_items, device, torch.int32, _ws)
-        kv_tile_end_indices = _alloc_perplan_buf(_BuffTag.kv_tile_end_indices, max_work_items, device, torch.int32, _ws)
-        kv_split_indices = _alloc_perplan_buf(_BuffTag.kv_split_indices, max_work_items, device, torch.int32, _ws)
-        num_kv_splits_per_row = _alloc_perplan_buf(_BuffTag.num_kv_splits_per_row, total_qo_len, device, torch.int32, _ws)
+        kv_tile_begin_indices = _alloc_perplan_buf(_BuffTag.kv_tile_begin_indices, max_work_items, device, torch.int32)
+        kv_tile_end_indices = _alloc_perplan_buf(_BuffTag.kv_tile_end_indices, max_work_items, device, torch.int32)
+        kv_split_indices = _alloc_perplan_buf(_BuffTag.kv_split_indices, max_work_items, device, torch.int32)
+        num_kv_splits_per_row = _alloc_perplan_buf(_BuffTag.num_kv_splits_per_row, total_qo_len, device, torch.int32)
         workspace_o = _alloc_workspace_buf(_BuffTag.workspace_o, total_qo_len * num_kv_splits * num_qo_heads * 128, device, dtype=torch.bfloat16)
 
         lse_total_size = num_kv_splits * total_qo_len * num_qo_heads
-        workspace_lse = _alloc_perplan_buf(_BuffTag.workspace_lse, lse_total_size, device, torch.float32, _ws)
+        workspace_lse = _alloc_perplan_buf(_BuffTag.workspace_lse, lse_total_size, device, torch.float32)
     else:
         kv_tile_begin_indices = None
         kv_tile_end_indices = None
@@ -2049,10 +1598,8 @@ def _fmha_sm100_plan_impl(
         lse_total_size = 0
         workspace_lse = None
 
-    qo_segment_lens_gpu = _plan_buf_from_list(
-        qo_lens, device, _ws, _BuffTag.plan_qo_segment_lens)
-    plan_kv_lens_gpu = _plan_buf_from_list(
-        plan_kv_lens_list, device, _ws, _BuffTag.plan_kv_lens)
+    qo_segment_lens_gpu = _plan_buf_from_list(qo_lens, device)
+    plan_kv_lens_gpu = _plan_buf_from_list(plan_kv_lens_list, device)
     _call_plan(qo_segment_offsets, qo_segment_lens_gpu, plan_kv_lens_gpu,
         packed_work_range, packed_work_info,
         qo_tile_size, kv_tile_size,
@@ -2073,8 +1620,7 @@ def _fmha_sm100_plan_impl(
         pack_factor=pack_factor, orig_num_qo_heads=orig_num_qo_heads,
         qo_len_uniform=qo_len_uniform, cute_workspace_buffer=cute_workspace_buffer,
         kv_page_indptr_local_last=kv_page_indptr_local_last,
-        **_icp_direct_fields,
-        plan_workspace=_ws, plan_workspace_epoch=_ws_epoch)
+        **_icp_direct_fields)
 
 
 
@@ -2102,7 +1648,6 @@ def _fmha_sm100(
     icp_rank: int = 0,
 ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
     """Run the ordinary dev variants or an explicit ICP score-only plan."""
-    _assert_plan_workspace_current(plan_info)
     _assert_device_plan_current(plan_info)
 
     if plan_info["MM-SA-Nv"]:
@@ -2696,18 +2241,6 @@ def fmha_sm100_plan(
     if split_prefill_decode and qmax > split_threshold:
         split = (qo_segment_lens > split_threshold).nonzero(as_tuple=False)[0, 0].item()
         has_mixed_prefill = split > 0
-    if has_mixed_prefill and kwargs.get("plan_workspace") is not None:
-        # Both sub-plans below are returned together and are therefore ALIVE
-        # TOGETHER; one workspace cannot hold both, and the existing `.clone()`
-        # of the decode half would defeat the stable pointers the workspace was
-        # passed for.  Refuse instead of silently giving back one stable plan and
-        # one freshly allocated one.
-        raise PlanWorkspaceError(
-            "plan_workspace cannot be used with a split mixed prefill/decode "
-            "plan: `fmha_sm100_plan` returns two sub-plans that are live at the "
-            "same time, so they need two workspaces.  Either pass "
-            "split_prefill_decode=False, or call `_fmha_sm100_plan` once per "
-            "half with its own workspace slot.")
     if has_mixed_prefill and kwargs.get("icp_block_table") is not None:
         # refined-icp-v1: REFUSED, not split.  Two independent reasons, either
         # sufficient: (1) the decode half below is `.clone()`d field by field, which
