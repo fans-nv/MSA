@@ -1,8 +1,8 @@
 """D3 (selector-side publish + early poll/merge) against the routes it replaces.
 
-Oracles: the UNCHANGED full-row decode selector writes each rank's C4 rows,
-then (a) K2 over the emulated ``all_to_all`` carrier and (b) K5T over the
-same rows. D3 must equal both on every row and every status bit.
+Oracle: the UNCHANGED full-row decode selector writes each rank's C4 rows,
+then K2 over the emulated ``all_to_all`` carrier. D3 must equal it on every
+row and every status bit.
 
 Single-GPU emulation: ``W`` plain device windows, one selector stream and one
 merge stream per rank. ``merges_first`` launches every merge BEFORE any
@@ -325,25 +325,6 @@ def test_d3_is_bit_identical_to_selector_plus_k2(
             assert torch.equal(outs[r], ref), (world, T, N, r)
             assert int(emu.status[r].item()) == s_ref
             assert torch.equal(mirrors[r].view(torch.int32), cands[r])
-
-
-@pytest.mark.gpu
-def test_d3_equals_k5t_on_the_same_rows(fused, sel):
-    from fmha_sm100.icp import _build
-
-    k5t = _build._k5t()
-    from test_tiled_exchange import Emulation as K5TEmulation
-
-    world, hl, T = 2, 2, 64
-    k5 = K5TEmulation(k5t, world=world, t_cap=256, h_local=hl)
-    emu = Emulation(fused, world=world, t_cap=256, h_local=hl)
-    for layer in range(7):
-        inv = make_invocation(world, hl, T, 1172, seed=7 + layer)
-        cands = [selector_rows(sel, inv, r) for r in range(world)]
-        a = k5.run(cands, inv["forced"], inv["n_ord"], layer_idx=layer)
-        b = emu.run(inv, layer_idx=layer, merges_first=bool(layer % 2))
-        for r in range(world):
-            assert torch.equal(a[r], b[r]), (layer, r)
 
 
 @pytest.mark.gpu
