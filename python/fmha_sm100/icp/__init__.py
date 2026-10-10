@@ -26,6 +26,8 @@ PUBLIC_VLLM_ABI = 1
 #: can still run the build gate, the ABI self-check and the pure-CPU tests.
 _LAZY = {
     "CandidateExchange": "candidate_exchange",
+    "IcpIndexerConfig": "indexer_runtime",
+    "IcpIndexerRuntime": "indexer_runtime",
     "IcpExchange": "exchange",
     "IcpTiledExchange": "tiled_exchange",
     "IcpFusedExchange": "fused_exchange",
@@ -93,7 +95,7 @@ _LAZY = {
 _SUBMODULES = frozenset({"abi", "candidates", "carrier", "exchange", "merge",
                          "merge_reference", "tiled_exchange",
                          "fused_exchange", "candidate_exchange", "exchange_plan",
-                         "local_indexer"})
+                         "local_indexer", "indexer_runtime"})
 
 __all__ = [
     *sorted(_LAZY),
