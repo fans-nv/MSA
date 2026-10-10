@@ -18,8 +18,10 @@ package is included here.
 | `fmha_sm100.icp.scorer.prefill.api` / `.jit` | aliases of shared `fmha_sm100.api` / `.jit`; no second FMHA tree |
 | `fmha_sm100.icp.scorer.decode.icp_decode_score` | prepared CuTe score scan; launch ABI 3, score ABI 2 |
 | `fmha_sm100.icp.local_indexer` | host planning and bound launch adapters |
+| `fmha_sm100.icp.indexer_runtime` | `IcpIndexerRuntime`: retained capacity, `plan_step`, `run_layer` |
+| `fmha_sm100.icp.compound_page` | compound-page layout math and local read bounds |
 | `fmha_sm100.icp.candidates` | local full-row selector |
-| `fmha_sm100.icp.CandidateExchange` | D3, K5T and NCCL-plus-K2 route adapter |
+| `fmha_sm100.icp.CandidateExchange` | D3, K5T and NCCL-plus-K2 route adapter; `for_tp_group` factory |
 | `fmha_sm100.icp.attention.nvfp4_prefill` | lazy facade over shared `fmha_sm100.cute` CSR/attention/combine |
 
 Producer device plans retain ABI 3 and live-plan ABI 1. The serving engine must
@@ -30,7 +32,8 @@ D3 retains publish per selector window and a final early merge. K5T retains its
 separate selector/exchange launch sequence and tile generations. NCCL retains
 packing, collective exchange and K2 merge. The row/tile generation protocols,
 launch arguments, padding writes and wait/publish ordering are not unified.
-Legacy K5 remains available for compatibility. No tuning or new performance
+The legacy K5 Python route was removed; `csrc/k5_exchange.cu` stays only so the
+source-keyed `icp` cache digest is unchanged. No tuning or new performance
 claim is attached to this ownership move.
 
 ## Existing MSA APIs
