@@ -312,23 +312,6 @@ def live_blocks(max_kv_len: int, *, page_size: int) -> int:
     return -(-int(max_kv_len) // int(page_size))
 
 
-def live_local_blocks(*_args: object, **_kwargs: object) -> int:
-    """Removed by refined-icp-v1. Use :func:`live_blocks`.
-
-    Kept as a raising stub rather than deleted because the replacement takes
-    *fewer* arguments: a caller that dropped ``icp_degree``/``icp_rank`` but
-    kept the name would otherwise bind to nothing and fail somewhere less
-    obvious, and a caller that kept them would silently compute a block-cyclic
-    count that is now ``W`` times too small.
-    """
-    raise RuntimeError(
-        "live_local_blocks() is block-cyclic and was removed by "
-        "refined-icp-v1: every rank now scores the full global block domain, so "
-        "the count no longer depends on icp_degree or icp_rank. Call "
-        "live_blocks(max_kv_len, page_size=...) instead."
-    )
-
-
 @dataclass(frozen=True, slots=True)
 class SelectorPlan:
     """Immutable launch bounds. Not constructible: use a band's subclass.
@@ -927,57 +910,6 @@ def select_decode_candidates(scores: torch.Tensor,
         )
     return _select(scores, geometry, plan=plan, workspace=workspace, out=out,
                    arm=arm)
-
-
-def select_with_control(scores: torch.Tensor, geometry: CandidateGeometry, *,
-                        plan: DecodePlan, workspace: CandidateWorkspace,
-                        out: torch.Tensor, control: int,
-                        arm: SelectArm | str | int | None = None) -> torch.Tensor:
-    """TEST ONLY: run the selector with one site deliberately perturbed.
-
-    ``control`` selects the perturbation; they are listed at the
-    ``ICP_RS_NEGATIVE_CONTROL`` macro in ``csrc/local_candidates_rs.cuh``.
-    ``control = 0`` perturbs nothing, so a gate that cannot tell 0 from a real
-    control is not gating. This runs a **different extension**, built with the
-    macro defined; the shipping one contains none of this code.
-
-    It drives the capacity-fed launcher, so it takes a :class:`DecodePlan`.
-    The prefill launcher has no controls in this repository; the standalone
-    suite that gates it lives in the campaign workspace, not here.
-
-    ``arm`` reaches the control extension as the **same** ``cap`` code the
-    shipping launcher dispatches on -- ``0`` sort, ``-1``/``-2`` radix, ``> 0``
-    capped -- so the control and the thing it controls take the same branch.
-    ``RADIX_FULL_ROW`` has no mutation-control implementation and is rejected
-    before tensor validation or building the control extension.
-    """
-    resolved = selector_arm(arm)
-    if resolved is SelectArm.RADIX_FULL_ROW:
-        raise ValueError(
-            "RADIX_FULL_ROW has no mutation-control implementation; "
-            "select_with_control supports only the legacy selector arms."
-        )
-    _validate(scores, geometry, plan=plan, out=out,
-              partials=workspace.partials, partial_shape=plan.partial_shape)
-    _build._select_control_ext().select_local_candidates_control(
-        scores,
-        geometry.local_valid_blocks,
-        geometry.forced_column,
-        geometry.active_rows,
-        out,
-        workspace.partials[: scores.shape[0]],
-        geometry.scan_block_begin,
-        plan.use_pdl,
-        int(control),
-        # NOT `max(int(resolved), 0)`. That was correct while the control
-        # extension treated every cap <= 0 as the radix arm; it now dispatches
-        # cap == 0 to the SORT arm, exactly as the shipping launcher does, so
-        # clamping would silently run the sort arm's controls under the radix
-        # arm's name.
-        int(resolved),
-        global_block_stride=geometry.global_block_stride,
-    )
-    return out
 
 
 def planned_kernel(arm: SelectArm | str | int, blocks: int) -> dict[str, int]:
