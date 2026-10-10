@@ -2,11 +2,8 @@
 
 This is the *unfused* path: whoever produced the candidates packs them into the
 C4 carrier, exchanges them (:mod:`fmha_sm100.icp.carrier`) and calls
-:func:`merge_candidates`. :class:`fmha_sm100.icp.IcpExchange` fuses the exchange
-and the merge into one launch and must produce a **bit-identical** result --
-``tests/test_exchange.py::test_exchange_is_bit_identical_to_the_reference_merge``
-gates exactly that, and it can be a ``torch.equal`` only because both paths
-compile the same ``merge_topk.cuh``.
+:func:`merge_candidates`. The fused D3 decode merge compiles the same
+``merge_topk.cuh`` and must produce a **bit-identical** result.
 
 Host ABI
 --------
@@ -50,25 +47,9 @@ Under fragment placement every rank scores every logical block over its own
 id arrives from several sources. The merge max-reduces duplicates by id
 **before** truncating to 16. Truncating first -- which is what the pre-refined
 merge and the M0 oracle both did -- drops winners.
-
-Arms, and their tiers
----------------------
-
-:class:`MergeArm` names the three implementations of the same C3/C5/C6
-semantics. :data:`PRODUCTION_ARMS` holds exactly one, ``CUDA``; the Triton and
-torch arms in :mod:`fmha_sm100.icp.merge_reference` are :data:`REFERENCE_ARMS` --
-they exist to define and check correct behaviour, and they are opt-in by name
-only. :func:`merge_backend` is the single resolution point: ``auto`` resolves to
-a production arm or **raises**, never to a reference one, and an explicit
-reference arm warns with :class:`IcpReferenceArmWarning` and is recorded by
-:func:`last_merge_arm` so a result artifact can carry it.
 """
 
 from __future__ import annotations
-
-import enum
-import os
-import warnings
 
 import torch
 
@@ -251,75 +232,6 @@ def canonical_key_cuda(scores: torch.Tensor, ids: torch.Tensor) -> torch.Tensor:
     return out
 
 
-# --------------------------------------------------------------------------
-# Arms, and the one place an arm is chosen
-# --------------------------------------------------------------------------
-
-
-class MergeArm(enum.Enum):
-    """Which implementation of the C3/C5/C6 merge runs.
-
-    ``CUDA``
-        ``csrc/k2_merge.cu`` over ``csrc/merge_topk.cuh``. The production path.
-    ``TRITON`` / ``TORCH``
-        :mod:`fmha_sm100.icp.merge_reference`. **REFERENCE tier**: they exist to
-        define and check correct behaviour, they are opt-in by name only, and
-        they are not production backends.
-
-    The split is a *tier*, not a preference ranking. Nothing resolves to a
-    reference arm on a caller's behalf -- see :func:`merge_backend`.
-    """
-
-    CUDA = "cuda"
-    TRITON = "triton"
-    TORCH = "torch"
-
-
-#: The shipping tier. ``auto`` resolves here and nowhere else.
-PRODUCTION_ARMS = frozenset({MergeArm.CUDA})
-
-#: The reference tier: :mod:`fmha_sm100.icp.merge_reference`.
-REFERENCE_ARMS = frozenset({MergeArm.TRITON, MergeArm.TORCH})
-
-#: Every name :func:`merge_backend` accepts, in the order it lists them when it
-#: refuses one. ``auto`` is a *resolution rule*, not an arm, so it has no
-#: :class:`MergeArm` member.
-MERGE_ARM_NAMES = ("auto", *(arm.value for arm in MergeArm))
-
-#: Sets the default arm without touching a call site. Same refuse-by-name
-#: discipline as the ``arm`` argument, and ``auto`` remains the default.
-MERGE_ARM_ENV = "ICP_MERGE_ARM"
-
-
-class IcpReferenceArmWarning(UserWarning):
-    """A REFERENCE-tier merge arm was selected by name.
-
-    Not advice and not a deprecation: the selection was honoured exactly as
-    asked. It is emitted because running a reference implementation is a
-    deliberate, visible act, and because a result taken on one must say so --
-    :func:`last_merge_arm` is what a result artifact should record.
-    """
-
-
-_last_arm: MergeArm | None = None
-
-#: Arms already warned about. Module state, so the warning is *one-time*
-#: whatever the ambient ``warnings`` filters are. ``tests/test_merge_key.py``
-#: clears it, which is the only supported reason to touch it.
-_WARNED_REFERENCE_ARMS: set[MergeArm] = set()
-
-
-def last_merge_arm() -> MergeArm | None:
-    """The arm :func:`merge_backend` resolved most recently, or ``None``.
-
-    Record it beside any result. A number whose arm is not recorded cannot be
-    attributed to an implementation, and the whole point of the reference tier
-    is that it produces the *same* numbers -- so no output comparison can
-    recover the arm after the fact.
-    """
-    return _last_arm
-
-
 def _require_k2() -> None:
     """Raise if the CUDA arm cannot take a call at all."""
     if not torch.cuda.is_available():
@@ -335,111 +247,8 @@ def _require_k2() -> None:
         )
 
 
-def _warn_reference_arm(arm: MergeArm, *, from_env: bool) -> None:
-    if arm in _WARNED_REFERENCE_ARMS:
-        return
-    _WARNED_REFERENCE_ARMS.add(arm)
-    via = f" (selected through {MERGE_ARM_ENV})" if from_env else ""
-    warnings.warn(
-        f"the {arm.value!r} merge arm{via} is REFERENCE tier, not a production "
-        "backend: it exists to define and check correct C5/C6 behaviour, and "
-        "the production path is the CUDA arm (K2). The selection was honoured; "
-        "record fmha_sm100.icp.merge.last_merge_arm() beside any result taken "
-        "with it.",
-        IcpReferenceArmWarning,
-        stacklevel=3,
-    )
-
-
-def merge_backend(requested: MergeArm | str | None = None) -> MergeArm:
-    """Resolve a request to a :class:`MergeArm`, and record it.
-
-    ===================  ====================================================
-    ``requested``        result
-    ===================  ====================================================
-    ``None``             :data:`MERGE_ARM_ENV` if set, else ``"auto"``; then
-                         the row for that value, refusing an unknown one by
-                         name.
-    ``"auto"``           ``CUDA`` if K2 is usable, else **raises**, naming the
-                         underlying reason and chaining it. Never a reference
-                         arm.
-    ``"cuda"``           ``CUDA`` if K2 is usable, else **raises**. Never
-                         degrades.
-    ``"triton"``         ``TRITON``, after a one-time
-                         :class:`IcpReferenceArmWarning`.
-    ``"torch"``          ``TORCH``, after a one-time
-                         :class:`IcpReferenceArmWarning`.
-    a :class:`MergeArm`  the same as its ``.value``.
-    anything else        ``ValueError`` naming the value and listing
-                         :data:`MERGE_ARM_NAMES`. Never silently defaulted.
-    ===================  ====================================================
-
-    The one thing this function will not do is put production traffic on a
-    reference implementation without being told to, by name. A fallback here
-    would be undetectable downstream: the arms are bit-exact by construction,
-    so no output comparison can tell which one ran.
-    """
-    global _last_arm
-
-    from_env = False
-    if requested is None:
-        env = os.environ.get(MERGE_ARM_ENV)
-        if env:
-            requested, from_env = env, True
-        else:
-            requested = "auto"
-
-    if isinstance(requested, MergeArm):
-        name = requested.value
-    else:
-        name = str(requested).strip().lower()
-    if name not in MERGE_ARM_NAMES:
-        where = (f"{MERGE_ARM_ENV}={requested!r}" if from_env
-                 else f"arm={requested!r}")
-        raise ValueError(
-            f"unknown merge arm: {where}. Legal values are "
-            f"{', '.join(repr(n) for n in MERGE_ARM_NAMES)}. An unrecognised "
-            "name is refused rather than defaulted: silently running 'auto' "
-            "for a misspelled 'trtion' would report one arm and measure "
-            "another, and the arms are bit-exact, so nothing downstream could "
-            "catch it."
-        )
-
-    if name in ("auto", MergeArm.CUDA.value):
-        try:
-            _require_k2()
-        except Exception as exc:
-            if name == "auto":
-                raise RuntimeError(
-                    "merge arm 'auto' resolves to a production arm "
-                    f"({', '.join(sorted(a.value for a in PRODUCTION_ARMS))}) "
-                    f"only, and the CUDA arm (K2) is unusable here: {exc}. "
-                    "`auto` will not silently route production traffic onto a "
-                    "reference implementation, so it raises instead. Fix the "
-                    "build, or ask for "
-                    f"{' / '.join(sorted(repr(a.value) for a in REFERENCE_ARMS))} "
-                    "by name -- which is a deliberate, visible act and warns."
-                ) from exc
-            # S7/vLLM's justification for raising instead of degrading, kept
-            # verbatim: "a benchmark that silently measured Triton while
-            # reporting 'K2' would be worse than a crash".
-            raise RuntimeError(
-                f"merge arm 'cuda' was requested but K2 is unusable: {exc}. "
-                "An explicit 'cuda' raises rather than degrading to a "
-                "reference arm: a benchmark that silently measured Triton "
-                "while reporting 'K2' would be worse than a crash."
-            ) from exc
-        arm = MergeArm.CUDA
-    else:
-        arm = MergeArm(name)
-        _warn_reference_arm(arm, from_env=from_env)
-
-    _last_arm = arm
-    return arm
-
-
 # --------------------------------------------------------------------------
-# The host-side contract, shared by all three arms
+# The host-side contract
 # --------------------------------------------------------------------------
 
 
@@ -448,10 +257,6 @@ def _prepare(cand: torch.Tensor, world: int, rank: int,
              n_ordinary: torch.Tensor | None):
     """Validate one merge invocation and return ``(cand, out, W, rank, Q, Hl)``.
 
-    Every arm goes through this, so the *argument* contract is one
-    implementation even though the merge is three. An arm-dependent refusal
-    would be a second way for the arms to disagree, and the point of the
-    reference tier is that they cannot.
     """
     if cand.dim() != 5:
         raise ValueError(
@@ -549,8 +354,7 @@ def merge_candidates(cand: torch.Tensor, *, world: int, rank: int,
                      out: torch.Tensor | None = None,
                      forced: torch.Tensor | None = None,
                      n_ordinary: torch.Tensor | None = None,
-                     status: torch.Tensor | None = None,
-                     arm: MergeArm | str | None = None) -> torch.Tensor:
+                     status: torch.Tensor | None = None) -> torch.Tensor:
     """Merge an exchanged C4 carrier into this rank's Top-16 (CONTRACT C6).
 
     Parameters
@@ -584,38 +388,20 @@ def merge_candidates(cand: torch.Tensor, *, world: int, rank: int,
         sync and the invocation is capturable. Zeroing it before the launch and
         checking it after belong to the caller. A status word nobody reads is a
         failure channel that does not exist.
-    arm
-        Which :class:`MergeArm` runs, resolved by :func:`merge_backend`.
-        ``None`` is ``ICP_MERGE_ARM`` or ``auto``, i.e. the CUDA arm or an
-        exception -- never a reference arm. ``"triton"``/``"torch"`` select
-        :mod:`fmha_sm100.icp.merge_reference` and warn; they are reference-tier
-        and produce the same bits, including on the failure path, which is what
-        ``tests/test_merge_key.py`` gates.
 
     Returns
     -------
     ``out``: int32 ``[Qchunk, H_local, 16]``, ascending, ``-1``-padded. A failed
     row is published as an all ``-1`` row -- never a stale or plausible
-    selection, and defined, so the CUDA and reference arms stay bit-comparable
-    on the failure path too.
+    selection.
     """
     cand, out, world, rank, tokens, heads_local = _prepare(
         cand, world, rank, out, forced, n_ordinary)
     status, owned_status = _acquire_status(status, cand.device)
 
-    chosen = merge_backend(arm)
-    if chosen is MergeArm.CUDA:
-        _build._k2().k2_merge(cand, out, rank * heads_local, world, rank,
-                              forced, n_ordinary, status)
-    else:
-        # Imported here, not at module scope: the reference arms pull in
-        # torch-heavy (and, for Triton, optional) machinery that the production
-        # path must not pay for or depend on.
-        from . import merge_reference  # noqa: PLC0415
-
-        kernel = (merge_reference._triton_merge if chosen is MergeArm.TRITON
-                  else merge_reference._torch_merge)
-        kernel(cand, out, forced, n_ordinary, status)
+    _require_k2()
+    _build._k2().k2_merge(cand, out, rank * heads_local, world, rank,
+                          forced, n_ordinary, status)
 
     _raise_on_status(status, owned_status)
     return out

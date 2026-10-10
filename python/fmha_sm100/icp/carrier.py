@@ -366,7 +366,7 @@ def allocate_carrier_workspace(*, world: int, qchunk: int, h_local: int,
     largest ``Qchunk`` any call through it will present. A shorter call needs a
     differently *shaped* carrier -- the row count is baked into the collective's
     element counts, not just into a stride -- so it needs its own workspace;
-    unlike :class:`fmha_sm100.icp.IcpExchange`'s symmetric window, nothing here is
+    unlike :class:`fmha_sm100.icp.IcpFusedExchange`'s symmetric window, nothing here is
     scarce, and a dict keyed by extent is the whole story.
     """
     if transport not in TRANSPORTS:

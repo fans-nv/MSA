@@ -1,7 +1,7 @@
 """The ICP local-candidate selector: dense block scores -> this rank's Top-16.
 
 This is the producer that feeds :func:`fmha_sm100.icp.merge_candidates` and
-:class:`fmha_sm100.icp.IcpExchange`. Each ICP rank scores only the blocks it owns,
+:class:`fmha_sm100.icp.IcpFusedExchange`. Each ICP rank scores only the blocks it owns,
 selects its own best 16 per (token, head), and emits them as CONTRACT C4
 candidate tuples; the merge or the exchange then reduces the ``C`` per-rank
 lists to the global Top-16.
@@ -169,7 +169,7 @@ class SelectArm(enum.IntEnum):
 SHIPPED_ARM = SelectArm.RADIX_BOUNDED
 
 #: Everything else. Reachable by name so an A/B can run, not because a caller
-#: should choose one -- the same split :data:`fmha_sm100.icp.MaskPreset` draws.
+#: should choose one.
 MEASUREMENT_ARMS = frozenset(a for a in SelectArm if a is not SHIPPED_ARM)
 
 #: Prototype spellings kept resolvable so older harness invocations and result

@@ -4,7 +4,7 @@ Oracles (the tests may use ATen; the kernel path may not):
 
 * CPU torch: ``pack_send_carrier`` -> emulated ``all_to_all_single`` (the
   source-major stack of every rank's slab for this destination) ->
-  the torch reference merge body (``merge_reference._torch_merge``).
+  the torch oracle merge body (``tests/icp/_merge_oracle._torch_merge``).
 * GPU K2: the same carrier -> ``merge_candidates`` (the CUDA K2 kernel), i.e.
   the route K5T replaces.
 
@@ -26,7 +26,7 @@ import pytest
 torch = pytest.importorskip("torch")
 
 from fmha_sm100.icp import carrier, forced_rows  # noqa: E402
-from fmha_sm100.icp.merge_reference import _torch_merge  # noqa: E402
+from _merge_oracle import _torch_merge  # noqa: E402
 
 CAND_K = 16
 POISON_SCORE = 3.0e38  # finite, must win
