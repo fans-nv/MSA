@@ -179,6 +179,54 @@ class CandidateExchange:
             for extent in capacities
         }
 
+    @classmethod
+    def for_tp_group(
+        cls,
+        *,
+        group: dist.ProcessGroup,
+        world_size: int,
+        rank: int,
+        topk_buffer: torch.Tensor,
+        num_sparse_layers: int,
+        max_num_batched_tokens: int,
+        cudagraph_capture_sizes: Sequence[int] = (),
+        fused_decode: bool = True,
+        use_pdl: bool = True,
+        classic_merge: bool = False,
+    ) -> CandidateExchange:
+        """One exchange per process whose output geometry is the shared top-k buffer.
+
+        ``topk_buffer`` is ``[T, H_local, 16]``; ``T`` must equal the largest
+        admitted extent of both bands' ladders, which are derived here from the
+        same config the indexer runtime uses.
+        """
+        from .exchange_plan import admitted_exchange_extents  # noqa: PLC0415
+
+        token_capacity, num_heads_local = topk_buffer.shape[0], topk_buffer.shape[1]
+        token_capacities = admitted_exchange_extents(
+            max_token_capacity=max_num_batched_tokens,
+            cudagraph_capture_sizes=tuple(cudagraph_capture_sizes or ()),
+        )
+        if token_capacities[-1] != token_capacity:
+            raise ValueError(
+                f"ICP: the shared top-k buffer holds {token_capacity} rows but "
+                f"the largest admitted exchange extent is {token_capacities[-1]}."
+            )
+        return cls(
+            group=group,
+            world_size=world_size,
+            rank=rank,
+            num_heads_local=num_heads_local,
+            num_index_heads=world_size * num_heads_local,
+            num_sparse_layers=num_sparse_layers,
+            token_capacities=token_capacities,
+            device=topk_buffer.device,
+            fused_decode=fused_decode,
+            use_pdl=use_pdl,
+            classic_merge=classic_merge,
+            slots=ICP_EXCHANGE_SLOTS,
+        )
+
     def close(self) -> None:
         """Drain/barrier the model-scoped window once on every TP rank."""
         if not self._closed:
