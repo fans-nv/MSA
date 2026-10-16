@@ -62,6 +62,8 @@ fmha_sm100 = [
     "csrc/**/*",
     "decode_q8kv4/csrc/**/*",
     "prefill_q8kv4/csrc/**/*",
+    "icp/**/*.py",
+    "icp/csrc/*",
     "cutlass/include/**/*",
     "cutlass/tools/util/include/**/*",
 ]

@@ -21,9 +21,21 @@ import torch
 
 from .jit import _dlpack_dtype_code, _PACK_FACTORS, get_fmha_variant, get_reduction_module, get_plan_fn, get_sparse_topk_module
 from .nvfp4_kv import nvfp4_head_slot_views
-from .sparse_fmha_adapter import sparse_fmha, sparse_fmha_plan
 from . import q8kv4_decode_adapter
 from . import q8kv4_prefill_adapter
+
+
+# Deferred so importing api does not load the CuTe DSL (ICP prewarm pins its arch first).
+def sparse_fmha(*args, **kwargs):
+    from .sparse_fmha_adapter import sparse_fmha as run
+
+    return run(*args, **kwargs)
+
+
+def sparse_fmha_plan(*args, **kwargs):
+    from .sparse_fmha_adapter import sparse_fmha_plan as plan
+
+    return plan(*args, **kwargs)
 
 
 _np_staging = np.empty(4096 * 1024, dtype=np.int32)
@@ -1508,3 +1520,146 @@ def sparse_topk_select(
     )
 
     return output_indices
+
+
+# ---- OnlyScoreIcp (TP2 ICP): rank-fragment scores; the KV writer fills the device plans ----
+
+_ICP_WORLD_SIZE = 2
+_ICP_PAGE_SIZE = 64
+_ICP_QO_TILE = 128
+
+
+class _IcpDevicePlanSlot:
+    """One chunk slot of an :class:`_IcpDevicePlanStore`."""
+
+    __slots__ = ("index", "store")
+
+    def __init__(self, store, index):
+        self.store = store
+        self.index = index
+
+    def views(self, num_segments):
+        """Exact-length views of this slot's rows; no device work."""
+        store, n = self.store, int(num_segments)
+        seg = store.segments[self.index]
+        work = store.work[self.index]
+        return {
+            "qo_segment_offsets": seg[0, :n + 1],
+            "kv_segment_offsets": seg[1, :n + 1],
+            "qo_segment_lens": seg[2, :n],
+            "kv_segment_lens": seg[3, :n],
+            "qo_offset": seg[4, :n],
+            "packed_work_range": work[:store.num_ctas],
+            "packed_work_info": work[store.num_ctas:store.num_ctas + store.max_work_items],
+        }
+
+
+class _IcpDevicePlanStore:
+    """Stable storage for every chunk's OnlyScoreIcp plan (device-plan ABI 4)."""
+
+    def __init__(self, *, device, num_slots, max_segments, num_heads, max_chunk_tokens):
+        self.device = device
+        self.num_heads = num_heads
+        self.num_ctas = _get_num_cta(device)
+        self.max_work_items = num_heads * (-(-max_chunk_tokens // _ICP_QO_TILE) + max_segments)
+        # Segment rows, in the writer's order: qo/kv offsets, qo/kv lengths, qo_offset.
+        self.segments = torch.empty((num_slots, 5, max_segments + 1),
+                                    dtype=torch.int32, device=device)
+        # Work row: [range | info | scratch info | scratch bucket/position].
+        self.work = torch.empty((num_slots, self.num_ctas + 3 * self.max_work_items),
+                                dtype=torch.int64, device=device)
+        self.header = torch.empty((num_slots, 4), dtype=torch.int32, device=device)
+
+    def slot(self, index):
+        """Slot ``index`` of this store."""
+        return _IcpDevicePlanSlot(self, index)
+
+    def writer_kwargs(self):
+        """Arguments of the fused writer's device-plan CTAs."""
+        return {
+            "icp_plan_segments": self.segments,
+            "icp_plan_work": self.work,
+            "icp_plan_header": self.header,
+            "icp_plan_num_ctas": self.num_ctas,
+            "icp_plan_num_heads": self.num_heads,
+        }
+
+
+def _icp_scorer_variants():
+    """``(variant_name, get_fmha_variant args)`` of both FP8 OnlyScoreIcp scorers."""
+    from .jit import _variant_key_from_runtime
+
+    code = _dlpack_dtype_code(torch.float8_e4m3fn)
+    variants = []
+    for single_wg in (True, False):
+        args = (code, _ICP_QO_TILE, single_wg, 4, _ICP_PAGE_SIZE, False, 1)
+        variants.append((_variant_key_from_runtime(*args)[0], args))
+    return variants
+
+
+def _fmha_sm100_icp_plan(qo_segment_lens, num_qo_heads, *, icp_rank, block_table,
+                         block_table_row_stride, block_table_row_begin, device_plan,
+                         max_k_tiles):
+    """Host-only plan of one chunk over the writer-filled ``device_plan`` slot; no device read."""
+    qo_lens = qo_segment_lens.tolist()
+    max_qo_len = max(qo_lens)
+    views = device_plan.views(len(qo_lens))
+    info = _make_plan_info(
+        packed_work_range=views["packed_work_range"],
+        packed_work_info=views["packed_work_info"],
+        kv_tile_begin_indices=None, kv_tile_end_indices=None, kv_split_indices=None,
+        num_kv_splits=1, workspace_o=None, workspace_lse=None, max_qo_len=max_qo_len,
+        predicted_speedup=1.0, num_kv_splits_per_row=None,
+        qo_segment_offsets=views["qo_segment_offsets"],
+        kv_segment_offsets=views["kv_segment_offsets"],
+        kv_page_indptr=None, max_k_tiles=max_k_tiles,
+        qo_segment_lens=views["qo_segment_lens"],
+        kv_segment_lens=views["kv_segment_lens"],
+        qo_offset=views["qo_offset"],
+        pack_factor=1, orig_num_qo_heads=num_qo_heads,
+        qo_len_uniform=min(qo_lens) == max_qo_len,
+        cute_workspace_buffer=_alloc_workspace_buf(
+            _BuffTag.fmha_sm100_cutlass_workspace, 32 * 1024 * 1024,
+            device_plan.store.device, torch.uint8))
+    info.update(
+        icp_rank=int(icp_rank),
+        block_table=block_table,
+        block_table_row_stride=int(block_table_row_stride),
+        block_table_row_begin=int(block_table_row_begin),
+    )
+    return info
+
+
+def _fmha_sm100_icp(q, k, plan_info, *, max_score, valid_score, sm_scale, qo_offset):
+    """Write this rank's max scores and validity ``[T, H, max_k_tiles]``; ``k`` is ``[pages, 1, 64, D]``."""
+    max_qo_len = plan_info["max_qo_len"]
+    variant = get_fmha_variant(_dlpack_dtype_code(q.dtype), _ICP_QO_TILE, max_qo_len <= 64,
+                               4, _ICP_PAGE_SIZE, False, 1)
+    variant.run(
+        plan_info["cute_workspace_buffer"],
+        q, k, k,
+        plan_info["qo_segment_lens"], plan_info["kv_segment_lens"],
+        plan_info["qo_segment_offsets"], plan_info["kv_segment_offsets"],
+        plan_info["packed_work_range"], plan_info["packed_work_info"],
+        None,
+        sm_scale, 1.0, 1.0, 1.0, 1.0,
+        max_qo_len,
+        qo_offset,
+        1,
+        None, None, None,
+        None, None,
+        None,
+        _ICP_QO_TILE,
+        plan_info["block_table"], None,
+        max_score,
+        plan_info["max_k_tiles"],
+        None,
+        1,
+        bool(plan_info["qo_len_uniform"]),
+        torch.cuda.current_stream().cuda_stream,
+        valid_score,
+        plan_info["block_table_row_stride"],
+        plan_info["block_table_row_begin"],
+        plan_info["icp_rank"],
+        _ICP_WORLD_SIZE,
+    )
